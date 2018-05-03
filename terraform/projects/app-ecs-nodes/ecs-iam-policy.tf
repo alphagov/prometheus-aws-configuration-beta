@@ -1,6 +1,5 @@
-
 resource "aws_iam_instance_profile" "ecs_profile" {
-  name  = "${var.stack_name}-ecs-profile"
+  name = "${var.stack_name}-ecs-profile"
   role = "${aws_iam_role.node_iam_role.name}"
 }
 
@@ -25,10 +24,7 @@ resource "aws_iam_role" "node_iam_role" {
 EOF
 }
 
-
-
 data "aws_iam_policy_document" "ecs_node_document" {
-
   statement {
     sid = "ECSNodePolicy"
 
@@ -47,7 +43,7 @@ data "aws_iam_policy_document" "ecs_node_document" {
       "ecr:GetDownloadUrlForLayer",
       "ecr:BatchGetImage",
       "logs:CreateLogStream",
-      "logs:PutLogEvents"
+      "logs:PutLogEvents",
     ]
   }
 }
@@ -57,8 +53,6 @@ resource "aws_iam_policy" "ecs_node_policy" {
   path   = "/"
   policy = "${data.aws_iam_policy_document.ecs_node_document.json}"
 }
-
-
 
 resource "aws_iam_role_policy_attachment" "ecs_node_document_policy_attachment" {
   role       = "${aws_iam_role.node_iam_role.name}"

@@ -75,7 +75,6 @@ data "terraform_remote_state" "app_ecs_albs" {
   }
 }
 
-
 ## Resources
 
 

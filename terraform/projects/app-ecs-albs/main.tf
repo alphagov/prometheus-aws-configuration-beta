@@ -35,12 +35,10 @@ variable "stack_name" {
 # --------------------------------------------------------------
 
 locals {
-
   default_tags = {
     Terraform = "true"
     Project   = "app-ecs-albs"
   }
-
 }
 
 # Resources
@@ -90,9 +88,10 @@ resource "aws_lb" "monitoring_external_alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = ["${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}"]
-  subnets            = [
+
+  subnets = [
     "${element(data.terraform_remote_state.infra_networking.public_subnets, 1)}",
-    "${element(data.terraform_remote_state.infra_networking.public_subnets, 2)}"
+    "${element(data.terraform_remote_state.infra_networking.public_subnets, 2)}",
   ]
 
   ## TODO Add access logs back in later
@@ -108,7 +107,6 @@ resource "aws_lb" "monitoring_external_alb" {
     map("Stackname", "${var.stack_name}"),
     map("Name", "${var.stack_name}-ecs-monitoring")
   )}"
-
 }
 
 resource "aws_lb_target_group" "monitoring_external_tg" {
@@ -129,7 +127,6 @@ resource "aws_lb_target_group" "monitoring_external_tg" {
   }
 }
 
-
 resource "aws_lb_listener" "monitoring_external" {
   load_balancer_arn = "${aws_lb.monitoring_external_alb.arn}"
   port              = "80"
@@ -140,8 +137,6 @@ resource "aws_lb_listener" "monitoring_external" {
     type             = "forward"
   }
 }
-
-
 
 ## Outputs
 

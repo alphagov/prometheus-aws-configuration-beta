@@ -63,14 +63,12 @@ variable "stack_name" {
 # --------------------------------------------------------------
 
 locals {
-
   default_tags = {
-    Terraform  = "true"
-    "Project"  = "app-ecs-nodes"
+    Terraform = "true"
+    "Project" = "app-ecs-nodes"
   }
 
   cluster_name = "${var.stack_name}-ecs-monitoring"
-
 }
 
 # Resources
@@ -141,7 +139,6 @@ data "template_file" "prometheus_user_data" {
   }
 }
 
-
 module "ecs-node-1" {
   source = "terraform-aws-modules/autoscaling/aws"
 
@@ -152,9 +149,9 @@ module "ecs-node-1" {
   # Launch configuration
   lc_name = "${var.stack_name}-ecs-node-1"
 
-  image_id        = "${var.ecs_image_id}"
-  instance_type   = "${var.ecs_instance_type}"
-  security_groups = ["${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}"]
+  image_id             = "${var.ecs_image_id}"
+  instance_type        = "${var.ecs_instance_type}"
+  security_groups      = ["${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}"]
   iam_instance_profile = "${var.stack_name}-ecs-profile"
 
   root_block_device = [
@@ -178,7 +175,6 @@ module "ecs-node-1" {
   tags = ["${concat(
     null_resource.node_autoscaling_group_tags.*.triggers)
   }"]
-
 }
 
 ## Outputs
@@ -187,4 +183,3 @@ output "ecs-node-1_asg_id" {
   value       = "${module.ecs-node-1.this_autoscaling_group_id}"
   description = "ecs-node-1 ASG ID"
 }
-

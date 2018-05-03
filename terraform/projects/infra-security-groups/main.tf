@@ -40,14 +40,11 @@ variable "stack_name" {
 }
 
 locals {
-
   default_tags = {
     Terraform = "true"
     Project   = "infra-security-groups"
   }
-
 }
-
 
 # Resources
 # --------------------------------------------------------------
@@ -94,7 +91,6 @@ resource "aws_security_group" "monitoring_external_sg" {
     map("Stackname", "${var.stack_name}"),
     map("Name", "${var.stack_name}-monitoring_external_sg")
   )}"
-
 }
 
 resource "aws_security_group_rule" "monitoring_external_sg_ingress_any_http" {
@@ -128,7 +124,6 @@ resource "aws_security_group" "monitoring_internal_sg" {
     map("Stackname", "${var.stack_name}"),
     map("Name", "${var.stack_name}-monitoring_internal_sg")
   )}"
-
 }
 
 resource "aws_security_group_rule" "monitoring_internal_sg_ingress_alb_http" {

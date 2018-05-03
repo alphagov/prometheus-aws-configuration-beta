@@ -24,16 +24,13 @@ variable "stack_name" {
   default     = "ecs-monitoring"
 }
 
-
 # locals
 # --------------------------------------------------------------
 
 locals {
-
   default_tags = {
-    Terraform   = "true"
+    Terraform = "true"
   }
-
 }
 
 # Resources
@@ -79,9 +76,7 @@ module "vpc" {
     var.additional_tags,
     map("Stackname", var.stack_name)
   )}"
-
 }
-
 
 ## Outputs
 
