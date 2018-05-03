@@ -2,13 +2,97 @@
 
 Terraform configuration to manage a Prometheus server running on AWS.
 
-## Assuming role with AWS Vault ##
+## Setup ##
 
-To assume the proper role in AWS to run Terraform we are using the [AWS Vault](https://github.com/99designs/aws-vault) tool.
+### Install Terraform
+
+    brew install terraform
+
+### Set up AWS Vault so you can assume AWS roles
+
+To assume the needed role in AWS to run Terraform we are using the [AWS Vault](https://github.com/99designs/aws-vault) tool.
 
 First, follow the instructions in the AWS Vault project to configure your environment.
 
-After that, the tool is completely operational but each time that is executed, it asks for the credentials to access the keychain.
+You will need to know the name of the AWS account you wish to deploy into for this (ask a team member if you
+don't know). You should be able to find the rest of the required variables using the AWS web console.
+
+You should end up with something similar to this in your `.aws/config` file:
+
+    [profile <profile-name>]
+    role_arn=arn:aws:iam::<account-number>:role/<iam-role-name>
+    mfa_serial=arn:aws:iam::<iam-user-id>:mfa/<iam-user-name>
+
+Note, all the commands in this README that run the `terraform` or `aws` CLI should be prefixed with `aws-vault`,
+for example:
+
+    aws-vault exec your-profile-name -- aws s3 ls
+
+### Set up your environment
+
+We store our Terraform state in an S3 bucket. Create
+and enable versioning on this bucket before you run any other commands.
+
+    export TERRAFORM_BUCKET=ecs-monitoring
+
+    aws s3 mb "s3://${TERRAFORM_BUCKET}"
+
+    aws s3api put-bucket-versioning  \
+      --bucket ${TERRAFORM_BUCKET} \
+      --versioning-configuration Status=Enabled
+
+Now you have a bucketname you will create the configurarion for your
+stack. Inside the `environments` directory you will find a pair of files
+for each stack, a `.backend` and a `.tfvars`. Make a copy of an existing
+pair and change the values to suit your new name. The `bucket`
+and `remote_state_bucket` settings in these files must match the bucket you
+created above.
+
+### Creating your environment
+
+Once you've created your environment configurations, and added the
+correct bucket name, you can create the environment.
+
+Create the environment:
+
+    cd terraform/projects/infra-networking
+
+    $ terraform init -backend-config=../../../environments/staging.backend
+
+    $ terraform plan -var-file=../../../environments/staging.tfvars
+
+    $ terraform apply -var-file=../../../environments/staging.tfvars
+
+    cd ../infra-security-groups
+
+    # terraform commands from above
+
+    cd ../app-ecs-nodes
+
+    # terraform commands from above
+
+    cd ../app-ecs-albs
+
+    # terraform commands from above
+
+    cd ../app-ecs-services
+
+    # terraform commands from above
+
+## Creating documentation
+
+The projects in this repo use the [terraform-docs](https://github.com/segmentio/terraform-docs)
+to generate the per project documentation.
+
+When adding a new project you should run
+
+    terraform-docs markdown . > index.md
+
+In the project directory and add that to your commit.
+
+## AWS Vault tips
+
+Every time you execute AWS vault it may ask for the credentials to access the keychain.
 
 To avoid this, we can follow the next steps (in OS X):
 
@@ -20,10 +104,16 @@ To avoid this, we can follow the next steps (in OS X):
 
 After this change, your credentials should be only asked the first time you use the tool after start/restart the machine.
 
-## Setup ##
+## ECS
 
-```brew install terraform```
+### Newest ECS AMI
 
+To see the latest ECS Optimized Amazon Linux AMI information in your
+default region, run this AWS CLI command:
+
+    aws ssm get-parameters --names /aws/service/ecs/optimized-ami/amazon-linux/recommended
+
+This would be used when moving to an updated ECS AMI.
 ## License
 [MIT License](LICENCE)
 
