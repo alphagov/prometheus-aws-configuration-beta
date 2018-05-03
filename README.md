@@ -6,7 +6,7 @@ Terraform configuration to manage a Prometheus server running on AWS.
 
 ### Install Terraform
 
-    brew install terraform
+    brew install terraform@0.11.7
 
 ### Set up AWS Vault so you can assume AWS roles
 
@@ -84,11 +84,15 @@ Create the environment:
 The projects in this repo use the [terraform-docs](https://github.com/segmentio/terraform-docs)
 to generate the per project documentation.
 
-When adding a new project you should run
+You can install `terraform-docs` by running:
 
-    terraform-docs markdown . > index.md
+    brew install terraform-docs
 
-In the project directory and add that to your commit.
+When adding adding or changing terraform projects you should run `terraform-docs` 
+in the project directory and add that to your commit, for example:
+
+    cd terraform/projects/app-ecs-albs
+    terraform-docs markdown . > README.md
 
 ## AWS Vault tips
 
