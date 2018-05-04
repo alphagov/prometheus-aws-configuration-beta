@@ -18,4 +18,10 @@ resource "aws_ecs_service" "prometheus_server" {
   cluster         = "${var.stack_name}-ecs-monitoring"
   task_definition = "${aws_ecs_task_definition.prometheus_server.arn}"
   desired_count   = 1
+
+  load_balancer {
+    target_group_arn = "${data.terraform_remote_state.app_ecs_albs.monitoring_external_tg}"
+    container_name   = "prometheus"
+    container_port   = 9090
+  }
 }

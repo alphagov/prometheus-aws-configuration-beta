@@ -119,7 +119,6 @@ resource "aws_lb_target_group" "monitoring_external_tg" {
     interval            = "10"
     path                = "/"
     matcher             = "200"
-    port                = "80"
     protocol            = "HTTP"
     healthy_threshold   = 2
     unhealthy_threshold = 2

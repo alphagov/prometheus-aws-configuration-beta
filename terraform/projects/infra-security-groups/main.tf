@@ -128,9 +128,9 @@ resource "aws_security_group" "monitoring_internal_sg" {
 
 resource "aws_security_group_rule" "monitoring_internal_sg_ingress_alb_http" {
   type      = "ingress"
-  from_port = 80
-  to_port   = 80
-  protocol  = "tcp"
+  from_port = 0
+  to_port   = 0
+  protocol  = "-1"
 
   security_group_id        = "${aws_security_group.monitoring_internal_sg.id}"
   source_security_group_id = "${aws_security_group.monitoring_external_sg.id}"
