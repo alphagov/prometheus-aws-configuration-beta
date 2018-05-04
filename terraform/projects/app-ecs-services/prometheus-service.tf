@@ -1,5 +1,5 @@
 resource "aws_ecs_task_definition" "prometheus_server" {
-  family                = "prometheus-server"
+  family                = "${var.stack_name}-prometheus-server"
   container_definitions = "${file("task-definitions/prometheus-server.json")}"
 
   volume {
@@ -14,8 +14,8 @@ resource "aws_ecs_task_definition" "prometheus_server" {
 }
 
 resource "aws_ecs_service" "prometheus_server" {
-  name            = "prometheus-server"
-  cluster         = "default"
+  name            = "${var.stack_name}-prometheus-server"
+  cluster         = "${var.stack_name}-ecs-monitoring"
   task_definition = "${aws_ecs_task_definition.prometheus_server.arn}"
   desired_count   = 1
 }

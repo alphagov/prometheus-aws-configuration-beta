@@ -49,7 +49,7 @@ data "aws_iam_policy_document" "ecs_node_document" {
 }
 
 resource "aws_iam_policy" "ecs_node_policy" {
-  name   = "ecs_node_policy"
+  name   = "${var.stack_name}_ecs_node_policy"
   path   = "/"
   policy = "${data.aws_iam_policy_document.ecs_node_document.json}"
 }

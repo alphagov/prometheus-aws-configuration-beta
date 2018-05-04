@@ -10,7 +10,7 @@ resource "aws_ecs_task_definition" "git_puller" {
 
 resource "aws_ecs_service" "git_puller" {
   name            = "git-puller"
-  cluster         = "default"
+  cluster         = "${var.stack_name}-ecs-monitoring"
   task_definition = "${aws_ecs_task_definition.git_puller.arn}"
   desired_count   = 1
 }
