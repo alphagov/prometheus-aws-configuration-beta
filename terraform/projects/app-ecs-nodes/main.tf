@@ -151,15 +151,15 @@ data "template_file" "node_user_data" {
   }
 }
 
-module "ecs-node-1" {
+module "ecs_node" {
   source = "terraform-aws-modules/autoscaling/aws"
 
-  name = "${var.stack_name}-ecs-node-1"
+  name = "${var.stack_name}-ecs-node"
 
   key_name = "${var.ecs_instance_ssh_keyname}"
 
   # Launch configuration
-  lc_name = "${var.stack_name}-ecs-node-1"
+  lc_name = "${var.stack_name}-ecs-node"
 
   image_id             = "${var.ecs_image_id}"
   instance_type        = "${var.ecs_instance_type}"
@@ -176,8 +176,8 @@ module "ecs-node-1" {
   user_data = "${data.template_file.node_user_data.rendered}"
 
   # Auto scaling group
-  asg_name                  = "${var.stack_name}-ecs-node-1"
-  vpc_zone_identifier       = ["${element(data.terraform_remote_state.infra_networking.private_subnets, 1)}"]
+  asg_name                  = "${var.stack_name}-ecs-node"
+  vpc_zone_identifier       = ["${element(data.terraform_remote_state.infra_networking.private_subnets, 0)}"]
   health_check_type         = "EC2"
   min_size                  = "${var.autoscaling_group_min_size}"
   max_size                  = "${var.autoscaling_group_max_size}"
@@ -191,7 +191,7 @@ module "ecs-node-1" {
 
 ## Outputs
 
-output "ecs-node-1_asg_id" {
-  value       = "${module.ecs-node-1.this_autoscaling_group_id}"
-  description = "ecs-node-1 ASG ID"
+output "ecs_node_asg_id" {
+  value       = "${module.ecs_node.this_autoscaling_group_id}"
+  description = "ecs-node ASG ID"
 }
