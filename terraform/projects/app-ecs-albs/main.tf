@@ -3,8 +3,6 @@
 *
 * Create ALBs for the ECS cluster
 *
-* This may be merged back in to the nodes project
-*
 */
 
 variable "additional_tags" {
@@ -94,13 +92,6 @@ resource "aws_lb" "monitoring_external_alb" {
     "${element(data.terraform_remote_state.infra_networking.public_subnets, 2)}",
   ]
 
-  ## TODO Add access logs back in later
-  /* access_logs { */
-  /*   bucket  = "${aws_s3_bucket.lb_logs.bucket}" */
-  /*   prefix  = "test-lb" */
-  /*   enabled = true */
-  /* } */
-
   tags = "${merge(
     local.default_tags,
     var.additional_tags,
@@ -122,11 +113,11 @@ resource "aws_lb_target_group" "monitoring_external_tg" {
     protocol            = "HTTP"
     healthy_threshold   = 2
     unhealthy_threshold = 2
-    timeout             = "6"
+    timeout             = "5"
   }
 }
 
-resource "aws_lb_listener" "monitoring_external" {
+resource "aws_lb_listener" "monitoring_external_listener" {
   load_balancer_arn = "${aws_lb.monitoring_external_alb.arn}"
   port              = "80"
   protocol          = "HTTP"

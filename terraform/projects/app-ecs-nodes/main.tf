@@ -15,12 +15,12 @@ variable "aws_region" {
   type        = "string"
   description = "AWS region"
   default     = "eu-west-1"
-}
+} 
 
 variable "ecs_image_id" {
   type        = "string"
   description = "AMI ID to use for the ECS nodes"
-  default     = "ami-2d386654"
+  default     = "ami-2d386654" # Latest Amazon ECS optimised AMI
 }
 
 variable "ecs_instance_type" {
@@ -45,12 +45,6 @@ variable "remote_state_bucket" {
   type        = "string"
   description = "S3 bucket we store our terraform state in"
   default     = "ecs-monitoring"
-}
-
-variable "remote_state_infra_networking_key_stack" {
-  type        = "string"
-  description = "Override infra-networking remote state path"
-  default     = "infra-security-groups.tfstate"
 }
 
 variable "stack_name" {
