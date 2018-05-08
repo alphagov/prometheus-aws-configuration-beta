@@ -44,7 +44,7 @@ variable "ecs_image_id" {
 variable "ecs_instance_type" {
   type        = "string"
   description = "ECS Node instance type"
-  default     = "t2.medium"
+  default     = "m4.xlarge"
 }
 
 variable "ecs_instance_root_size" {
