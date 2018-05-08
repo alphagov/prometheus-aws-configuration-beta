@@ -88,8 +88,8 @@ resource "aws_lb" "monitoring_external_alb" {
   security_groups    = ["${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}"]
 
   subnets = [
-    "${element(data.terraform_remote_state.infra_networking.public_subnets, 1)}",
-    "${element(data.terraform_remote_state.infra_networking.public_subnets, 2)}",
+    "${element(data.terraform_remote_state.infra_networking.public_subnets, 0)}",
+    "${element(data.terraform_remote_state.infra_networking.public_subnets, 1)}"
   ]
 
   tags = "${merge(
