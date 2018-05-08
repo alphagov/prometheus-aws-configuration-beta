@@ -41,12 +41,17 @@ and enable versioning on this bucket before you run any other commands.
       --bucket ${TERRAFORM_BUCKET} \
       --versioning-configuration Status=Enabled
 
-Now you have a bucketname you will create the configurarion for your
+Now you have a bucket name you will create the configurarion for your
 stack. Inside the `environments` directory you will find a pair of files
 for each stack, a `.backend` and a `.tfvars`. Make a copy of an existing
 pair and change the values to suit your new name. The `bucket`
 and `remote_state_bucket` settings in these files must match the bucket you
 created above.
+
+You should also ensure that the AWS account you are creating your environment in has an SSH key pair
+set up called `ecs-monitoring-ssh-test`. You should do this manually using the AWS web console. You
+will need to download the private key for this key pair when you create it if you wish to SSH in to
+the ECS node.
 
 ### Creating your environment
 
