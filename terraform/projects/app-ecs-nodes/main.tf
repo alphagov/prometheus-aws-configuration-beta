@@ -143,8 +143,8 @@ resource "aws_ecs_cluster" "prometheus_cluster" {
   name = "${local.cluster_name}"
 }
 
-data "template_file" "prometheus_user_data" {
-  template = "${file("prometheus-user-data.tpl")}"
+data "template_file" "node_user_data" {
+  template = "${file("node-user-data.tpl")}"
 
   vars {
     cluster_name = "${local.cluster_name}"
@@ -173,7 +173,7 @@ module "ecs-node-1" {
     },
   ]
 
-  user_data = "${data.template_file.prometheus_user_data.rendered}"
+  user_data = "${data.template_file.node_user_data.rendered}"
 
   # Auto scaling group
   asg_name                  = "${var.stack_name}-ecs-node-1"
