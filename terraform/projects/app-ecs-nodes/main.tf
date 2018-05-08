@@ -15,7 +15,25 @@ variable "aws_region" {
   type        = "string"
   description = "AWS region"
   default     = "eu-west-1"
-} 
+}
+
+variable "autoscaling_group_min_size" {
+  type = "string"
+  description = "Minimum desired number of ECS nodes"
+  default = 1
+}
+
+variable "autoscaling_group_max_size" {
+  type = "string"
+  description = "Maximum desired number of ECS nodes"
+  default = 1
+}
+
+variable "autoscaling_group_desired_capacity" {
+  type = "string"
+  description = "Desired number of ECS nodes"
+  default = 1
+}
 
 variable "ecs_image_id" {
   type        = "string"
@@ -161,9 +179,9 @@ module "ecs-node-1" {
   asg_name                  = "${var.stack_name}-ecs-node-1"
   vpc_zone_identifier       = ["${element(data.terraform_remote_state.infra_networking.private_subnets, 1)}"]
   health_check_type         = "EC2"
-  min_size                  = 1
-  max_size                  = 1
-  desired_capacity          = 1
+  min_size                  = "${var.autoscaling_group_min_size}"
+  max_size                  = "${var.autoscaling_group_max_size}"
+  desired_capacity          = "${var.autoscaling_group_desired_capacity}"
   wait_for_capacity_timeout = 0
 
   tags = ["${concat(
