@@ -18,27 +18,27 @@ variable "aws_region" {
 }
 
 variable "autoscaling_group_min_size" {
-  type = "string"
+  type        = "string"
   description = "Minimum desired number of ECS nodes"
-  default = 1
+  default     = 1
 }
 
 variable "autoscaling_group_max_size" {
-  type = "string"
+  type        = "string"
   description = "Maximum desired number of ECS nodes"
-  default = 1
+  default     = 1
 }
 
 variable "autoscaling_group_desired_capacity" {
-  type = "string"
+  type        = "string"
   description = "Desired number of ECS nodes"
-  default = 1
+  default     = 1
 }
 
 variable "ecs_image_id" {
   type        = "string"
   description = "AMI ID to use for the ECS nodes"
-  default     = "ami-2d386654" # Latest Amazon ECS optimised AMI
+  default     = "ami-2d386654"                    # Latest Amazon ECS optimised AMI
 }
 
 variable "ecs_instance_type" {
@@ -77,7 +77,7 @@ variable "stack_name" {
 locals {
   default_tags = {
     Terraform = "true"
-    Project = "app-ecs-nodes"
+    Project   = "app-ecs-nodes"
   }
 
   cluster_name = "${var.stack_name}-ecs-monitoring"

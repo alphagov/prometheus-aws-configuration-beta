@@ -89,7 +89,7 @@ resource "aws_lb" "monitoring_external_alb" {
 
   subnets = [
     "${element(data.terraform_remote_state.infra_networking.public_subnets, 0)}",
-    "${element(data.terraform_remote_state.infra_networking.public_subnets, 1)}"
+    "${element(data.terraform_remote_state.infra_networking.public_subnets, 1)}",
   ]
 
   tags = "${merge(

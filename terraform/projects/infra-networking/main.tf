@@ -30,7 +30,7 @@ variable "stack_name" {
 locals {
   default_tags = {
     Terraform = "true"
-    Project = "infra-networking"
+    Project   = "infra-networking"
   }
 }
 
