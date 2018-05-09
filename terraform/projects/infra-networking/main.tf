@@ -30,6 +30,7 @@ variable "stack_name" {
 locals {
   default_tags = {
     Terraform = "true"
+    Project = "infra-networking"
   }
 }
 
@@ -60,7 +61,7 @@ data "aws_availability_zones" "available" {}
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
-  name = "${var.stack_name}"
+  name = "${var.stack_name}-vpc"
   cidr = "10.0.0.0/16"
 
   # subnets assumes 3 AZs although 3AZs are not implemented elsewhere
@@ -71,6 +72,7 @@ module "vpc" {
 
   enable_nat_gateway = true
 
+  # no `Name` tag unlike other resources as this is taken care of by the vpc module `name` property
   tags = "${merge(
     local.default_tags,
     var.additional_tags,

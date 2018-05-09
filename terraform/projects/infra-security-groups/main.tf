@@ -33,6 +33,9 @@ variable "stack_name" {
   default     = "ecs-monitoring"
 }
 
+# locals
+# --------------------------------------------------------------
+
 locals {
   default_tags = {
     Terraform = "true"

@@ -77,7 +77,7 @@ variable "stack_name" {
 locals {
   default_tags = {
     Terraform = "true"
-    "Project" = "app-ecs-nodes"
+    Project = "app-ecs-nodes"
   }
 
   cluster_name = "${var.stack_name}-ecs-monitoring"
@@ -129,16 +129,6 @@ data "terraform_remote_state" "infra_security_groups" {
 
 ## Resources
 
-resource "null_resource" "node_autoscaling_group_tags" {
-  count = "${length(keys(var.additional_tags))}"
-
-  triggers {
-    key                 = "${element(keys(var.additional_tags), count.index)}"
-    value               = "${element(values(var.additional_tags), count.index)}"
-    propagate_at_launch = true
-  }
-}
-
 resource "aws_ecs_cluster" "prometheus_cluster" {
   name = "${local.cluster_name}"
 }
@@ -184,9 +174,12 @@ module "ecs_node" {
   desired_capacity          = "${var.autoscaling_group_desired_capacity}"
   wait_for_capacity_timeout = 0
 
-  tags = ["${concat(
-    null_resource.node_autoscaling_group_tags.*.triggers)
-  }"]
+  tags_as_map = "${merge(
+    local.default_tags,
+    var.additional_tags,
+    map("Stackname", "${var.stack_name}"),
+    map("Name", "${var.stack_name}-ecs_node")
+  )}"
 }
 
 ## Outputs
