@@ -2,8 +2,6 @@
 
 Create ALBs for the ECS cluster
 
-This may be merged back in to the nodes project
-
 
 
 ## Inputs
