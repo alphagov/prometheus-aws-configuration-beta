@@ -1,9 +1,7 @@
 /**
-* ## Project: app-ecs-albs
+* ## Project: app-ecs-services
 *
-* Create ALBs for the ECS cluster
-*
-* This may be merged back in to the nodes project
+* Create services and task definitions for the ECS cluster
 *
 */
 

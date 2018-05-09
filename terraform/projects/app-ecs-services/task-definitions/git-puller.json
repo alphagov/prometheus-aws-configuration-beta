@@ -11,6 +11,6 @@
         "containerPath": "/configs"
       }
     ],
-    "command": ["clone", "https://github.com/deanwilson/terrible-testing-repo.git", "/configs"]
+    "command": ["clone", "https://github.com/alphagov/prometheus-config.git", "/configs"]
   }
 ]

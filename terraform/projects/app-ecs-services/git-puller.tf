@@ -1,3 +1,8 @@
+/**
+* ECS service to pull down the prometheus config file from Github
+*
+*/
+
 resource "aws_ecs_task_definition" "git_puller" {
   family                = "git-puller"
   container_definitions = "${file("task-definitions/git-puller.json")}"

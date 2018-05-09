@@ -1,3 +1,8 @@
+/**
+* ECS service that runs prometheus
+*
+*/
+
 resource "aws_ecs_task_definition" "prometheus_server" {
   family                = "${var.stack_name}-prometheus-server"
   container_definitions = "${file("task-definitions/prometheus-server.json")}"
