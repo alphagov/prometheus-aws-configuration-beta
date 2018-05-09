@@ -83,6 +83,17 @@ correct bucket name, you can create the stack:
 
     # terraform commands from above
 
+## Development process
+
+If you want to make a change to our Prometheus infrastructure you should:
+
+- Create a new branch
+- Create a new stack for testing purposes in the team sandbox AWS account by following the above set up instructions
+- Once you are happy with your code, put in a pull request and get it reviewed by another team member
+- Once your PR is merged, manually deploy to the staging stack in the staging AWS account using Terraform
+- If staging is fine then manually deploy to the production stack in the production AWS account using Terraform
+
+
 ## Creating documentation
 
 The projects in this repo use the [terraform-docs](https://github.com/segmentio/terraform-docs)
