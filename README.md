@@ -41,7 +41,7 @@ and enable versioning on this bucket before you run any other commands.
       --bucket ${TERRAFORM_BUCKET} \
       --versioning-configuration Status=Enabled
 
-Now you have a bucket name you will create the configurarion for your
+Now you have a bucket name you will create the configuration for your
 stack. Inside the `environments` directory you will find a pair of files
 for each stack, a `.backend` and a `.tfvars`. Make a copy of an existing
 pair and change the values to suit your new name. The `bucket`
