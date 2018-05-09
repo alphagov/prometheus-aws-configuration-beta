@@ -28,12 +28,13 @@ for example:
 
     aws-vault exec your-profile-name -- aws s3 ls
 
-### Set up your environment
+### Set up your stack
 
-We store our Terraform state in an S3 bucket. Create
-and enable versioning on this bucket before you run any other commands.
+You will need to pick a unique name to call this stack, for example `my-test-stack`.
+We store our Terraform state in an S3 bucket. Create and enable versioning
+on this bucket before you run any other commands.
 
-    export TERRAFORM_BUCKET=ecs-monitoring
+    export TERRAFORM_BUCKET=my-test-stack
 
     aws s3 mb "s3://${TERRAFORM_BUCKET}"
 
@@ -42,7 +43,7 @@ and enable versioning on this bucket before you run any other commands.
       --versioning-configuration Status=Enabled
 
 Now you have a bucket name you will create the configuration for your
-stack. Inside the `environments` directory you will find a pair of files
+stack. Inside the `stacks` directory you will find a pair of files
 for each stack, a `.backend` and a `.tfvars`. Make a copy of an existing
 pair and change the values to suit your new name. The `bucket`
 and `remote_state_bucket` settings in these files must match the bucket you
@@ -53,20 +54,18 @@ set up called `ecs-monitoring-ssh-test`. You should do this manually using the A
 will need to download the private key for this key pair when you create it if you wish to SSH in to
 the ECS node.
 
-### Creating your environment
+### Creating your stack
 
-Once you've created your environment configurations, and added the
-correct bucket name, you can create the environment.
-
-Create the environment:
+Once you've created your stack configurations, and added the
+correct bucket name, you can create the stack:
 
     cd terraform/projects/infra-networking
 
-    $ terraform init -backend-config=../../../environments/staging.backend
+    $ terraform init -backend-config=../../../stacks/staging.backend
 
-    $ terraform plan -var-file=../../../environments/staging.tfvars
+    $ terraform plan -var-file=../../../stacks/staging.tfvars
 
-    $ terraform apply -var-file=../../../environments/staging.tfvars
+    $ terraform apply -var-file=../../../stacks/staging.tfvars
 
     cd ../infra-security-groups
 
