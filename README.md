@@ -111,17 +111,15 @@ in the project directory and add that to your commit, for example:
 
 ## AWS Vault tips
 
-Every time you execute AWS vault it may ask for the credentials to access the keychain.
+Every time you execute AWS vault it may ask for the credentials to
+access the keychain.  You should click "Always Allow" when aws-vault
+asks to access items in the `aws-vault` keychain, so that you don't
+have to retype your password for every aws-vault operation.
 
-To avoid this, we can follow the next steps (in OS X):
-
-1. Open the 'Keychain Access' utility.
-2. In the menu select "File > Add Keychain..."
-3. Select the "aws-vault.keychain". It can be found in `~/Library/Keychains/`.
-4. Once it is added, right click in it (it shows in the left hand side under 'Keychains') and select `Change Settings for Keychain aws-vault`.
-5. Uncheck `Lock after X minutes of inactivity` and `Look when sleeping`
-
-After this change, your credentials should be only asked the first time you use the tool after start/restart the machine.
+You should ensure that your aws-vault keychain has sensible locking
+behaviour.  By default it should lock whenever your laptop goes to
+sleep or after 5 minutes of inactivity.  You can change this in
+Keychain Access.
 
 ## ECS
 
