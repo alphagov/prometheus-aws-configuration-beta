@@ -52,7 +52,7 @@ created above.
 You should also ensure that the AWS account you are creating your environment in has an SSH key pair
 set up called `ecs-monitoring-ssh-test`. You should do this manually using the AWS web console. You
 will need to download the private key for this key pair when you create it if you wish to SSH in to
-the ECS node.
+the ECS container instance.
 
 ### Creating your stack
 
@@ -71,7 +71,7 @@ correct bucket name, you can create the stack:
 
     # terraform commands from above
 
-    cd ../app-ecs-nodes
+    cd ../app-ecs-instances
 
     # terraform commands from above
 
@@ -103,7 +103,7 @@ You can install `terraform-docs` by running:
 
     brew install terraform-docs
 
-When adding adding or changing terraform projects you should run `terraform-docs` 
+When adding adding or changing terraform projects you should run `terraform-docs`
 in the project directory and add that to your commit, for example:
 
     cd terraform/projects/app-ecs-albs
@@ -133,4 +133,3 @@ default region, run this AWS CLI command:
 This would be used when moving to an updated ECS AMI.
 ## License
 [MIT License](LICENCE)
-

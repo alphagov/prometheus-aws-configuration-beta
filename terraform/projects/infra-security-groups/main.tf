@@ -113,7 +113,7 @@ resource "aws_security_group_rule" "monitoring_external_sg_egress_any_any" {
 resource "aws_security_group" "monitoring_internal_sg" {
   name        = "${var.stack_name}-monitoring_internal_sg"
   vpc_id      = "${data.terraform_remote_state.infra_networking.vpc_id}"
-  description = "Controls access to the ECS nodes from the LBs"
+  description = "Controls access to the ECS container instance from the LBs"
 
   tags = "${merge(
     local.default_tags,
