@@ -1,0 +1,16 @@
+[
+  {
+    "name": "git-puller",
+    "image": "alpine/git",
+    "cpu": 40,
+    "memory": 256,
+    "essential": true,
+    "mountPoints": [
+      {
+        "sourceVolume": "pulled-config",
+        "containerPath": "/configs"
+      }
+    ],
+    "command": ["clone", "https://github.com/alphagov/prometheus-config.git", "/configs"]
+  }
+]
