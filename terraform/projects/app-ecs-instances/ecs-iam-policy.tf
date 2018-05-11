@@ -49,7 +49,7 @@ data "aws_iam_policy_document" "ecs_instance_document" {
 }
 
 resource "aws_iam_policy" "ecs_instance_policy" {
-  name   = "${var.stack_name}_ecs_instance_policy"
+  name   = "${var.stack_name}-ecs-instance-policy"
   path   = "/"
   policy = "${data.aws_iam_policy_document.ecs_instance_document.json}"
 }

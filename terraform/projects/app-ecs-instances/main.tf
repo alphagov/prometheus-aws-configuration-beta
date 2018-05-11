@@ -144,12 +144,12 @@ data "template_file" "instance_user_data" {
 module "ecs_instance" {
   source = "terraform-aws-modules/autoscaling/aws"
 
-  name = "${var.stack_name}-ecs_instance"
+  name = "${var.stack_name}-ecs-instance"
 
   key_name = "${var.ecs_instance_ssh_keyname}"
 
   # Launch configuration
-  lc_name = "${var.stack_name}-ecs_instance"
+  lc_name = "${var.stack_name}-ecs-instance"
 
   image_id             = "${var.ecs_image_id}"
   instance_type        = "${var.ecs_instance_type}"
@@ -166,7 +166,7 @@ module "ecs_instance" {
   user_data = "${data.template_file.instance_user_data.rendered}"
 
   # Auto scaling group
-  asg_name                  = "${var.stack_name}-ecs_instance"
+  asg_name                  = "${var.stack_name}-ecs-instance"
   vpc_zone_identifier       = ["${element(data.terraform_remote_state.infra_networking.private_subnets, 0)}"]
   health_check_type         = "EC2"
   min_size                  = "${var.autoscaling_group_min_size}"
@@ -178,7 +178,7 @@ module "ecs_instance" {
     local.default_tags,
     var.additional_tags,
     map("Stackname", "${var.stack_name}"),
-    map("Name", "${var.stack_name}-ecs_instance")
+    map("Name", "${var.stack_name}-ecs-instance")
   )}"
 }
 
