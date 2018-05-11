@@ -20,6 +20,14 @@
         "sourceVolume": "alert-config",
         "containerPath": "/etc/prometheus/alerts/alerts.default"
       }
-    ]
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group}",
+        "awslogs-region": "${region}",
+        "awslogs-stream-prefix": "prometheus"
+      }
+    }
   }
 ]

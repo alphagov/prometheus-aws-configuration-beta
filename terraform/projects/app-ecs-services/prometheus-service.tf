@@ -3,9 +3,18 @@
 *
 */
 
+data "template_file" "prometheus_container_defn" {
+  template = "${file("task-definitions/prometheus-server.json")}"
+
+  vars {
+    log_group = "${aws_cloudwatch_log_group.task_logs.name}"
+    region    = "${var.aws_region}"
+  }
+}
+
 resource "aws_ecs_task_definition" "prometheus_server" {
   family                = "${var.stack_name}-prometheus-server"
-  container_definitions = "${file("task-definitions/prometheus-server.json")}"
+  container_definitions = "${data.template_file.prometheus_container_defn.rendered}"
 
   volume {
     name      = "prometheus-config"

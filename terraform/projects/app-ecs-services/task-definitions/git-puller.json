@@ -11,6 +11,14 @@
         "containerPath": "/configs"
       }
     ],
-    "command": ["clone", "https://github.com/alphagov/prometheus-config.git", "/configs"]
+    "command": ["clone", "https://github.com/alphagov/prometheus-config.git", "/configs"],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group}",
+        "awslogs-region": "${region}",
+        "awslogs-stream-prefix": "git-puller"
+      }
+    }
   }
 ]
