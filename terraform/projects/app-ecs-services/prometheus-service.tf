@@ -18,12 +18,12 @@ resource "aws_ecs_task_definition" "prometheus_server" {
 
   volume {
     name      = "prometheus-config"
-    host_path = "/ecs/pulled-config/prometheus/prometheus.yml"
+    host_path = "/ecs/config-from-s3/prometheus/prometheus.yml"
   }
 
   volume {
     name      = "alert-config"
-    host_path = "/ecs/pulled-config/prometheus/alerts/alerts.default"
+    host_path = "/ecs/config-from-s3/prometheus/alerts"
   }
 }
 
@@ -38,4 +38,11 @@ resource "aws_ecs_service" "prometheus_server" {
     container_name   = "prometheus"
     container_port   = 9090
   }
+}
+
+resource "aws_s3_bucket_object" "prometheus-config" {
+  bucket = "${aws_s3_bucket.config_bucket.id}"
+  key    = "etc/prometheus/prometheus.yml"
+  source = "config/prometheus.yml"
+  etag   = "${md5(file("config/prometheus.yml"))}"
 }

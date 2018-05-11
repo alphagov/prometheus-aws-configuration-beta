@@ -18,7 +18,7 @@
       },
       {
         "sourceVolume": "alert-config",
-        "containerPath": "/etc/prometheus/alerts/alerts.default"
+        "containerPath": "/etc/prometheus/alerts"
       }
     ],
     "logConfiguration": {
