@@ -1,6 +1,11 @@
+# terraform state files
 .terraform/
 *.tfst*
 
+# terraform env vars
 stacks/*
 !stacks/staging.*
 !stacks/production.*
+
+# local env vars
+environment.sh
