@@ -1,2 +1,4 @@
 .terraform/
 *.tfst*
+
+environment.sh
