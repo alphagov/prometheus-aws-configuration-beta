@@ -1,6 +1,10 @@
 /**
 * ECS service that runs prometheus
 *
+* This service consists of two containers.  The first, `s3-config-grabber`, fetches prometheus configuration from our config S3 bucket, and stores it on a shared volume.  Then `prometheus` runs and consumes that config.
+*
+* There is a known race condition between the two tasks - there is no guarantee that `s3-config-grabber` will grab the config before `prometheus` starts.
+*
 */
 
 ## IAM roles & policies
@@ -64,8 +68,9 @@ data "template_file" "prometheus_container_defn" {
   template = "${file("task-definitions/prometheus-server.json")}"
 
   vars {
-    log_group = "${aws_cloudwatch_log_group.task_logs.name}"
-    region    = "${var.aws_region}"
+    log_group     = "${aws_cloudwatch_log_group.task_logs.name}"
+    region        = "${var.aws_region}"
+    config_bucket = "${aws_s3_bucket.config_bucket.id}"
   }
 }
 
@@ -75,7 +80,7 @@ resource "aws_ecs_task_definition" "prometheus_server" {
   task_role_arn         = "${aws_iam_role.prometheus_task_iam_role.arn}"
 
   volume {
-    name      = "pulled-config"
+    name      = "config-from-s3"
     host_path = "/ecs/config-from-s3"
   }
 

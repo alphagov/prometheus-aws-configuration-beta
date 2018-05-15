@@ -38,11 +38,11 @@
     "essential": false,
     "mountPoints": [
       {
-        "sourceVolume": "pulled-config",
+        "sourceVolume": "config-from-s3",
         "containerPath": "/configs"
       }
     ],
-    "command": ["s3", "sync", "s3://gdsprom-phil-config/etc/prometheus", "/configs/prometheus"],
+    "command": ["s3", "sync", "s3://${config_bucket}/etc/prometheus", "/configs/prometheus"],
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {
