@@ -41,6 +41,10 @@ provider "aws" {
   region  = "${var.aws_region}"
 }
 
+provider "template" {
+  version = "~> 1.0.0"
+}
+
 ## Data sources
 
 data "terraform_remote_state" "infra_networking" {
@@ -75,6 +79,10 @@ data "terraform_remote_state" "app_ecs_albs" {
 
 ## Resources
 
+resource "aws_cloudwatch_log_group" "task_logs" {
+  name = "${var.stack_name}"
+  retention_in_days = 7
+}
 
 ## Outputs
 

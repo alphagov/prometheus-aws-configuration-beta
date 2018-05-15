@@ -3,9 +3,18 @@
 *
 */
 
+data "template_file" "git_puller_container_defn" {
+  template = "${file("task-definitions/git-puller.json")}"
+
+  vars {
+    log_group = "${aws_cloudwatch_log_group.task_logs.name}"
+    region    = "${var.aws_region}"
+  }
+}
+
 resource "aws_ecs_task_definition" "git_puller" {
   family                = "git-puller"
-  container_definitions = "${file("task-definitions/git-puller.json")}"
+  container_definitions = "${data.template_file.git_puller_container_defn.rendered}"
 
   volume {
     name      = "pulled-config"
