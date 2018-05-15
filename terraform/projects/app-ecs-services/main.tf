@@ -82,9 +82,6 @@ data "terraform_remote_state" "app_ecs_albs" {
 resource "aws_cloudwatch_log_group" "task_logs" {
   name = "${var.stack_name}"
   retention_in_days = 7
-  tags = {
-    Environment = "${var.stack_name}"
-  }
 }
 
 ## Outputs
