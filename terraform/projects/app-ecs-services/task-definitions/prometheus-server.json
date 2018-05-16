@@ -2,7 +2,7 @@
   {
     "name": "prometheus",
     "image": "prom/prometheus",
-    "memory": 8192,
+    "memoryReservation": 4096,
     "essential": true,
     "portMappings": [
       {
