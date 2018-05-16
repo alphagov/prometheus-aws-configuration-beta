@@ -138,6 +138,8 @@ data "template_file" "instance_user_data" {
 
   vars {
     cluster_name = "${local.cluster_name}"
+    volume_id    = "${aws_ebs_volume.prometheus_ebs_volume.id}"
+    region       = "${var.aws_region}"
   }
 }
 
@@ -179,6 +181,23 @@ module "ecs_instance" {
     var.additional_tags,
     map("Stackname", "${var.stack_name}"),
     map("Name", "${var.stack_name}-ecs-instance")
+  )}"
+}
+
+resource "aws_ebs_volume" "prometheus_ebs_volume" {
+  availability_zone = "${element(data.terraform_remote_state.infra_networking.az_names, 0)}"
+  size              = 500
+  type              = "gp2"
+
+  lifecycle {
+    prevent_destroy = true
+  }
+
+  tags = "${merge(
+    local.default_tags,
+    var.additional_tags,
+    map("Stackname", "${var.stack_name}"),
+    map("Name", "${var.stack_name}-prometheus-ebs-volume")
   )}"
 }
 
