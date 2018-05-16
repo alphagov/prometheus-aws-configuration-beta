@@ -5,19 +5,29 @@ TERRAFORMBACKVARS=$(pwd)/stacks/test.backend
 TERRAFORMTFVARS=$(pwd)/stacks/test.tfvars
 ROOTPROJ=$(pwd)
 TERRAFORMPROJ=$(pwd)/terraform/projects/
-USE_AWS_VAULT=true
+USE_AWS_VAULT=false
 declare -a COMPONENTS=("infra-networking" "infra-security-groups" "app-ecs-instances" "app-ecs-albs" "app-ecs-services")
+declare -a COMPONENTSDESTROY=("app-ecs-services" "app-ecs-albs" "app-ecs-instances" "infra-security-groups" "infra-networking")
 
 
 #Buckert name and stackname
 ############ Actions #################
 
 aws_vault_create_bucket() {
-        aws-vault exec ${PROFILE_NAME} -- aws s3 mb "s3://${TERRAFORM_BUCKET}"
 
-        aws-vault exec ${PROFILE_NAME} -- aws s3api put-bucket-versioning  \
-        --bucket ${TERRAFORM_BUCKET} \
-        --versioning-configuration Status=Enabled
+        if [ "${USE_AWS_VAULT}" = 'true' ] ; then  
+                aws-vault exec ${PROFILE_NAME} -- aws s3 mb "s3://${TERRAFORM_BUCKET}"
+
+                aws-vault exec ${PROFILE_NAME} -- aws s3api put-bucket-versioning  \
+                --bucket ${TERRAFORM_BUCKET} \
+                --versioning-configuration Status=Enabled
+        else
+                aws s3 mb "s3://${TERRAFORM_BUCKET}"
+
+                aws s3api put-bucket-versioning  \
+                --bucket ${TERRAFORM_BUCKET} \
+                --versioning-configuration Status=Enabled
+        fi   
 }
 
 clean() {
@@ -25,7 +35,7 @@ clean() {
 
         if [ -d "$TERRAFORMPROJ$1/.terraform" ] ; then
                 rm -rf $TERRAFORMPROJ$1/.terraform
-                echo "It worked" 
+                echo "Finsished cleaning" 
         else
                 echo "$1 .terraform not found"
         fi
@@ -130,7 +140,7 @@ case "$1" in
         cd ${ROOTPROJ}
     ;;
 -d) echo "Destroy terraform plan to enviroment :"
-        for folder in $COMPONENTS
+        for folder in $COMPONENTSDESTROY
         do
           destroy $folder
         done

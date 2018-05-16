@@ -3,13 +3,17 @@
 *
 */
 
+data "template_file" "git_puller_container_defn" {
+  template = "${file("task-definitions/git-puller.json")}"
+}
+
 resource "aws_ecs_task_definition" "git_puller" {
   family                = "git-puller"
-  container_definitions = "${file("task-definitions/git-puller.json")}"
+  container_definitions = "${data.template_file.git_puller_container_defn.rendered}"
 
   volume {
     name      = "pulled-config"
-    host_path = "/ecs/pulled-config"
+    host_path = "/srv/ecs/pulled-config"
   }
 }
 

@@ -8,13 +8,8 @@ resource "aws_ecs_task_definition" "prometheus_server" {
   container_definitions = "${file("task-definitions/prometheus-server.json")}"
 
   volume {
-    name      = "prometheus-config"
-    host_path = "/ecs/pulled-config/prometheus/prometheus.yml"
-  }
-
-  volume {
-    name      = "alert-config"
-    host_path = "/ecs/pulled-config/prometheus/alerts/alerts.default"
+    name      = "prometheus-etc"
+    host_path = "/srv/gds/prometheus/"
   }
 }
 

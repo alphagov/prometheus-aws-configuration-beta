@@ -40,6 +40,12 @@ data "aws_iam_policy_document" "ecs_instance_document" {
       "ecs:Submit*",
       "ecr:GetAuthorizationToken",
       "ecr:BatchCheckLayerAvailability",
+      "s3:PutObjectTagging",
+      "s3:PutObject",
+      "s3:GetObjectTagging",
+      "s3:GetObject",
+      "s3:DeleteObject",
+      "s3:ListBucket",
       "ecr:GetDownloadUrlForLayer",
       "ecr:BatchGetImage",
       "logs:CreateLogStream",
@@ -48,6 +54,7 @@ data "aws_iam_policy_document" "ecs_instance_document" {
   }
 }
 
+#Added instance permissions for s3
 resource "aws_iam_policy" "ecs_instance_policy" {
   name   = "${var.stack_name}-ecs-instance-policy"
   path   = "/"
