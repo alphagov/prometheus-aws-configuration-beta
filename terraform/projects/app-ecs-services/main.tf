@@ -85,8 +85,8 @@ resource "aws_cloudwatch_log_group" "task_logs" {
 }
 
 resource "aws_s3_bucket" "config_bucket" {
-  bucket = "gdsprom-${var.stack_name}-config"
-  acl    = "private"
+  bucket_prefix = "ecs-monitoring-${var.stack_name}-config"
+  acl           = "private"
 
   versioning {
     enabled = true
