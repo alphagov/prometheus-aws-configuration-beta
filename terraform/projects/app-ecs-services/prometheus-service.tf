@@ -40,6 +40,7 @@ data "aws_iam_policy_document" "prometheus_policy_doc" {
       "s3:Get*",
     ]
   }
+
   statement {
     sid = "ListConfigBucket"
 
