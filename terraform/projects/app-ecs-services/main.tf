@@ -80,8 +80,17 @@ data "terraform_remote_state" "app_ecs_albs" {
 ## Resources
 
 resource "aws_cloudwatch_log_group" "task_logs" {
-  name = "${var.stack_name}"
+  name              = "${var.stack_name}"
   retention_in_days = 7
+}
+
+resource "aws_s3_bucket" "config_bucket" {
+  bucket_prefix = "ecs-monitoring-${var.stack_name}-config"
+  acl           = "private"
+
+  versioning {
+    enabled = true
+  }
 }
 
 ## Outputs
