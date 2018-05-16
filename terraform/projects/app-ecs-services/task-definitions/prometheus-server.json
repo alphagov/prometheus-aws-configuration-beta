@@ -2,7 +2,6 @@
   {
     "name": "prometheus",
     "image": "prom/prometheus",
-    "cpu": 2048,
     "memory": 8192,
     "essential": true,
     "portMappings": [
@@ -33,7 +32,6 @@
   {
     "name": "s3-config-grabber",
     "image": "mesosphere/aws-cli",
-    "cpu": 40,
     "memory": 256,
     "essential": false,
     "mountPoints": [
