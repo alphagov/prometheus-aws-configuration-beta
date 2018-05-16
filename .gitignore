@@ -1,2 +1,6 @@
 .terraform/
 *.tfst*
+
+stacks/*
+!stacks/staging.*
+!stacks/production.*
