@@ -14,11 +14,7 @@
     "mountPoints": [
       {
         "sourceVolume": "prometheus-config",
-        "containerPath": "/etc/prometheus/prometheus.yml"
-      },
-      {
-        "sourceVolume": "alert-config",
-        "containerPath": "/etc/prometheus/alerts"
+        "containerPath": "/etc/prometheus/"
       }
     ],
     "logConfiguration": {
