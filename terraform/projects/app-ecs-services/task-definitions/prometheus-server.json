@@ -14,6 +14,10 @@
       {
         "sourceVolume": "prometheus-config",
         "containerPath": "/etc/prometheus"
+      },
+      {
+        "sourceVolume": "prometheus-timeseries-storage",
+        "containerPath": "/prometheus"
       }
     ],
     "logConfiguration": {
