@@ -91,8 +91,13 @@ resource "aws_ecs_task_definition" "prometheus_server" {
   }
 
   volume {
-    name      = "nginx-vhosts"
-    host_path = "/ecs/config-from-s3/nginx/conf.d"
+    name      = "auth-proxy"
+    host_path = "/ecs/config-from-s3/auth-proxy/conf.d"
+  }
+
+  volume {
+    name      = "paas-proxy"
+    host_path = "/ecs/config-from-s3/paas-proxy/conf.d"
   }
 
   # We mount this at /prometheus which is the expected location for the prom/prometheus docker image
@@ -110,7 +115,7 @@ resource "aws_ecs_service" "prometheus_server" {
 
   load_balancer {
     target_group_arn = "${data.terraform_remote_state.app_ecs_albs.monitoring_external_tg}"
-    container_name   = "nginx"
+    container_name   = "auth-proxy"
     container_port   = 9090
   }
 }
@@ -126,7 +131,7 @@ resource "aws_s3_bucket_object" "prometheus-config" {
 
 resource "aws_s3_bucket_object" "nginx-reverse-proxy" {
   bucket = "${aws_s3_bucket.config_bucket.id}"
-  key    = "prometheus/nginx/conf.d/prometheus-auth-proxy.conf"
+  key    = "prometheus/auth-proxy/conf.d/prometheus-auth-proxy.conf"
   source = "config/vhosts/auth-proxy.conf"
   etag   = "${md5(file("config/vhosts/auth-proxy.conf"))}"
 }
@@ -136,7 +141,16 @@ resource "aws_s3_bucket_object" "nginx-reverse-proxy" {
 # https://github.com/nginxinc/docker-nginx/issues/29
 resource "aws_s3_bucket_object" "nginx-htpasswd" {
   bucket = "${aws_s3_bucket.config_bucket.id}"
-  key    = "prometheus/nginx/conf.d/.htpasswd"
+  key    = "prometheus/auth-proxy/conf.d/.htpasswd"
   source = "config/vhosts/.htpasswd"
   etag   = "${md5(file("config/vhosts/.htpasswd"))}"
+}
+
+#### paas proxy
+
+resource "aws_s3_bucket_object" "nginx-paas-proxy" {
+  bucket = "${aws_s3_bucket.config_bucket.id}"
+  key    = "prometheus/paas-proxy/conf.d/prometheus-paas-proxy.conf"
+  source = "config/vhosts/paas-proxy.conf"
+  etag   = "${md5(file("config/vhosts/paas-proxy.conf"))}"
 }
