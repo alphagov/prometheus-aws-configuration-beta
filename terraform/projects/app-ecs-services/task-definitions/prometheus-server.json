@@ -2,14 +2,9 @@
   {
     "name": "prometheus",
     "image": "prom/prometheus",
+    "cpu": 1024,
     "memoryReservation": 4096,
     "essential": true,
-    "portMappings": [
-      {
-        "containerPort": 9090,
-        "hostPort": 9090
-      }
-    ],
     "mountPoints": [
       {
         "sourceVolume": "prometheus-config",
@@ -32,6 +27,7 @@
   {
     "name": "s3-config-grabber",
     "image": "mesosphere/aws-cli",
+    "cpu": 256,
     "memory": 256,
     "essential": false,
     "mountPoints": [
@@ -40,7 +36,37 @@
         "containerPath": "/configs"
       }
     ],
-    "command": ["s3", "sync", "s3://${config_bucket}/etc/prometheus", "/configs/prometheus"],
+    "command": ["s3", "sync", "s3://${config_bucket}/prometheus", "/configs"],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group}",
+        "awslogs-region": "${region}",
+        "awslogs-stream-prefix": "prometheus"
+      }
+    }
+  },
+  {
+    "name": "nginx",
+    "image": "nginx:alpine",
+    "cpu": 256,
+    "memory": 256,
+    "essential": true,
+    "portMappings": [
+      {
+        "containerPort": 9090
+      }
+    ],
+    "mountPoints": [
+      {
+        "sourceVolume": "nginx-vhosts",
+        "containerPath": "/etc/nginx/conf.d",
+        "readOnly": true
+      }
+    ],
+    "links": [
+      "prometheus"
+    ],
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {

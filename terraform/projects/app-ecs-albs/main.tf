@@ -108,7 +108,7 @@ resource "aws_lb_target_group" "monitoring_external_tg" {
 
   health_check {
     interval            = "10"
-    path                = "/graph" # path chosen that 200s as '/' does not return 200
+    path                = "/health" # static health check on nginx auth proxy
     matcher             = "200"
     protocol            = "HTTP"
     healthy_threshold   = 2
