@@ -1,0 +1,10 @@
+env:
+  - TERRAFORM_VERSION=0.11.7 TERRAFORM_FILE_NAME=terraform_${TERRAFORM_VERSION}_linux_amd64.zip TERRAFORM_DOWNLOAD_URL=https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/${TERRAFORM_FILE_NAME}
+install:
+  - wget ${TERRAFORM_DOWNLOAD_URL}
+  - unzip -o ${TERRAFORM_FILE_NAME} -d /tmp
+  - export PATH=/tmp:${PATH}
+script:
+  - find . -name '*.tf' | xargs tools/terraform-format.sh
+notifications:
+  email: false
