@@ -26,30 +26,34 @@ EOF
 
 data "aws_iam_policy_document" "ecs_instance_document" {
   statement {
-    sid = "ECSInstancePolicy"
-
+    sid       = "ECSInstancePolicy"
     resources = ["*"]
 
     actions = [
-      "ec2:DescribeNetworkInterfaces",
-      "ec2:AttachNetworkInterface",
+      "ec2:describenetworkinterfaces",
+      "ec2:attachnetworkinterface",
+      "ec2:describevolumestatus",
+      "ec2:describevolumes",
+      "ecs:createcluster",
+      "ecs:deregistercontainerinstance",
+      "ecs:discoverpollendpoint",
+      "ecs:poll",
+      "ecs:registercontainerinstance",
+      "ecs:starttelemetrysession",
+      "ecs:submit*",
+      "ecr:getauthorizationtoken",
+      "ecr:batchchecklayeravailability",
+      "ecr:getdownloadurlforlayer",
+      "ecr:batchgetimage",
+      "logs:createlogstream",
+      "logs:putlogevents",
+    ]
+
+    resources = ["arn:aws:ec2:${var.aws_region}:${var.account_id}:volume/${aws_ebs_volume.prometheus_ebs_volume.id}"]
+
+    actions = [
       "ec2:AttachVolume",
       "ec2:DetachVolume",
-      "ec2:DescribeVolumeStatus",
-      "ec2:DescribeVolumes",
-      "ecs:CreateCluster",
-      "ecs:DeregisterContainerInstance",
-      "ecs:DiscoverPollEndpoint",
-      "ecs:Poll",
-      "ecs:RegisterContainerInstance",
-      "ecs:StartTelemetrySession",
-      "ecs:Submit*",
-      "ecr:GetAuthorizationToken",
-      "ecr:BatchCheckLayerAvailability",
-      "ecr:GetDownloadUrlForLayer",
-      "ecr:BatchGetImage",
-      "logs:CreateLogStream",
-      "logs:PutLogEvents",
     ]
   }
 }

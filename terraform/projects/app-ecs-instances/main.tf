@@ -5,6 +5,12 @@
 *
 */
 
+variable "account_id" {
+  type        = "string"
+  description = "Our AWS account ID"
+  default     = "0"
+}
+
 variable "additional_tags" {
   type        = "map"
   description = "Stack specific tags to apply"
@@ -190,7 +196,7 @@ resource "aws_ebs_volume" "prometheus_ebs_volume" {
   type              = "gp2"
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 
   tags = "${merge(
