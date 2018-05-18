@@ -196,7 +196,7 @@ resource "aws_ebs_volume" "prometheus_ebs_volume" {
   type              = "gp2"
 
   lifecycle {
-    prevent_destroy = false
+    prevent_destroy = true
   }
 
   tags = "${merge(

@@ -16,6 +16,7 @@
         "containerPath": "/etc/prometheus"
       },
       {
+        "__comment": "/prometheus is the default path that prometheus uses to store timeseries",
         "sourceVolume": "prometheus-timeseries-storage",
         "containerPath": "/prometheus"
       }

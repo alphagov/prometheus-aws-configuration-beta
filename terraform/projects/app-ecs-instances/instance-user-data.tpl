@@ -25,17 +25,17 @@ while [[ $x -lt 15 ]]; do
 done
 
 # Format and mount volume
-if sudo file -s /dev/$DEVICE | grep -q "/dev/$DEVICE: data"; then
+if file -s /dev/$DEVICE | grep -q "/dev/$DEVICE: data"; then
   echo "[$(date '+%H:%M:%S %d-%m-%Y')] attach-volume: /dev/$DEVICE does not contain any partition, beginning to format disk"
-  sudo mkfs -t ext4 /dev/$DEVICE
+  mkfs -t ext4 /dev/$DEVICE
 else
   echo "[$(date '+%H:%M:%S %d-%m-%Y')] attach-volume: /dev/$DEVICE is already formatted: $(file -s /dev/$DEVICE)"
 fi
 
 # Allow prometheus container user access to read/write/execute within container
-sudo mkdir -p /ecs/prometheus_data
-sudo mount /dev/$DEVICE /ecs/prometheus_data
-sudo chmod 777 /ecs/prometheus_data
+mkdir -p /ecs/prometheus_data
+mount /dev/$DEVICE /ecs/prometheus_data
+chmod 777 /ecs/prometheus_data
 
 # Set any ECS agent configuration options
 echo 'ECS_CLUSTER=${cluster_name}' >> /etc/ecs/ecs.config
