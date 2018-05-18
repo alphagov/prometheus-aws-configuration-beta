@@ -48,8 +48,14 @@ data "aws_iam_policy_document" "ecs_instance_document" {
       "logs:createlogstream",
       "logs:putlogevents",
     ]
+  }
 
-    resources = ["arn:aws:ec2:${var.aws_region}:${var.account_id}:volume/${aws_ebs_volume.prometheus_ebs_volume.id}"]
+  statement {
+    resources = [
+      "arn:aws:ec2:${var.aws_region}:${var.account_id}:volume/${aws_ebs_volume.prometheus_ebs_volume.id}",
+      "arn:aws:ec2:${var.aws_region}:${var.account_id}:instance/*"
+    ]
+
 
     actions = [
       "ec2:AttachVolume",
