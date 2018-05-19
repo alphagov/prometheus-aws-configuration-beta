@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+
 DEFAULT_DEV_TARGETS_S3_BUCKET=gds-prometheus-targets-dev
 TERRAFORM_BUCKET=${TERRAFORM_BUCKET}
 TERRAFORMPATH=$(which terraform)
@@ -8,8 +10,8 @@ ROOTPROJ=$(pwd)
 TERRAFORMPROJ=$(pwd)/terraform/projects/
 SHARED_DEV_SUBDOMAIN_RESOURCE=aws_route53_zone.shared_dev_subdomain
 SHARED_DEV_DNS_ZONE=Z3702PZTSCDWPA  # this is the dev.gds-reliability.engineering DNS hosted zone ID
-declare -a COMPONENTS=("infra-networking" "infra-security-groups" "app-ecs-instances" "app-ecs-albs" "app-ecs-services")
-declare -a COMPONENTSDESTROY=("app-ecs-services" "app-ecs-albs" "app-ecs-instances" "infra-security-groups" "infra-networking")
+declare -a COMPONENTS=("infra-networking" "infra-security-groups" "infra-jump-instance" "app-ecs-instances" "app-ecs-albs" "app-ecs-services")
+declare -a COMPONENTSDESTROY=("app-ecs-services" "app-ecs-albs" "app-ecs-instances" "infra-jump-instance" "infra-security-groups" "infra-networking")
 
 
 ############ Actions #################
@@ -32,10 +34,11 @@ if [ -e "${ROOTPROJ}/stacks/${ENV}.tfvars" ] ; then
         echo "${ENV}.tfvars exists"
 else
 cat <<EOF >stacks/${ENV}.tfvars
+dev_environment = "true"
+ecs_instance_ssh_keyname = "${ENV}-jumpbox-key"
+prometheus_subdomain = "${ENV}"
 remote_state_bucket = "${TERRAFORM_BUCKET}"
 stack_name = "${ENV}"
-dev_environment = "true"
-prometheus_subdomain = "${ENV}"
 targets_s3_bucket="$DEFAULT_DEV_TARGETS_S3_BUCKET"
 prometheis_total=1
 additional_tags = {
@@ -98,6 +101,11 @@ remove_shared_dev_route53 () {
 
 init () {
 # Init a terraform project
+        # Only init the jump box for dev stacks
+        if [ $DEV_ENVIRONMENT != 'true' -a "$1" = 'infra-jump-instance' ] ; then
+                return
+        fi
+
         echo $1
 
         cd $TERRAFORMPROJ$1
@@ -114,6 +122,11 @@ plan () {
 
 apply () {
 # Apply a terraform project
+        # Only create the jump box for dev stacks
+        if [ $DEV_ENVIRONMENT != 'true' -a "$1" = 'infra-jump-instance' ] ; then
+                return
+        fi
+
         echo $1
 
         cd $TERRAFORMPROJ$1
@@ -129,6 +142,10 @@ apply () {
 
 destroy () {
 # Destroy a terraform project
+        # Only destroy the jump box for dev stacks
+        if [ $DEV_ENVIRONMENT != 'true' -a "$1" = 'infra-jump-instance' ] ; then
+                return
+        fi
         echo $1
 
         cd $TERRAFORMPROJ$1
@@ -151,6 +168,33 @@ taint() {
 
         cd $TERRAFORMPROJ$1
         aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH taint $2
+}
+
+jumpbox() {
+        if [ $DEV_ENVIRONMENT != 'true' ] ; then
+                echo "Jumpbox is only available for dev environments"
+                return
+        fi
+
+        EC2_DATA=$(aws-vault exec $PROFILE_NAME -- aws ec2 describe-instances --filters "Name=tag:Environment,Values=$ENV" "Name=instance-state-name,Values=running")
+
+        EC2_DATA_STR=$(echo "$EC2_DATA" | jq -c .) 
+        
+        if [ $EC2_DATA_STR = '{"Reservations":[]}' ] ; then
+                echo "No EC2 instances running"
+                return
+        fi
+
+        INSTANCE_IP=$(echo $EC2_DATA | jq -cr '[.Reservations[] | select(.Instances[]).Instances | first.PrivateIpAddress] | first')
+
+        JUMPBOX=jump.$ENV.dev.gds-reliability.engineering
+
+        # jumpbox fingerprint removed so that the jumpbox IP can change without affecting the connection to the instance
+        echo Remove $JUMPBOX fingerprint from ~/.ssh/known_hosts
+        ssh-keygen -R $JUMPBOX
+
+        echo "Connecting to instance: $INSTANCE_IP via jumpbox: ec2-user@$JUMPBOX"
+        ssh -At -oStrictHostKeyChecking=no ec2-user@$JUMPBOX ssh -oStrictHostKeyChecking=no ec2-user@$INSTANCE_IP
 }
 
 #################################
@@ -289,6 +333,9 @@ else
         ;;
         -t) echo "Taint a terraform resource: ${ENV}"
                 taint $2 $3
+        ;;
+        -j) echo "Jump onto instance: ${ENV}"
+                jumpbox
         ;;
         *) echo "Invalid option"
         ;;

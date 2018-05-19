@@ -69,6 +69,10 @@ destroy-list: ## Destroy terraform for a list of projects, make destroy-list lis
 taint: ## Taint a resource, make taint project=<project name> resource=<resource name>
 	. ./setup.sh -t ${project} ${resource}
 
+.PHONY: jump
+jump: ## Jump onto the first instance on a dev environment
+	. ./setup.sh -j
+
 .PHONY: docs
 docs: ## Update all terraform docs
 	. ./tools/update-docs.sh

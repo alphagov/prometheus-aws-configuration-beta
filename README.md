@@ -120,6 +120,26 @@ To apply terraform for a list of projects:
 `. ./setup.sh -a list "<1st project>,<2nd project>,<3rd project>"`
 </details>
 
+### How to connect to your dev EC2 instance
+
+If you are experiencing problems after creating the stack, you may want to connect to the EC2 instance:
+
+Before using the jump box:
+  - Ensure you have `jq` installed: `brew install jq`
+  - Enable ssh forwarding of your private key: `ssh-add ~/.ssh/id_rsa`
+
+Run one of the following commands to connect to the instance:
+
+```shell
+# using the Makefile
+make jump
+
+# or using the shell script
+. ./setup.sh -j
+```
+
+### Viewing the Prometheus dashboard
+
 Once you have deployed your development stack you should be able to reach the prometheus dashboard using this url pattern:
 
 `https://prom-1.<your test environment specified in the ENV environment variable>.dev.gds-reliability.engineering`
@@ -135,8 +155,7 @@ If you want to make a change to our Prometheus infrastructure you should:
 - Create a new branch
 - Create a new stack for testing purposes in the gds-tech-ops AWS account by following the above set up instructions
 - Once you are happy with your code, put in a pull request and get it reviewed by another team member
-- Once your PR is merged, manually deploy to the staging stack in the staging AWS account using Terraform
-- If staging is fine then manually deploy to the production stack in the production AWS account using Terraform
+- Once your PR is merged, follow the team checklist for deployment (available from other team members) and record your deployment time for staging and production.
 
 
 ## Creating documentation
