@@ -33,10 +33,6 @@ data "aws_iam_policy_document" "ecs_instance_document" {
     resources = ["*"]
 
     actions = [
-      "ec2:DescribeNetworkInterfaces",
-      "ec2:AttachNetworkInterface",
-      "ec2:DescribeVolumeStatus",
-      "ec2:DescribeVolumes",
       "ecs:CreateCluster",
       "ecs:DeregisterContainerInstance",
       "ecs:DiscoverPollEndpoint",
