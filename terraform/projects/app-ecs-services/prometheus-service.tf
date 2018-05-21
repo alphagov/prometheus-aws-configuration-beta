@@ -87,12 +87,7 @@ resource "aws_ecs_task_definition" "prometheus_server" {
 
   volume {
     name      = "prometheus-config"
-    host_path = "/ecs/config-from-s3/prometheus/prometheus.yml"
-  }
-
-  volume {
-    name      = "alert-config"
-    host_path = "/ecs/config-from-s3/prometheus/alerts"
+    host_path = "/ecs/config-from-s3/prometheus"
   }
 }
 
