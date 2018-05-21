@@ -24,6 +24,8 @@ resource "aws_iam_role" "instance_iam_role" {
 EOF
 }
 
+data "aws_caller_identity" "current" {}
+
 data "aws_iam_policy_document" "ecs_instance_document" {
   statement {
     sid = "ECSInstancePolicy"
@@ -53,8 +55,8 @@ data "aws_iam_policy_document" "ecs_instance_document" {
 
   statement {
     resources = [
-      "arn:aws:ec2:${var.aws_region}:${var.account_id}:volume/${aws_ebs_volume.prometheus_ebs_volume.id}",
-      "arn:aws:ec2:${var.aws_region}:${var.account_id}:instance/*",
+      "${aws_ebs_volume.prometheus_ebs_volume.arn}",
+      "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:instance/*",
     ]
 
     actions = [

@@ -5,12 +5,6 @@
 *
 */
 
-variable "account_id" {
-  type        = "string"
-  description = "Our AWS account ID"
-  default     = "0"
-}
-
 variable "additional_tags" {
   type        = "map"
   description = "Stack specific tags to apply"
