@@ -100,6 +100,12 @@ resource "aws_ecs_task_definition" "prometheus_server" {
     host_path = "/ecs/config-from-s3/paas-proxy/conf.d"
   }
 
+  volume {
+    name      = "alertmanager-config"
+    host_path = "/ecs/alertmanager"
+  }
+
+
   # We mount this at /prometheus which is the expected location for the prom/prometheus docker image
   volume {
     name      = "prometheus-timeseries-storage"
@@ -153,4 +159,13 @@ resource "aws_s3_bucket_object" "nginx-paas-proxy" {
   key    = "prometheus/paas-proxy/conf.d/prometheus-paas-proxy.conf"
   source = "config/vhosts/paas-proxy.conf"
   etag   = "${md5(file("config/vhosts/paas-proxy.conf"))}"
+}
+
+#### alertmanager
+
+resource "aws_s3_bucket_object" "alertmanager" {
+  bucket = "${aws_s3_bucket.config_bucket.id}"
+  key    = "prometheus/alertmanager/conf.d/alertmanager.conf"
+  source = "config/vhosts/alertmanager.conf"
+  etag   = "${md5(file("config/vhosts/alertmanager.conf"))}"
 }
