@@ -34,7 +34,7 @@ data "aws_iam_policy_document" "prometheus_policy_doc" {
   statement {
     sid = "GetPrometheusFiles"
 
-    resources = ["arn:aws:s3:::${aws_s3_bucket.config_bucket.id}/etc/prometheus/*"]
+    resources = ["arn:aws:s3:::${aws_s3_bucket.config_bucket.id}/prometheus/*"]
 
     actions = [
       "s3:Get*",
@@ -90,6 +90,16 @@ resource "aws_ecs_task_definition" "prometheus_server" {
     host_path = "/ecs/config-from-s3/prometheus"
   }
 
+  volume {
+    name      = "auth-proxy"
+    host_path = "/ecs/config-from-s3/auth-proxy/conf.d"
+  }
+
+  volume {
+    name      = "paas-proxy"
+    host_path = "/ecs/config-from-s3/paas-proxy/conf.d"
+  }
+
   # We mount this at /prometheus which is the expected location for the prom/prometheus docker image
   volume {
     name      = "prometheus-timeseries-storage"
@@ -105,14 +115,42 @@ resource "aws_ecs_service" "prometheus_server" {
 
   load_balancer {
     target_group_arn = "${data.terraform_remote_state.app_ecs_albs.monitoring_external_tg}"
-    container_name   = "prometheus"
+    container_name   = "auth-proxy"
     container_port   = 9090
   }
 }
 
 resource "aws_s3_bucket_object" "prometheus-config" {
   bucket = "${aws_s3_bucket.config_bucket.id}"
-  key    = "etc/prometheus/prometheus.yml"
+  key    = "prometheus/prometheus/prometheus.yml"
   source = "config/prometheus.yml"
   etag   = "${md5(file("config/prometheus.yml"))}"
+}
+
+#### nginx reverse proxy
+
+resource "aws_s3_bucket_object" "nginx-reverse-proxy" {
+  bucket = "${aws_s3_bucket.config_bucket.id}"
+  key    = "prometheus/auth-proxy/conf.d/prometheus-auth-proxy.conf"
+  source = "config/vhosts/auth-proxy.conf"
+  etag   = "${md5(file("config/vhosts/auth-proxy.conf"))}"
+}
+
+# The htpasswd file is in bcrypt format, which is only supported
+# by the nginx:alpine image, not the plain nginx image
+# https://github.com/nginxinc/docker-nginx/issues/29
+resource "aws_s3_bucket_object" "nginx-htpasswd" {
+  bucket = "${aws_s3_bucket.config_bucket.id}"
+  key    = "prometheus/auth-proxy/conf.d/.htpasswd"
+  source = "config/vhosts/.htpasswd"
+  etag   = "${md5(file("config/vhosts/.htpasswd"))}"
+}
+
+#### paas proxy
+
+resource "aws_s3_bucket_object" "nginx-paas-proxy" {
+  bucket = "${aws_s3_bucket.config_bucket.id}"
+  key    = "prometheus/paas-proxy/conf.d/prometheus-paas-proxy.conf"
+  source = "config/vhosts/paas-proxy.conf"
+  etag   = "${md5(file("config/vhosts/paas-proxy.conf"))}"
 }

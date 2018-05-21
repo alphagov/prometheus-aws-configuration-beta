@@ -13,7 +13,7 @@ scrape_configs:
       - targets: ['localhost:9090']
   - job_name: paas-targets
     scheme: http
-    proxy_url: 'http://metrics-nginx.sd.ecs-monitoring.com:8080'
+    proxy_url: 'http://paas-proxy:8080'
     file_sd_configs:
       - files: ['/etc/prometheus/targets/*.json']
         refresh_interval: 30s
