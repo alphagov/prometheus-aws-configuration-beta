@@ -17,6 +17,7 @@ related services. You will often have multiple VPCs in an account
 
 | Name | Description |
 |------|-------------|
+| az_names | Names of available availability zones |
 | private_subnets | List of private subnet IDs |
 | public_subnets | List of public subnet IDs |
 | vpc_id | VPC ID where the stack resources are created |

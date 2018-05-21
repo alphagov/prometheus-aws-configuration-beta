@@ -82,6 +82,11 @@ module "vpc" {
 
 ## Outputs
 
+output "az_names" {
+  value       = "${data.aws_availability_zones.available.names}"
+  description = "Names of available availability zones"
+}
+
 output "vpc_id" {
   value       = "${module.vpc.vpc_id}"
   description = "VPC ID where the stack resources are created"

@@ -89,6 +89,12 @@ resource "aws_ecs_task_definition" "prometheus_server" {
     name      = "prometheus-config"
     host_path = "/ecs/config-from-s3/prometheus"
   }
+
+  # We mount this at /prometheus which is the expected location for the prom/prometheus docker image
+  volume {
+    name      = "prometheus-timeseries-storage"
+    host_path = "/ecs/prometheus_data"
+  }
 }
 
 resource "aws_ecs_service" "prometheus_server" {
