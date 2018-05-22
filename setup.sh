@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 TERRAFORM_BUCKET=${TERRAFORM_BUCKET}
 TERRAFORMPATH=$(which terraform)
 TERRAFORMBACKVARS=$(pwd)/stacks/${ENV}.backend
@@ -15,7 +15,7 @@ declare -a COMPONENTSDESTROY=("app-ecs-services" "app-ecs-albs" "app-ecs-instanc
 create_stack_configs() {
 
 if [ -e "${ROOTPROJ}/stacks/${ENV}.backend" ] ; then
-  echo "${ENV}.backend exists"
+        echo "${ENV}.backend exists"
 else
 cat <<EOF >stacks/${ENV}.backend
 bucket = "${TERRAFORM_BUCKET}"
@@ -26,7 +26,7 @@ echo "stacks/${ENV}.backend created"
 fi
 
 if [ -e "${ROOTPROJ}/stacks/${ENV}.tfvars" ] ; then
-  echo "${ENV}.tfvars exists"
+        echo "${ENV}.tfvars exists"
 else
 cat <<EOF >stacks/${ENV}.tfvars
 remote_state_bucket = "${TERRAFORM_BUCKET}"
@@ -78,8 +78,6 @@ init () {
 
 plan () {
         echo $1
-        # check that the AWS thing exists before running the plan
-
         cd $TERRAFORMPROJ$1
         if [ "${USE_AWS_VAULT}" = 'true' ] ; then
                 aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH plan --var-file=$TERRAFORMTFVARS
@@ -104,7 +102,7 @@ destroy () {
 
         cd $TERRAFORMPROJ$1
         if [ "${USE_AWS_VAULT}" = 'true' ] ; then
-                aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH destroy --var-file=$TERRAFORMTFVARS
+                aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH destroy --var-file=$TERRAFORMTFVARS --auto-approve
         else
                 $TERRAFORMPATH destroy --var-file=$TERRAFORMTFVARS
         fi
@@ -112,59 +110,86 @@ destroy () {
 
 #################################
 #################################
-if [ "${USE_AWS_VAULT}" = "true" ] ; then
-  if [ -z "${PROFILE_NAME}" ] ; then
-    echo "Please set your PROFILE_NAME environment variable";
-  fi
+ENV_VARS_SET=1
+if [ -z "${ENV}" ] ; then
+        echo "Please set your ENV environment variable";
+        ENV_VARS_SET=0
+fi
+if [ -z "${TERRAFORM_BUCKET}" ] ; then
+        echo "Please set your TERRAFORM_BUCKET environment variable";
+        ENV_VARS_SET=0
 fi
 
-case "$1" in
-
--s) echo "Create stack config files :"
-        create_stack_configs
-    ;;
--b) echo "Create bucket :"
-        create_bucket
-    ;;
--c) echo "Clean terraform statefile :"
-	for folder in $COMPONENTS
-	do
-          clean $folder
-	done
-    ;;
--i) echo "Initilize terraform dir :"
-	for folder in $COMPONENTS
-	do
-          init $folder
-	done
-        cd ${ROOTPROJ}
-    ;;
--p) echo "Create terraform plan  :"
-        for folder in $COMPONENTS
-        do
-          plan $folder
-        done
-        cd ${ROOTPROJ}
-    ;;
--a) echo "Apply terraform plan to enviroment :"
-        if [ $2 ] ; then
-          apply $2
-        else
-          for folder in $COMPONENTS
-          do 
-          apply $folder
-          done
+if [ "${USE_AWS_VAULT}" = "true" ] ; then
+        if [ -z "${PROFILE_NAME}" ] ; then
+                echo "Please set your PROFILE_NAME environment variable";
+                ENV_VARS_SET=0
         fi
+fi
 
-        cd ${ROOTPROJ}
-    ;;
--d) echo "Destroy terraform plan to enviroment :"
-        for folder in $COMPONENTSDESTROY
-        do
-          destroy $folder
-        done
-        cd ${ROOTPROJ}
-    ;;
-*) echo "Invalid option"
-   ;;
-esac
+if [ "${ENV_VARS_SET}" = 0 ] ; then
+        echo "Your environment hasn't been set correctly"
+else
+        case "$1" in
+
+        -s) echo "Create stack config files: ${ENV}"
+                create_stack_configs
+        ;;
+        -b) echo "Create bucket: ${TERRAFORM_BUCKET}"
+                create_bucket
+        ;;
+        -c) echo "Clean terraform statefile: ${ENV}"
+                for folder in ${COMPONENTS[@]}
+                do
+                        clean $folder
+                done
+        ;;
+        -i) echo "Initialize terraform dir: ${ENV}"
+                for folder in ${COMPONENTS[@]}
+                do
+                        init $folder
+                done
+                cd ${ROOTPROJ}
+        ;;
+        -p) echo "Create terraform plan: ${ENV}"
+                for folder in ${COMPONENTS[@]}
+                do
+                        plan $folder
+                done
+                cd ${ROOTPROJ}
+        ;;
+        -a) echo "Apply terraform plan to environment: ${ENV}"
+                if [ "${ENV}" = 'staging' -o "${ENV}" = 'production' ] ; then
+                        echo "Cannot run terraform apply all on ${ENV}"
+                else
+                        if [ $2 ] ; then
+                                apply $2
+                        else
+                                for folder in ${COMPONENTS[@]}
+                                do 
+                                        apply $folder
+                                done
+                        fi
+
+                        cd ${ROOTPROJ}
+                fi
+        ;;
+        -d) echo "Destroy terraform plan to environment: ${ENV}"
+                if [ "${ENV}" = 'staging' -o "${ENV}" = 'production' ] ; then
+                        echo "Cannot run terraform apply all on ${ENV}"
+                else
+                        read -p 'Are you sure? (y)' answer
+
+                        if [ "${answer}" = 'y' ] ; then
+                                for folder in ${COMPONENTSDESTROY[@]}
+                                do
+                                        destroy $folder
+                                done
+                                cd ${ROOTPROJ}
+                        fi
+                fi
+        ;;
+        *) echo "Invalid option"
+        ;;
+        esac
+fi
