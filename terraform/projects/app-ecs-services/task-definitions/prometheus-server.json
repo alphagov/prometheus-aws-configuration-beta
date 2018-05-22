@@ -105,29 +105,5 @@
         "awslogs-stream-prefix": "prometheus"
       }
     }
-  },
-  {
-    "name": "alertmanager",
-    "image": "prom/alertmanager",
-    "cpu": 128,
-    "memoryReservation": 256,
-    "essential": true,
-    "mountPoints": [
-      {
-        "sourceVolume": "alertmanager",
-        "containerPath": "/etc/alertmanager"
-      }
-    ],
-    "command": [
-      "--config.file=/etc/prometheus/alertmanager/alertmanager.yml"
-    ],
-    "logConfiguration": {
-      "logDriver": "awslogs",
-      "options": {
-        "awslogs-group": "${log_group}",
-        "awslogs-region": "${region}",
-        "awslogs-stream-prefix": "alertmanager"
-      }
-    }
   }
 ]

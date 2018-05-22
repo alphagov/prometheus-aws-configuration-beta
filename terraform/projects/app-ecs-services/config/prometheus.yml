@@ -2,8 +2,14 @@ global:
   scrape_interval: 30s
 alerting:
   alertmanagers:
-    - static_configs:
-      - targets: ['10.0.0.38:9093']
+  - scheme: http
+    ec2_sd_configs:
+    - region: eu-west-1
+      port: 9093
+    relabel_configs:
+    - source_labels: [__meta_ec2_tag_Name]
+      regex: .*ecs-node.*
+      action: keep
 rule_files:
   - "/etc/prometheus/alerts/*"
 scrape_configs:
