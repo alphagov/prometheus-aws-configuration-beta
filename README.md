@@ -34,6 +34,8 @@ export USE_AWS_VAULT=<`true` if you are using `aws-vault`>
 export ENV=<your test environment, or `staging` / `production`>
 ```
 
+Applying or destroying the stack on the staging and production environments has been blocked but is possible on other development environments.
+
 <details>
 <summary>
 How to use the Makefile
@@ -44,7 +46,7 @@ Executing `make` on the command line will give you a list of possible commands t
 In order to create a new stack you can run these make commands in order:
 
 ```shell
-# ensure that you have set up your environment variables in `environment.sh`
+# ensure that you have set up and sourced your environment variables in `environment.sh`
 
 make create-stack   # Create the terraform stack env vars
 make create-bucket  # Create the terraform state bucket
@@ -74,6 +76,8 @@ How to use the setup.sh shell script
 In order to create a new stack run the following commands in order:
 
 ```shell
+# ensure that you have set up and sourced your environment variables in `environment.sh`
+
 . ./setup.sh -s     # create stack config files `backend` and `tfvars` 
 . ./setup.sh -b     # create the terraform bucket for holding the state
 . ./setup.sh -i     # initialise the terraform state
