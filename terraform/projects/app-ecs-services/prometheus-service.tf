@@ -101,8 +101,8 @@ resource "aws_ecs_task_definition" "prometheus_server" {
   }
 
   volume {
-    name      = "alertmanager-config"
-    host_path = "/ecs/alertmanager"
+    name      = "alertmanager"
+    host_path = "/ecs/config-from-s3/alertmanager"
   }
 
 
@@ -165,7 +165,7 @@ resource "aws_s3_bucket_object" "nginx-paas-proxy" {
 
 resource "aws_s3_bucket_object" "alertmanager" {
   bucket = "${aws_s3_bucket.config_bucket.id}"
-  key    = "prometheus/alertmanager/conf.d/alertmanager.conf"
-  source = "config/vhosts/alertmanager.conf"
-  etag   = "${md5(file("config/vhosts/alertmanager.conf"))}"
+  key    = "prometheus/alertmanager/alertmanager.yml"
+  source = "config/alertmanager.yml"
+  etag   = "${md5(file("config/alertmanager.yml"))}"
 }

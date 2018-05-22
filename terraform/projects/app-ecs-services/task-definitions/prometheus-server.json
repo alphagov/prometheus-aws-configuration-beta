@@ -114,9 +114,12 @@
     "essential": true,
     "mountPoints": [
       {
-        "sourceVolume": "alertmanager-config",
+        "sourceVolume": "alertmanager",
         "containerPath": "/etc/alertmanager"
       }
+    ],
+    "command": [
+      "--config.file=/etc/prometheus/alertmanager/alertmanager.yml"
     ],
     "logConfiguration": {
       "logDriver": "awslogs",
