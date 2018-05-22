@@ -23,9 +23,9 @@ You should end up with something similar to this in your `.aws/config` file:
     role_arn=arn:aws:iam::<account-number>:role/<iam-role-name>
     mfa_serial=arn:aws:iam::<iam-user-id>:mfa/<iam-user-name>
 
-### Developing with the `setup.sh` shell script
+### Developing with the `Makefile` or `setup.sh` shell script
 
-Before using the shell script you will need to make a copy of the `environment_sample.sh` to `environment.sh`.
+Before using the Makefile or shell script you will need to make a copy of the `environment_sample.sh` to `environment.sh`.
 
 ```shell
 export TERRAFORM_BUCKET=<terraform state bucket name, should be unique or match `remote_state_bucket` in `tfvars` file for staging / production>
@@ -34,38 +34,66 @@ export USE_AWS_VAULT=<`true` if you are using `aws-vault`>
 export ENV=<your test environment, or `staging` / `production`>
 ```
 
+<details>
+<summary>
+How to use the Makefile
+</summary>
+
+Executing `make` on the command line will give you a list of possible commands to run your terraform.
+
+In order to create a new stack you can run these make commands in order:
+
+```shell
+# ensure that you have set up your environment variables in `environment.sh`
+
+make create-stack   # Create the terraform stack env vars
+make create-bucket  # Create the terraform state bucket
+make init           # Initialise terraform
+make plan           # Plan all terraform
+make apply          # Apply all terraform, auto approves
+```
+
+If you are changing stacks or have a problem with the terraform state:
+
+`make clean`
+
+To delete a stack:
+
+`make destroy`
+
+To apply terraform for a particular project:
+
+`make apply-single project=<project name in terraform/projects>`
+</details>
+
+<details>
+<summary>
+How to use the setup.sh shell script
+</summary>
+
 In order to create a new stack run the following commands in order:
 
 ```shell
-# create stack config files `backend` and `tfvars` 
-. ./setup.sh -s
-
-# create the terraform bucket for holding the state
-. ./setup.sh -b
-
-# initialise the terraform state
-. ./setup.sh -i
-
-# plan terraform to see what will change in the stack
-. ./setup.sh -p
-
-# apply terraform
-. ./setup.sh -a
+. ./setup.sh -s     # create stack config files `backend` and `tfvars` 
+. ./setup.sh -b     # create the terraform bucket for holding the state
+. ./setup.sh -i     # initialise the terraform state
+. ./setup.sh -p     # plan terraform to see what will change in the stack
+. ./setup.sh -a     # apply terraform
 ```
 
-To remove a stack run the following commands in order:
+To delete a stack:
 
-```shell
-# destroy the terraform stack
-. ./setup.sh -d
+`. ./setup.sh -d`
 
-# clean the terraform state files
-. ./setup.sh -c
-```
+If you are changing stacks or have a problem with the terraform state:
+
+`. ./setup.sh -c`
 
 To apply terraform for a particular project:
 
 `. ./setup.sh -a <project name in terraform/projects>`
+
+</details>
 
 ## Development process
 
