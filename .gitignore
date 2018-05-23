@@ -9,3 +9,6 @@ stacks/*
 
 # local env vars
 environment.sh
+
+# editor config stuff
+.vscode
