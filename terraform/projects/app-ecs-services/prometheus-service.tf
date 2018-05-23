@@ -135,7 +135,7 @@ resource "aws_ecs_service" "prometheus_server" {
 }
 
 resource "aws_ecs_service" "targets_grabber" {
-  name            = "${var.stack_name}-targets_grabber"
+  name            = "${var.stack_name}-targets-grabber"
   cluster         = "${var.stack_name}-ecs-monitoring"
   task_definition = "${aws_ecs_task_definition.targets_grabber.arn}"
   desired_count   = 1
