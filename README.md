@@ -23,65 +23,81 @@ You should end up with something similar to this in your `.aws/config` file:
     role_arn=arn:aws:iam::<account-number>:role/<iam-role-name>
     mfa_serial=arn:aws:iam::<iam-user-id>:mfa/<iam-user-name>
 
-Note, all the commands in this README that run the `terraform` or `aws` CLI should be prefixed with `aws-vault`,
-for example:
+### Developing with the `Makefile` or `setup.sh` shell script
 
-    aws-vault exec your-profile-name -- aws s3 ls
+Before using the Makefile or shell script you will need to make a copy of the `environment_sample.sh` to `environment.sh`.
 
-### Set up your stack
+```shell
+export TERRAFORM_BUCKET=<terraform state bucket name, should be unique or match `remote_state_bucket` in `tfvars` file for staging / production>
+export PROFILE_NAME=<if you are using `aws-vault` your profile name in `~/.aws/config` to access RE AWS>
+export USE_AWS_VAULT=<`true` if you are using `aws-vault`>
+export ENV=<your test environment, or `staging` / `production`>
+```
 
-You will need to pick a unique name to call this stack, for example `my-test-stack`.
-We store our Terraform state in an S3 bucket. Create and enable versioning
-on this bucket before you run any other commands.
+Applying or destroying the stack on the staging and production environments has been blocked but is possible on other development environments.
 
-    export TERRAFORM_BUCKET=my-test-stack
+<details>
+<summary>
+How to use the Makefile
+</summary>
 
-    aws s3 mb "s3://${TERRAFORM_BUCKET}"
+Executing `make` on the command line will give you a list of possible commands to run your terraform.
 
-    aws s3api put-bucket-versioning  \
-      --bucket ${TERRAFORM_BUCKET} \
-      --versioning-configuration Status=Enabled
+In order to create a new stack you can run these make commands in order:
 
-Now you have a bucket name you will create the configuration for your
-stack. Inside the `stacks` directory you will find a pair of files
-for each stack, a `.backend` and a `.tfvars`. Make a copy of an existing
-pair and change the values to suit your new name. The `bucket`
-and `remote_state_bucket` settings in these files must match the bucket you
-created above.
+```shell
+# ensure that you have set up and sourced your environment variables in `environment.sh`
 
-You should also ensure that the AWS account you are creating your environment in has an SSH key pair
-set up called `ecs-monitoring-ssh-test`. You should do this manually using the AWS web console. You
-will need to download the private key for this key pair when you create it if you wish to SSH in to
-the ECS container instance.
+make create-stack   # Create the terraform stack env vars
+make create-bucket  # Create the terraform state bucket
+make init           # Initialise terraform
+make plan           # Plan all terraform
+make apply          # Apply all terraform, auto approves
+```
 
-### Creating your stack
+If you are changing stacks or have a problem with the terraform state:
 
-Once you've created your stack configurations, and added the
-correct bucket name, you can create the stack:
+`make clean`
 
-    cd terraform/projects/infra-networking
+To delete a stack:
 
-    $ terraform init -backend-config=../../../stacks/staging.backend
+`make destroy`
 
-    $ terraform plan -var-file=../../../stacks/staging.tfvars
+To apply terraform for a particular project:
 
-    $ terraform apply -var-file=../../../stacks/staging.tfvars
+`make apply-single project=<project name in terraform/projects>`
+</details>
 
-    cd ../infra-security-groups
+<details>
+<summary>
+How to use the setup.sh shell script
+</summary>
 
-    # terraform commands from above
+In order to create a new stack run the following commands in order:
 
-    cd ../app-ecs-instances
+```shell
+# ensure that you have set up and sourced your environment variables in `environment.sh`
 
-    # terraform commands from above
+. ./setup.sh -s     # create stack config files `backend` and `tfvars` 
+. ./setup.sh -b     # create the terraform bucket for holding the state
+. ./setup.sh -i     # initialise the terraform state
+. ./setup.sh -p     # plan terraform to see what will change in the stack
+. ./setup.sh -a     # apply terraform
+```
 
-    cd ../app-ecs-albs
+To delete a stack:
 
-    # terraform commands from above
+`. ./setup.sh -d`
 
-    cd ../app-ecs-services
+If you are changing stacks or have a problem with the terraform state:
 
-    # terraform commands from above
+`. ./setup.sh -c`
+
+To apply terraform for a particular project:
+
+`. ./setup.sh -a <project name in terraform/projects>`
+
+</details>
 
 ## Development process
 
