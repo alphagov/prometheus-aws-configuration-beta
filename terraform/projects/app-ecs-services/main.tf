@@ -17,6 +17,12 @@ variable "remote_state_bucket" {
   default     = "ecs-monitoring"
 }
 
+variable "targets_s3_bucket" {
+  type        = "string"
+  description = "The default s3 bucket to grab targets"
+  default     = "gds-prometheus-targets"
+}
+
 variable "stack_name" {
   type        = "string"
   description = "Unique name for this collection of resources"
