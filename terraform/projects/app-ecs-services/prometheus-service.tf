@@ -50,6 +50,20 @@ data "aws_iam_policy_document" "prometheus_policy_doc" {
       "s3:List*",
     ]
   }
+
+  statement {
+    sid = "GetTargetsBucket"
+
+    resources = [
+      "arn:aws:s3:::${var.targets_s3_bucket}",
+      "arn:aws:s3:::${var.targets_s3_bucket}/*",
+    ]
+
+    actions = [
+      "s3:List*",
+      "s3:Get*",
+    ]
+  }
 }
 
 resource "aws_iam_policy" "prometheus_task_policy" {
@@ -117,6 +131,34 @@ resource "aws_ecs_service" "prometheus_server" {
     target_group_arn = "${data.terraform_remote_state.app_ecs_albs.monitoring_external_tg}"
     container_name   = "auth-proxy"
     container_port   = 9090
+  }
+}
+
+resource "aws_ecs_service" "targets_grabber" {
+  name            = "${var.stack_name}-targets_grabber"
+  cluster         = "${var.stack_name}-ecs-monitoring"
+  task_definition = "${aws_ecs_task_definition.targets_grabber.arn}"
+  desired_count   = 1
+}
+
+data "template_file" "targets_container_defn" {
+  template = "${file("task-definitions/targets_grabber.json")}"
+
+  vars {
+    log_group      = "${aws_cloudwatch_log_group.task_logs.name}"
+    region         = "${var.aws_region}"
+    targets_bucket = "${var.targets_s3_bucket}"
+  }
+}
+
+resource "aws_ecs_task_definition" "targets_grabber" {
+  family                = "${var.stack_name}-targets"
+  container_definitions = "${data.template_file.targets_container_defn.rendered}"
+  task_role_arn         = "${aws_iam_role.prometheus_task_iam_role.arn}"
+
+  volume {
+    name      = "config-from-s3"
+    host_path = "/ecs/config-from-s3"
   }
 }
 
