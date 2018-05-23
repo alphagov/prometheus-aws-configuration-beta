@@ -159,11 +159,11 @@ else
                 cd ${ROOTPROJ}
         ;;
         -a) echo "Apply terraform plan to environment: ${ENV}"
-                if [ "${ENV}" = 'staging' -o "${ENV}" = 'production' ] ; then
-                        echo "Cannot run terraform apply all on ${ENV}"
+                if [ $2 ] ; then
+                        apply $2
                 else
-                        if [ $2 ] ; then
-                                apply $2
+                        if [ "${ENV}" = 'staging' -o "${ENV}" = 'production' ] ; then
+                                echo "Cannot run terraform apply all on ${ENV}"
                         else
                                 for folder in ${COMPONENTS[@]}
                                 do 
