@@ -101,10 +101,11 @@ resource "aws_lb" "monitoring_external_alb" {
 }
 
 resource "aws_lb_target_group" "monitoring_external_tg" {
-  name     = "${var.stack_name}-ext-tg"
-  port     = 80
-  protocol = "HTTP"
-  vpc_id   = "${data.terraform_remote_state.infra_networking.vpc_id}"
+  name                 = "${var.stack_name}-ext-tg"
+  port                 = 80
+  protocol             = "HTTP"
+  vpc_id               = "${data.terraform_remote_state.infra_networking.vpc_id}"
+  deregistration_delay = 30
 
   health_check {
     interval            = "10"
