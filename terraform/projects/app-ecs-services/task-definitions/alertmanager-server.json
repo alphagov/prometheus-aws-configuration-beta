@@ -7,7 +7,7 @@
     "essential": true,
     "mountPoints": [
       {
-        "sourceVolume": "alertmanager",
+        "sourceVolume": "config-from-s3",
         "containerPath": "/etc/alertmanager"
       }
     ],
