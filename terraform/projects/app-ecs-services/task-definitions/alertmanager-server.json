@@ -5,14 +5,19 @@
     "cpu": 128,
     "memoryReservation": 256,
     "essential": true,
+    "portMappings": [
+      {
+        "containerPort": 9093
+      }
+    ],
+    "command": [
+      "--config.file=/etc/alertmanager/alertmanager.yml"
+    ],
     "mountPoints": [
       {
         "sourceVolume": "alertmanager",
         "containerPath": "/etc/alertmanager"
       }
-    ],
-    "command": [
-      "--config.file=/etc/alertmanager/alertmanager.yml"
     ],
     "logConfiguration": {
       "logDriver": "awslogs",
@@ -35,7 +40,7 @@
         "containerPath": "/configs"
       }
     ],
-    "command": ["s3", "sync", "s3://${config_bucket}/alertmanager", "/configs"],
+    "command": ["s3", "sync", "s3://${config_bucket}/alertmanager", "/configs/alertmanager"],
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {

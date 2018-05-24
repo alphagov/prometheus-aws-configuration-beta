@@ -117,6 +117,7 @@ resource "aws_lb_target_group" "monitoring_external_tg" {
   }
 }
 
+
 resource "aws_lb_listener" "monitoring_external_listener" {
   load_balancer_arn = "${aws_lb.monitoring_external_alb.arn}"
   port              = "80"
@@ -128,9 +129,46 @@ resource "aws_lb_listener" "monitoring_external_listener" {
   }
 }
 
+
+resource "aws_lb_listener" "alertmanager_listener" {
+  load_balancer_arn = "${aws_lb.monitoring_external_alb.arn}"
+  port              = "8080"
+  protocol          = "HTTP"
+
+  default_action {
+    target_group_arn = "${aws_lb_target_group.alertmanager_endpoint.arn}"
+    type             = "forward"
+  }
+}
+
+
+resource "aws_lb_target_group" "alertmanager_endpoint" {
+  name     = "${var.stack_name}-alertmanager"
+  port     = "9093"
+  protocol = "HTTP"
+  vpc_id   = "${data.terraform_remote_state.infra_networking.vpc_id}"
+
+  health_check {
+    interval            = "10"
+    path                = "/" # static health check on nginx auth proxy
+    matcher             = "200"
+    protocol            = "HTTP"
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = "5"
+  }
+}
+
+
 ## Outputs
 
 output "monitoring_external_tg" {
   value       = "${aws_lb_target_group.monitoring_external_tg.arn}"
   description = "External Monitoring ALB target group"
+}
+
+
+output "alertmanager_external_tg" {
+  value       = "${aws_lb_target_group.alertmanager_endpoint.arn}"
+  description = "External Alertmanager ALB target group"
 }

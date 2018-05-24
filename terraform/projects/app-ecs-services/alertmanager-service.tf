@@ -96,6 +96,12 @@ resource "aws_ecs_service" "alertmanager_server" {
   cluster         = "${var.stack_name}-ecs-monitoring"
   task_definition = "${aws_ecs_task_definition.alertmanager_server.arn}"
   desired_count   = 1
+
+  load_balancer {
+    target_group_arn = "${data.terraform_remote_state.app_ecs_albs.alertmanager_external_tg}"
+    container_name   = "alertmanager"
+    container_port   = 9093
+  }
 }
 
 #### alertmanager

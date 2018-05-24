@@ -99,6 +99,15 @@ resource "aws_security_group_rule" "monitoring_external_sg_ingress_any_http" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
+resource "aws_security_group_rule" "alertmanager_external_sg_ingress_any_http" {
+  type              = "ingress"
+  to_port           = 8080
+  from_port         = 8080
+  protocol          = "tcp"
+  security_group_id = "${aws_security_group.monitoring_external_sg.id}"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
 resource "aws_security_group_rule" "monitoring_external_sg_egress_any_any" {
   type              = "egress"
   from_port         = 0
