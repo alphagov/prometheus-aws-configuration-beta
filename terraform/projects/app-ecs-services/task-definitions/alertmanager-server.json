@@ -22,5 +22,27 @@
         "awslogs-stream-prefix": "alertmanager"
       }
     }
+  },
+  {
+    "name": "s3-config-grabber",
+    "image": "mesosphere/aws-cli",
+    "cpu": 128,
+    "memory": 128,
+    "essential": false,
+    "mountPoints": [
+      {
+        "sourceVolume": "config-from-s3",
+        "containerPath": "/configs"
+      }
+    ],
+    "command": ["s3", "sync", "s3://${config_bucket}/alertmanager", "/configs"],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group}",
+        "awslogs-region": "${region}",
+        "awslogs-stream-prefix": "alertmanager"
+      }
+    }
   }
 ]
