@@ -51,6 +51,11 @@ provider "template" {
   version = "~> 1.0.0"
 }
 
+provider "pass" {
+  store_dir     = "~/.reng-pass"
+  refresh_store = true           # will call `git pull`
+}
+
 ## Data sources
 
 data "terraform_remote_state" "infra_networking" {
