@@ -6,8 +6,8 @@ TERRAFORMTFVARS=$(pwd)/stacks/${ENV}.tfvars
 ROOTPROJ=$(pwd)
 TERRAFORMPROJ=$(pwd)/terraform/projects/
 USE_AWS_VAULT=${USE_AWS_VAULT}
-declare -a COMPONENTS=("infra-networking" "infra-security-groups" "app-ecs-instances" "app-ecs-albs" "app-ecs-services")
-declare -a COMPONENTSDESTROY=("app-ecs-services" "app-ecs-albs" "app-ecs-instances" "infra-security-groups" "infra-networking")
+declare -a COMPONENTS=("infra-networking" "infra-security-groups" "app-ecs-instances" "app-ecs-albs" "infra-networking-route53"  "app-ecs-services")
+declare -a COMPONENTSDESTROY=("app-ecs-services" "infra-networking-route53" "app-ecs-albs" "app-ecs-instances" "infra-security-groups" "infra-networking")
 
 #Bucket name and stackname
 ############ Actions #################
@@ -31,6 +31,7 @@ else
 cat <<EOF >stacks/${ENV}.tfvars
 remote_state_bucket = "${TERRAFORM_BUCKET}"
 stack_name = "${ENV}"
+prometheus_subdomain = "${ENV}"
 additional_tags = {
   "Environment" = "${ENV}"
 }
@@ -139,24 +140,34 @@ else
                 create_bucket
         ;;
         -c) echo "Clean terraform statefile: ${ENV}"
-                for folder in ${COMPONENTS[@]}
-                do
-                        clean $folder
-                done
+                if [ $2 ] ; then
+                        clean $2
+                else
+                        for folder in ${COMPONENTS[@]}
+                        do
+                                clean $folder
+                        done
+                fi
         ;;
         -i) echo "Initialize terraform dir: ${ENV}"
-                for folder in ${COMPONENTS[@]}
-                do
-                        init $folder
-                done
-                cd ${ROOTPROJ}
+                if [ $2 ] ; then
+                        init $2
+                else
+                        for folder in ${COMPONENTS[@]}
+                        do
+                                init $folder
+                        done
+                fi
         ;;
         -p) echo "Create terraform plan: ${ENV}"
-                for folder in ${COMPONENTS[@]}
-                do
-                        plan $folder
-                done
-                cd ${ROOTPROJ}
+                if [ $2 ] ; then
+                        plan $2
+                else
+                        for folder in ${COMPONENTS[@]}
+                        do
+                                plan $folder
+                        done
+                fi
         ;;
         -a) echo "Apply terraform plan to environment: ${ENV}"
                 if [ $2 ] ; then
@@ -170,8 +181,6 @@ else
                                         apply $folder
                                 done
                         fi
-
-                        cd ${ROOTPROJ}
                 fi
         ;;
         -d) echo "Destroy terraform plan to environment: ${ENV}"
@@ -185,7 +194,6 @@ else
                                 do
                                         destroy $folder
                                 done
-                                cd ${ROOTPROJ}
                         fi
                 fi
         ;;

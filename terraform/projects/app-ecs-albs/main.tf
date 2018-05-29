@@ -135,3 +135,13 @@ output "monitoring_external_tg" {
   value       = "${aws_lb_target_group.monitoring_external_tg.arn}"
   description = "External Monitoring ALB target group"
 }
+
+output "dns_name" {
+  value       = "${aws_lb.monitoring_external_alb.dns_name}"
+  description = "External Monitoring ALB dns_name"
+}
+
+output "zone_id" {
+  value       = "${aws_lb.monitoring_external_alb.zone_id}"
+  description = "External Monitoring ALB hosted zone ID"
+}
