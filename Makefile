@@ -45,6 +45,10 @@ plan-single: ## Plan terraform for a project, make plan-single project=<project 
 apply-single: ## Apply terraform for a project, make apply-single project=<project name>
 	. ./setup.sh -a ${project}
 
+.PHONY: destroy-single
+destroy-single: ## Destroy terraform to a project, make destroy-single project=<project name>
+	. ./setup.sh -d ${project}
+
 .PHONY: destroy
 destroy: ## Destroy stack
 	. ./setup.sh -d

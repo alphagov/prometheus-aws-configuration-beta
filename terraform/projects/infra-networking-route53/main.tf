@@ -1,7 +1,15 @@
 /**
 * ## Project: infra-networking-route53
 *
-* Terraform project to setup route53
+* Terraform project to setup route53 with alias records to our ALBs.
+*
+* When running for `staging` and `production` environments, this will set up a
+* new DNS hosted zone, for example `monitoring-staging.gds-reliability.engineering` using the
+* `prometheus_subdomain` variable from the `tfvars` file.
+*
+* When running for development environments, this will create a new zone and
+* delegate it to our shared `dev.gds-reliability.engineering` zone
+* for example `your-stack.dev.gds-reliability.engineering`.
 *
 */
 
@@ -23,11 +31,19 @@ variable "remote_state_bucket" {
   default     = "ecs-monitoring"
 }
 
+variable "stack_name" {
+  type        = "string"
+  description = "Unique name for this collection of resources"
+  default     = "ecs-monitoring"
+}
+
 # locals
 # --------------------------------------------------------------
 
-# Resources
-# --------------------------------------------------------------
+locals {
+  create_staging_or_prod_count = "${(var.stack_name == "production" || var.stack_name == "staging") ? 1 : 0}"
+  create_dev_count             = "${(var.stack_name == "production" || var.stack_name == "staging") ? 0 : 1}"
+}
 
 ## Providers
 
@@ -57,13 +73,59 @@ data "terraform_remote_state" "app-ecs-albs" {
 }
 
 ## Resources
+# --------------------------------------------------------------
+# These resources are only created for staging or production environments (not dev)
 
 resource "aws_route53_zone" "subdomain" {
-  name = "${var.prometheus_subdomain}.gds-reliability.engineering"
+  count = "${local.create_staging_or_prod_count}"
+  name  = "${var.prometheus_subdomain}.gds-reliability.engineering"
 }
 
-resource "aws_route53_record" "prom-alias" {
+resource "aws_route53_record" "prom_alias" {
+  count   = "${local.create_staging_or_prod_count}"
   zone_id = "${aws_route53_zone.subdomain.zone_id}"
+  name    = "prom-1"
+  type    = "A"
+
+  alias {
+    name                   = "${data.terraform_remote_state.app-ecs-albs.dns_name}"
+    zone_id                = "${data.terraform_remote_state.app-ecs-albs.zone_id}"
+    evaluate_target_health = false
+  }
+}
+
+## Development resources
+# --------------------------------------------------------------
+# These resources are only created for development environments (not staging or prod)
+
+resource "aws_route53_zone" "shared_dev_subdomain" {
+  count = "${local.create_dev_count}"
+  name  = "dev.gds-reliability.engineering"
+}
+
+resource "aws_route53_record" "shared_dev_ns" {
+  count   = "${local.create_dev_count}"
+  zone_id = "${aws_route53_zone.shared_dev_subdomain.zone_id}"
+  name    = "${var.stack_name}.${aws_route53_zone.shared_dev_subdomain.name}"
+  type    = "NS"
+  ttl     = "30"
+
+  records = [
+    "${aws_route53_zone.dev_subdomain.name_servers.0}",
+    "${aws_route53_zone.dev_subdomain.name_servers.1}",
+    "${aws_route53_zone.dev_subdomain.name_servers.2}",
+    "${aws_route53_zone.dev_subdomain.name_servers.3}",
+  ]
+}
+
+resource "aws_route53_zone" "dev_subdomain" {
+  count = "${local.create_dev_count}"
+  name  = "${var.prometheus_subdomain}.${aws_route53_zone.shared_dev_subdomain.name}"
+}
+
+resource "aws_route53_record" "dev_prom_alias" {
+  count   = "${local.create_dev_count}"
+  zone_id = "${aws_route53_zone.dev_subdomain.zone_id}"
   name    = "prom-1"
   type    = "A"
 

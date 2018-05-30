@@ -5,13 +5,15 @@ TERRAFORMBACKVARS=$(pwd)/stacks/${ENV}.backend
 TERRAFORMTFVARS=$(pwd)/stacks/${ENV}.tfvars
 ROOTPROJ=$(pwd)
 TERRAFORMPROJ=$(pwd)/terraform/projects/
+SHARED_DEV_DNS_ZONE=Z3702PZTSCDWPA  # this is the dev.gds-reliability.engineering DNS hosted zone ID
 declare -a COMPONENTS=("infra-networking" "infra-security-groups" "app-ecs-instances" "app-ecs-albs" "infra-networking-route53"  "app-ecs-services")
 declare -a COMPONENTSDESTROY=("app-ecs-services" "infra-networking-route53" "app-ecs-albs" "app-ecs-instances" "infra-security-groups" "infra-networking")
 
-#Bucket name and stackname
+
 ############ Actions #################
 
 create_stack_configs() {
+# Creates .backend and .tfvars files for this stack in the stacks directory
 
 if [ -e "${ROOTPROJ}/stacks/${ENV}.backend" ] ; then
         echo "${ENV}.backend exists"
@@ -41,13 +43,24 @@ fi
 }
 
 create_bucket() {
+# Creates versioned AWS bucket to store remote terraform state
         aws-vault exec ${PROFILE_NAME} -- aws s3 mb "s3://${TERRAFORM_BUCKET}"
         aws-vault exec ${PROFILE_NAME} -- aws s3api put-bucket-versioning  \
         --bucket ${TERRAFORM_BUCKET} \
         --versioning-configuration Status=Enabled
+}
 
+does_stack_config_exist() {
+        if [ -e "${ROOTPROJ}/stacks/${ENV}.backend" ] ; then
+                return "1"
+        else
+                echo "stacks/${ENV}.backend doesn't exist"
+                return "0"
+        fi
+}
 
 clean() {
+# Removes .terraform files to avoid state clashes
         echo $1
 
         if [ -d "$TERRAFORMPROJ$1/.terraform" ] ; then
@@ -58,7 +71,21 @@ clean() {
         fi
 }
 
+import_shared_dev_route53 () {
+# Imports into terraform the shared development route 53 zone that had not been set up
+# using Terraform
+        echo "import shared dev route53"
+        aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH import aws_route53_zone.shared_dev_subdomain $SHARED_DEV_DNS_ZONE
+}
+
+remove_shared_dev_route53 () {
+# Remove the shared development route 53 zone from the state file
+        echo "import shared dev route53"
+        aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH state rm aws_route53_zone.shared_dev_subdomain
+}
+
 init () {
+# Init a terraform project
         echo $1
 
         cd $TERRAFORMPROJ$1
@@ -66,6 +93,7 @@ init () {
 }
 
 plan () {
+# Plan a terraform project
         echo $1
 
         cd $TERRAFORMPROJ$1
@@ -73,17 +101,37 @@ plan () {
 }
 
 apply () {
+# Apply a terraform project
         echo $1
 
         cd $TERRAFORMPROJ$1
+
+        # For development stacks, for the `infra-networking-route53` project, ensure that
+        # the shared_dev_route53 resource has been imported into terraform before applying
+        if [ $ENV != 'production' -a $ENV != 'staging' -a "$1" = 'infra-networking-route53' ] ; then
+                import_shared_dev_route53
+        fi
+
         aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH apply --var-file=$TERRAFORMTFVARS --auto-approve
 }
 
 destroy () {
+# Destroy a terraform project
         echo $1
 
         cd $TERRAFORMPROJ$1
+
+        # For development stacks, for the `infra-networking-route53` project,
+        # remove the shared_dev_subdomain route53 state file
+        if [ $ENV != 'production' -a $ENV != 'staging' -a "$1" = 'infra-networking-route53' ] ; then
+                remove_shared_dev_route53
+        fi
+
         aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH destroy --var-file=$TERRAFORMTFVARS --auto-approve
+
+        if [ $? != 0 ]; then
+                exit
+        fi
 }
 
 #################################
@@ -125,50 +173,69 @@ else
                 fi
         ;;
         -i) echo "Initialize terraform dir: ${ENV}"
-                if [ $2 ] ; then
-                        init $2
-                else
-                        for folder in ${COMPONENTS[@]}
-                        do
-                                init $folder
-                        done
-                fi
-        ;;
-        -p) echo "Create terraform plan: ${ENV}"
-                if [ $2 ] ; then
-                        plan $2
-                else
-                        for folder in ${COMPONENTS[@]}
-                        do
-                                plan $folder
-                        done
-                fi
-        ;;
-        -a) echo "Apply terraform plan to environment: ${ENV}"
-                if [ $2 ] ; then
-                        apply $2
-                else
-                        if [ "${ENV}" = 'staging' -o "${ENV}" = 'production' ] ; then
-                                echo "Cannot run terraform apply all on ${ENV}"
+                does_stack_config_exist
+                if [ $? = 1 ] ; then
+                        if [ $2 ] ; then
+                                init $2
                         else
                                 for folder in ${COMPONENTS[@]}
                                 do
-                                        apply $folder
+                                        init $folder
                                 done
                         fi
                 fi
         ;;
-        -d) echo "Destroy terraform plan to environment: ${ENV}"
-                if [ "${ENV}" = 'staging' -o "${ENV}" = 'production' ] ; then
-                        echo "Cannot run terraform apply all on ${ENV}"
-                else
-                        read -p 'Are you sure? (y)' answer
-
-                        if [ "${answer}" = 'y' ] ; then
-                                for folder in ${COMPONENTSDESTROY[@]}
+        -p) echo "Create terraform plan: ${ENV}"
+                does_stack_config_exist
+                if [ $? = 1 ] ; then
+                        if [ $2 ] ; then
+                                plan $2
+                        else
+                                for folder in ${COMPONENTS[@]}
                                 do
-                                        destroy $folder
+                                        plan $folder
                                 done
+                        fi
+                fi
+        ;;
+        -a) echo "Apply terraform plan to environment: ${ENV}"
+                does_stack_config_exist
+                if [ $? = 1 ]    ; then
+                        if [ $2 ] ; then
+                                apply $2
+                        else
+                                if [ "${ENV}" = 'staging' -o "${ENV}" = 'production' ] ; then
+                                        echo "Cannot run terraform apply all on ${ENV}"
+                                else
+                                        for folder in ${COMPONENTS[@]}
+                                        do
+                                                apply $folder
+                                        done
+                                fi
+                        fi
+                fi
+        ;;
+        -d) echo "Destroy terraform plan to environment: ${ENV}"
+                does_stack_config_exist
+                if [ $? = 1 ] ; then
+                        if [ $2 ] ; then
+                                destroy $2
+                        else
+                                if [ "${ENV}" = 'staging' -o "${ENV}" = 'production' ] ; then
+                                        echo "Cannot run terraform destroy all on ${ENV}"
+                                else
+                                        read -p 'Are you sure? (yN)' answer
+
+                                        if [ "${answer}" = 'y' ] ; then
+                                                for folder in ${COMPONENTSDESTROY[@]}
+                                                do
+                                                        destroy $folder
+                                                        if [ $? != 0 ] ; then
+                                                                exit
+                                                        fi
+                                                done
+                                        fi
+                                fi
                         fi
                 fi
         ;;
@@ -176,3 +243,5 @@ else
         ;;
         esac
 fi
+
+cd $ROOTPROJ
