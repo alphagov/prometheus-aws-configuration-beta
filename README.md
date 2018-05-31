@@ -46,12 +46,11 @@ Executing `make` on the command line will give you a list of possible commands t
 In order to create a new stack you can run these make commands in order:
 
 ```shell
-# ensure that you have set up and sourced your environment variables in `environment.sh`
+# ensure that you have set up and sourced your environment variables using `source environment.sh`
 
 make create-stack   # Create the terraform stack env vars
 make create-bucket  # Create the terraform state bucket
 make init           # Initialise terraform
-make plan           # Plan all terraform
 make apply          # Apply all terraform, auto approves
 ```
 
@@ -76,12 +75,11 @@ How to use the setup.sh shell script
 In order to create a new stack run the following commands in order:
 
 ```shell
-# ensure that you have set up and sourced your environment variables in `environment.sh`
+# ensure that you have set up and sourced your environment variables using `source environment.sh`
 
-. ./setup.sh -s     # create stack config files `backend` and `tfvars` 
+. ./setup.sh -s     # create stack config files `backend` and `tfvars`
 . ./setup.sh -b     # create the terraform bucket for holding the state
 . ./setup.sh -i     # initialise the terraform state
-. ./setup.sh -p     # plan terraform to see what will change in the stack
 . ./setup.sh -a     # apply terraform
 ```
 
