@@ -17,5 +17,7 @@ Create ALBs for the ECS cluster
 
 | Name | Description |
 |------|-------------|
+| dns_name | External Monitoring ALB dns_name |
 | monitoring_external_tg | External Monitoring ALB target group |
+| zone_id | External Monitoring ALB hosted zone ID |
 

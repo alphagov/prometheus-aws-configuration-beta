@@ -16,7 +16,7 @@ clean: ## Remove all terraform state files
 .PHONY: create-bucket
 create-bucket: ## Create the terraform state bucket
 	. ./setup.sh -b
-	
+
 .PHONY: init
 init: ## Initialise terraform
 	. ./setup.sh -i
@@ -48,3 +48,7 @@ apply-single: ## Apply terraform to a project, make apply-single project=<projec
 .PHONY: destroy
 destroy: ## Destroy stack
 	. ./setup.sh -d
+
+.PHONY: docs
+docs: ## Update all terraform docs
+	. ./tools/update-docs.sh

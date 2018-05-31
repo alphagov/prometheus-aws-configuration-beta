@@ -119,11 +119,8 @@ You can install `terraform-docs` by running:
 
     brew install terraform-docs
 
-When adding adding or changing terraform projects you should run `terraform-docs`
-in the project directory and add that to your commit, for example:
-
-    cd terraform/projects/app-ecs-albs
-    terraform-docs markdown . > README.md
+When adding adding or changing terraform projects you should run `make docs`
+and add the changes to your commit.
 
 ## AWS Vault tips
 
