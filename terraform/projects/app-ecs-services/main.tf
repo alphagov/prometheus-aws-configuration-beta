@@ -63,6 +63,16 @@ data "terraform_remote_state" "infra_networking" {
   }
 }
 
+data "terraform_remote_state" "infra-networking" {
+  backend = "s3"
+
+  config {
+    bucket = "${var.remote_state_bucket}"
+    key    = "infra-networking-route53.tfstate"
+    region = "${var.aws_region}"
+  }
+}
+
 data "terraform_remote_state" "infra_security_groups" {
   backend = "s3"
 
