@@ -29,8 +29,7 @@ Before using the Makefile or shell script you will need to make a copy of the `e
 
 ```shell
 export TERRAFORM_BUCKET=<terraform state bucket name, should be unique or match `remote_state_bucket` in `tfvars` file for staging / production>
-export PROFILE_NAME=<if you are using `aws-vault` your profile name in `~/.aws/config` to access RE AWS>
-export USE_AWS_VAULT=<`true` if you are using `aws-vault`>
+export PROFILE_NAME=<your profile name in `~/.aws/config` to access RE AWS>
 export ENV=<your test environment, or `staging` / `production`>
 ```
 

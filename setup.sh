@@ -5,7 +5,6 @@ TERRAFORMBACKVARS=$(pwd)/stacks/${ENV}.backend
 TERRAFORMTFVARS=$(pwd)/stacks/${ENV}.tfvars
 ROOTPROJ=$(pwd)
 TERRAFORMPROJ=$(pwd)/terraform/projects/
-USE_AWS_VAULT=${USE_AWS_VAULT}
 declare -a COMPONENTS=("infra-networking" "infra-security-groups" "app-ecs-instances" "app-ecs-albs" "infra-networking-route53"  "app-ecs-services")
 declare -a COMPONENTSDESTROY=("app-ecs-services" "infra-networking-route53" "app-ecs-albs" "app-ecs-instances" "infra-security-groups" "infra-networking")
 
@@ -42,25 +41,18 @@ fi
 }
 
 create_bucket() {
-        if [ "${USE_AWS_VAULT}" = 'true' ] ; then  
-                aws-vault exec ${PROFILE_NAME} -- aws s3 mb "s3://${TERRAFORM_BUCKET}"
-                aws-vault exec ${PROFILE_NAME} -- aws s3api put-bucket-versioning  \
-                --bucket ${TERRAFORM_BUCKET} \
-                --versioning-configuration Status=Enabled
-        else
-                aws s3 mb "s3://${TERRAFORM_BUCKET}"
-                aws s3api put-bucket-versioning  \
-                --bucket ${TERRAFORM_BUCKET} \
-                --versioning-configuration Status=Enabled
-        fi
-}
+        aws-vault exec ${PROFILE_NAME} -- aws s3 mb "s3://${TERRAFORM_BUCKET}"
+        aws-vault exec ${PROFILE_NAME} -- aws s3api put-bucket-versioning  \
+        --bucket ${TERRAFORM_BUCKET} \
+        --versioning-configuration Status=Enabled
+
 
 clean() {
         echo $1
 
         if [ -d "$TERRAFORMPROJ$1/.terraform" ] ; then
                 rm -rf $TERRAFORMPROJ$1/.terraform
-                echo "Finished cleaning $1" 
+                echo "Finished cleaning $1"
         else
                 echo "$1 .terraform not found"
         fi
@@ -70,43 +62,28 @@ init () {
         echo $1
 
         cd $TERRAFORMPROJ$1
-        if [ "${USE_AWS_VAULT}" = 'true' ] ; then
-                aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH init -backend-config=$TERRAFORMBACKVARS
-        else
-                $TERRAFORMPATH init -backend-config=$TERRAFORMBACKVARS
-        fi
+        aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH init -backend-config=$TERRAFORMBACKVARS
 }
 
 plan () {
         echo $1
+
         cd $TERRAFORMPROJ$1
-        if [ "${USE_AWS_VAULT}" = 'true' ] ; then
-                aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH plan --var-file=$TERRAFORMTFVARS
-        else 
-                $TERRAFORMPATH plan --var-file=$TERRAFORMTFVARS
-        fi
+        aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH plan --var-file=$TERRAFORMTFVARS
 }
 
 apply () {
         echo $1
 
         cd $TERRAFORMPROJ$1
-        if [ "${USE_AWS_VAULT}" = 'true' ] ; then
-                aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH apply --var-file=$TERRAFORMTFVARS --auto-approve
-        else
-                $TERRAFORMPATH apply --var-file=$TERRAFORMTFVARS --auto-approve
-        fi
+        aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH apply --var-file=$TERRAFORMTFVARS --auto-approve
 }
 
 destroy () {
         echo $1
 
         cd $TERRAFORMPROJ$1
-        if [ "${USE_AWS_VAULT}" = 'true' ] ; then
-                aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH destroy --var-file=$TERRAFORMTFVARS --auto-approve
-        else
-                $TERRAFORMPATH destroy --var-file=$TERRAFORMTFVARS
-        fi
+        aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH destroy --var-file=$TERRAFORMTFVARS --auto-approve
 }
 
 #################################
@@ -120,13 +97,11 @@ if [ -z "${TERRAFORM_BUCKET}" ] ; then
         echo "Please set your TERRAFORM_BUCKET environment variable";
         ENV_VARS_SET=0
 fi
-
-if [ "${USE_AWS_VAULT}" = "true" ] ; then
-        if [ -z "${PROFILE_NAME}" ] ; then
-                echo "Please set your PROFILE_NAME environment variable";
-                ENV_VARS_SET=0
-        fi
+if [ -z "${PROFILE_NAME}" ] ; then
+        echo "Please set your PROFILE_NAME environment variable";
+        ENV_VARS_SET=0
 fi
+
 
 if [ "${ENV_VARS_SET}" = 0 ] ; then
         echo "Your environment hasn't been set correctly"
@@ -177,7 +152,7 @@ else
                                 echo "Cannot run terraform apply all on ${ENV}"
                         else
                                 for folder in ${COMPONENTS[@]}
-                                do 
+                                do
                                         apply $folder
                                 done
                         fi

@@ -1,4 +1,3 @@
 export TERRAFORM_BUCKET=
 export PROFILE_NAME=
-export USE_AWS_VAULT=
 export ENV=
