@@ -190,7 +190,13 @@ resource "aws_ebs_volume" "prometheus_ebs_volume" {
   type              = "gp2"
 
   lifecycle {
-    prevent_destroy = true
+    # This allows our EBS volumes to be destroyed, which is allowed behaviour
+    # for dev stacks but behaviour we want to avoid for staging or production.
+    # Therefore, we manually created a new policy in the staging and production
+    # account - `Prevent_delete_EC2_volume`, which has been attached to the
+    # AWS roles used by terraform to help prevent accidental EBS volume deletion
+    # https://github.com/hashicorp/terraform/issues/3116
+    prevent_destroy = false
   }
 
   tags = "${merge(
