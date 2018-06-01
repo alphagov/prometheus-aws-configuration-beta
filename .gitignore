@@ -12,3 +12,7 @@ environment.sh
 
 # editor config stuff
 .vscode
+.*.swp
+
+# os files 
+.DS_Store
