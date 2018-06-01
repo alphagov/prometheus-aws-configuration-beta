@@ -32,10 +32,20 @@ else
   echo "[$(date '+%H:%M:%S %d-%m-%Y')] attach-volume: /dev/$DEVICE is already formatted: $(file -s /dev/$DEVICE)"
 fi
 
-# Allow prometheus container user access to read/write/execute within container
+
+#Mount volume to be used by prometheus container
 mkdir -p /ecs/prometheus_data
 mount /dev/$DEVICE /ecs/prometheus_data
-chmod 777 /ecs/prometheus_data
+
+
+
+#Create prometheus group and allow it to read and write to our volume for storing prometheus data. Note, 65534 is 
+#chosen as the UID to be added to the prometheus group as this is the UID that prometheus in the docker container runs as.
+
+groupadd --system --gid 65534 prometheus
+useradd --system --uid 65534 --gid 65534 prometheus
+chown prometheus:prometheus /ecs/prometheus_data
+chmod -R 760 /ecs/prometheus_data
 
 # Set any ECS agent configuration options
 echo 'ECS_CLUSTER=${cluster_name}' >> /etc/ecs/ecs.config
