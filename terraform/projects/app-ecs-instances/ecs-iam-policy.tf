@@ -51,13 +51,21 @@ data "aws_iam_policy_document" "ecs_instance_document" {
 
   statement {
     resources = [
-      "${aws_ebs_volume.prometheus_ebs_volume.arn}",
+      "${aws_ebs_volume.prometheus_ebs_volume.*.arn}",
       "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:instance/*",
     ]
 
     actions = [
       "ec2:AttachVolume",
       "ec2:DetachVolume",
+    ]
+  }
+
+  statement {
+    resources = ["*"]
+
+    actions = [
+      "ec2:DescribeVolumes",
     ]
   }
 }
