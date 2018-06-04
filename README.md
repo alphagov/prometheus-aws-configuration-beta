@@ -33,7 +33,7 @@ export PROFILE_NAME=<your profile name in `~/.aws/config` to access RE AWS>
 export ENV=<your test environment, or `staging` / `production`>
 ```
 
-Applying or destroying the stack on the staging and production environments has been blocked but is possible on other development environments.
+Applying or destroying the entire stack on the staging and production environments has been blocked but is possible on other development environments.
 
 <details>
 <summary>
@@ -95,6 +95,14 @@ To apply terraform for a particular project:
 `. ./setup.sh -a <project name in terraform/projects>`
 
 </details>
+
+Once you have deployed your development stack you should be able to reach the prometheus dashboard using this url pattern:
+
+`http://prom-1.<your test environment specified in the ENV environment variable>.dev.reliability.engineering`
+
+e.g.
+
+`http://prom-1.your-test-stack.dev.reliability.engineering`
 
 ## Development process
 
