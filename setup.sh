@@ -5,6 +5,7 @@ TERRAFORMBACKVARS=$(pwd)/stacks/${ENV}.backend
 TERRAFORMTFVARS=$(pwd)/stacks/${ENV}.tfvars
 ROOTPROJ=$(pwd)
 TERRAFORMPROJ=$(pwd)/terraform/projects/
+SHARED_DEV_SUBDOMAIN_RESOURCE=aws_route53_zone.shared_dev_subdomain
 SHARED_DEV_DNS_ZONE=Z3702PZTSCDWPA  # this is the dev.gds-reliability.engineering DNS hosted zone ID
 declare -a COMPONENTS=("infra-networking" "infra-security-groups" "app-ecs-instances" "app-ecs-albs" "infra-networking-route53"  "app-ecs-services")
 declare -a COMPONENTSDESTROY=("app-ecs-services" "infra-networking-route53" "app-ecs-albs" "app-ecs-instances" "infra-security-groups" "infra-networking")
@@ -52,10 +53,10 @@ create_bucket() {
 
 does_stack_config_exist() {
         if [ -e "${ROOTPROJ}/stacks/${ENV}.backend" ] ; then
-                return "1"
+                return 0
         else
-                echo "stacks/${ENV}.backend doesn't exist"
-                return "0"
+                echo "stacks/${ENV}.backend doesn't exist, create the stack config files first"
+                return 1
         fi
 }
 
@@ -74,13 +75,20 @@ clean() {
 import_shared_dev_route53 () {
 # Imports into terraform the shared development route 53 zone that had not been set up
 # using Terraform
-        echo "import shared dev route53"
-        aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH import aws_route53_zone.shared_dev_subdomain $SHARED_DEV_DNS_ZONE
+
+        # check if the resource exists in the state file
+        SHARED_DEV_SUBDOMAIN=`aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH state list $SHARED_DEV_SUBDOMAIN_RESOURCE`
+        if [ "$SHARED_DEV_SUBDOMAIN" = "$SHARED_DEV_SUBDOMAIN_RESOURCE" ] ; then
+                echo "$SHARED_DEV_SUBDOMAIN already imported"
+        else
+                echo "import $SHARED_DEV_SUBDOMAIN_RESOURCE"
+                aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH import $SHARED_DEV_SUBDOMAIN_RESOURCE $SHARED_DEV_DNS_ZONE
+        fi
 }
 
 remove_shared_dev_route53 () {
 # Remove the shared development route 53 zone from the state file
-        echo "import shared dev route53"
+        echo "remove shared dev route53"
         aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH state rm aws_route53_zone.shared_dev_subdomain
 }
 
@@ -134,6 +142,13 @@ destroy () {
         fi
 }
 
+taint() {
+        echo $1
+
+        cd $TERRAFORMPROJ$1
+        aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH taint $2
+}
+
 #################################
 #################################
 ENV_VARS_SET=1
@@ -173,8 +188,7 @@ else
                 fi
         ;;
         -i) echo "Initialize terraform dir: ${ENV}"
-                does_stack_config_exist
-                if [ $? = 1 ] ; then
+                if does_stack_config_exist; then
                         if [ $2 ] ; then
                                 init $2
                         else
@@ -186,8 +200,7 @@ else
                 fi
         ;;
         -p) echo "Create terraform plan: ${ENV}"
-                does_stack_config_exist
-                if [ $? = 1 ] ; then
+                if does_stack_config_exist; then
                         if [ $2 ] ; then
                                 plan $2
                         else
@@ -199,8 +212,7 @@ else
                 fi
         ;;
         -a) echo "Apply terraform plan to environment: ${ENV}"
-                does_stack_config_exist
-                if [ $? = 1 ]    ; then
+                if does_stack_config_exist; then
                         if [ $2 ] ; then
                                 apply $2
                         else
@@ -216,8 +228,7 @@ else
                 fi
         ;;
         -d) echo "Destroy terraform plan to environment: ${ENV}"
-                does_stack_config_exist
-                if [ $? = 1 ] ; then
+                if does_stack_config_exist; then
                         if [ $2 ] ; then
                                 destroy $2
                         else
@@ -239,9 +250,10 @@ else
                         fi
                 fi
         ;;
+        -t) echo "Taint a terraform resource: ${ENV}"
+                taint $2 $3
+        ;;
         *) echo "Invalid option"
         ;;
         esac
 fi
-
-cd $ROOTPROJ

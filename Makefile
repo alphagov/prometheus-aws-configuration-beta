@@ -46,12 +46,16 @@ apply-single: ## Apply terraform for a project, make apply-single project=<proje
 	. ./setup.sh -a ${project}
 
 .PHONY: destroy-single
-destroy-single: ## Destroy terraform to a project, make destroy-single project=<project name>
+destroy-single: ## Destroy terraform for a project, make destroy-single project=<project name>
 	. ./setup.sh -d ${project}
 
 .PHONY: destroy
 destroy: ## Destroy stack
 	. ./setup.sh -d
+
+.PHONY: taint
+taint: ## Taint a resource, make taint project=<project name> resource=<resource name>
+	. ./setup.sh -t ${project} ${resource}
 
 .PHONY: docs
 docs: ## Update all terraform docs
