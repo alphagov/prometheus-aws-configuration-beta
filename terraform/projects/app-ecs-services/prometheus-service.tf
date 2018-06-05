@@ -34,7 +34,7 @@ data "aws_iam_policy_document" "prometheus_policy_doc" {
   statement {
     sid = "GetPrometheusFiles"
 
-    resources = ["arn:aws:s3:::${aws_s3_bucket.config_bucket.id}/prometheus/*"]
+    resources = ["arn:aws:s3:::${aws_s3_bucket.config_bucket.id}/prometheus/*", "arn:aws:s3:::${aws_s3_bucket.config_bucket.id}/alertmanager/*"]
 
     actions = [
       "s3:Get*",
@@ -77,6 +77,14 @@ resource "aws_iam_role_policy_attachment" "prometheus_policy_attachment" {
   policy_arn = "${aws_iam_policy.prometheus_task_policy.arn}"
 }
 
+data "template_file" "prometheus_config_file" {
+  template = "${file("templates/prometheus.tpl")}"
+
+  vars {
+    alertmanager_dns_name = "${data.terraform_remote_state.app_ecs_albs.alertmanager_alb_dns}"
+  }
+}
+
 ### container, task, service definitions
 
 data "template_file" "prometheus_container_defn" {
@@ -101,7 +109,7 @@ resource "aws_ecs_task_definition" "prometheus_server" {
 
   volume {
     name      = "prometheus-config"
-    host_path = "/ecs/config-from-s3/prometheus"
+    host_path = "/ecs/config-from-s3"
   }
 
   volume {
@@ -121,6 +129,27 @@ resource "aws_ecs_task_definition" "prometheus_server" {
   }
 }
 
+data "template_file" "pass_proxy_container_defn" {
+  template = "${file("task-definitions/paas_proxy.json")}"
+
+  vars {
+    log_group     = "${aws_cloudwatch_log_group.task_logs.name}"
+    region        = "${var.aws_region}"
+    config_bucket = "${aws_s3_bucket.config_bucket.id}"
+  }
+}
+
+resource "aws_ecs_task_definition" "paas_proxy" {
+  family                = "${var.stack_name}-pass-proxy"
+  container_definitions = "${data.template_file.pass_proxy_container_defn.rendered}"
+  task_role_arn         = "${aws_iam_role.prometheus_task_iam_role.arn}"
+
+  volume {
+    name      = "paas-proxy"
+    host_path = "/ecs/config-from-s3/paas-proxy/conf.d"
+  }
+}
+
 resource "aws_ecs_service" "prometheus_server" {
   name            = "${var.stack_name}-prometheus-server"
   cluster         = "${var.stack_name}-ecs-monitoring"
@@ -134,26 +163,40 @@ resource "aws_ecs_service" "prometheus_server" {
   }
 }
 
-resource "aws_ecs_service" "targets_grabber" {
+resource "aws_ecs_service" "paas_proxy_service" {
+  name            = "${var.stack_name}-paas-proxy"
+  cluster         = "${var.stack_name}-ecs-monitoring"
+  task_definition = "${aws_ecs_task_definition.paas_proxy.arn}"
+  desired_count   = 1
+
+  load_balancer {
+    target_group_arn = "${data.terraform_remote_state.app_ecs_albs.pass_proxy_tg}"
+    container_name   = "paas-proxy"
+    container_port   = 8080
+  }
+}
+
+resource "aws_ecs_service" "config_updater" {
   name            = "${var.stack_name}-targets-grabber"
   cluster         = "${var.stack_name}-ecs-monitoring"
-  task_definition = "${aws_ecs_task_definition.targets_grabber.arn}"
+  task_definition = "${aws_ecs_task_definition.config_updater.arn}"
   desired_count   = 1
 }
 
-data "template_file" "targets_container_defn" {
-  template = "${file("task-definitions/targets_grabber.json")}"
+data "template_file" "config_updater_defn" {
+  template = "${file("task-definitions/config_updater.json")}"
 
   vars {
     log_group      = "${aws_cloudwatch_log_group.task_logs.name}"
     region         = "${var.aws_region}"
     targets_bucket = "${var.targets_s3_bucket}"
+    config_bucket  = "${aws_s3_bucket.config_bucket.id}"
   }
 }
 
-resource "aws_ecs_task_definition" "targets_grabber" {
-  family                = "${var.stack_name}-targets"
-  container_definitions = "${data.template_file.targets_container_defn.rendered}"
+resource "aws_ecs_task_definition" "config_updater" {
+  family                = "${var.stack_name}-config-updater"
+  container_definitions = "${data.template_file.config_updater_defn.rendered}"
   task_role_arn         = "${aws_iam_role.prometheus_task_iam_role.arn}"
 
   volume {
@@ -163,19 +206,34 @@ resource "aws_ecs_task_definition" "targets_grabber" {
 }
 
 resource "aws_s3_bucket_object" "prometheus-config" {
+  bucket  = "${aws_s3_bucket.config_bucket.id}"
+  key     = "prometheus/prometheus.yml"
+  content = "${data.template_file.prometheus_config_file.rendered}"
+  etag    = "${md5(data.template_file.prometheus_config_file.rendered)}"
+}
+
+resource "aws_s3_bucket_object" "alerts-config" {
   bucket = "${aws_s3_bucket.config_bucket.id}"
-  key    = "prometheus/prometheus/prometheus.yml"
-  source = "config/prometheus.yml"
-  etag   = "${md5(file("config/prometheus.yml"))}"
+  key    = "prometheus/alerts/alerts.yml"
+  source = "config/alerts.yml"
+  etag   = "${md5(file("config/alerts.yml"))}"
 }
 
 #### nginx reverse proxy
 
+data "template_file" "auth_proxy_config_file" {
+  template = "${file("templates/auth-proxy.conf.tpl")}"
+
+  vars {
+    alertmanager_dns_name = "${data.terraform_remote_state.app_ecs_albs.alertmanager_alb_dns}"
+  }
+}
+
 resource "aws_s3_bucket_object" "nginx-reverse-proxy" {
-  bucket = "${aws_s3_bucket.config_bucket.id}"
-  key    = "prometheus/auth-proxy/conf.d/prometheus-auth-proxy.conf"
-  source = "config/vhosts/auth-proxy.conf"
-  etag   = "${md5(file("config/vhosts/auth-proxy.conf"))}"
+  bucket  = "${aws_s3_bucket.config_bucket.id}"
+  key     = "prometheus/auth-proxy/conf.d/prometheus-auth-proxy.conf"
+  content = "${data.template_file.auth_proxy_config_file.rendered}"
+  etag    = "${md5(data.template_file.auth_proxy_config_file.rendered)}"
 }
 
 # The htpasswd file is in bcrypt format, which is only supported

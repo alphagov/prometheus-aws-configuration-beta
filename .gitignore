@@ -11,4 +11,6 @@ stacks/*
 environment.sh
 
 # editor config stuff
+.idea
+.idea/*/**
 .vscode

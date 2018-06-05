@@ -1,0 +1,29 @@
+[
+  {
+    "name": "paas-proxy",
+    "image": "nginx:alpine",
+    "cpu": 128,
+    "memory": 128,
+    "essential": true,
+    "portMappings": [
+      {
+        "containerPort": 8080
+      }
+    ],
+    "mountPoints": [
+      {
+        "sourceVolume": "paas-proxy",
+        "containerPath": "/etc/nginx/conf.d",
+        "readOnly": true
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group}",
+        "awslogs-region": "${region}",
+        "awslogs-stream-prefix": "paas-proxy"
+      }
+    }
+  }
+]

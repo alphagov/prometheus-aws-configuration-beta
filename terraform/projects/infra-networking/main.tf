@@ -142,3 +142,13 @@ output "public_zone_id" {
   value       = "${aws_route53_zone.subdomain.zone_id}"
   description = "Route 53 Zone ID for publicly visible zone"
 }
+
+output "private_subnets_ips" {
+  value       = "${module.vpc.private_subnets_cidr_blocks}"
+  description = "List of public subnet IDs"
+}
+
+output "nat_gateway" {
+  value       = "${module.vpc.nat_public_ips}"
+  description = "List of nat gateway IP"
+}

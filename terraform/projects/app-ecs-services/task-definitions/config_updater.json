@@ -1,35 +1,34 @@
 [
   {
-    "name": "prometheus",
-    "image": "prom/prometheus",
-    "cpu": 1024,
-    "memoryReservation": 4096,
+    "name": "s3-updater-targets",
+    "image": "mesosphere/aws-cli",
+    "cpu": 40,
+    "memory": 256,
     "essential": true,
     "mountPoints": [
       {
-        "sourceVolume": "prometheus-config",
-        "containerPath": "/etc/prometheus"
-      },
-      {
-        "sourceVolume": "prometheus-timeseries-storage",
-        "containerPath": "/prometheus"
+        "sourceVolume": "config-from-s3",
+        "containerPath": "/configs"
       }
+    ],
+    "command": [
+      "s3", "sync", "--delete", "s3://${targets_bucket}/active", "/configs/targets"
     ],
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {
         "awslogs-group": "${log_group}",
         "awslogs-region": "${region}",
-        "awslogs-stream-prefix": "prometheus"
+        "awslogs-stream-prefix": "s3-targets-"
       }
     }
   },
   {
-    "name": "s3-config-grabber",
+    "name": "s3-updater-config",
     "image": "mesosphere/aws-cli",
     "cpu": 128,
     "memory": 128,
-    "essential": false,
+    "essential": true,
     "mountPoints": [
       {
         "sourceVolume": "config-from-s3",
@@ -42,37 +41,29 @@
       "options": {
         "awslogs-group": "${log_group}",
         "awslogs-region": "${region}",
-        "awslogs-stream-prefix": "prometheus"
+        "awslogs-stream-prefix": "prometheus-config-grabber"
       }
     }
   },
   {
-    "name": "auth-proxy",
-    "image": "nginx:alpine",
+    "name": "s3-updater-alertmanager",
+    "image": "mesosphere/aws-cli",
     "cpu": 128,
     "memory": 128,
     "essential": true,
-    "portMappings": [
-      {
-        "containerPort": 9090
-      }
-    ],
     "mountPoints": [
       {
-        "sourceVolume": "auth-proxy",
-        "containerPath": "/etc/nginx/conf.d",
-        "readOnly": true
+        "sourceVolume": "config-from-s3",
+        "containerPath": "/configs"
       }
     ],
-    "links": [
-      "prometheus"
-    ],
+    "command": ["s3", "sync", "s3://${config_bucket}/alertmanager", "/configs/alertmanager"],
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {
         "awslogs-group": "${log_group}",
         "awslogs-region": "${region}",
-        "awslogs-stream-prefix": "prometheus"
+        "awslogs-stream-prefix": "alertmanager-config-grabber"
       }
     }
   }

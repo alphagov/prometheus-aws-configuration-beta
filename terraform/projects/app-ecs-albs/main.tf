@@ -96,13 +96,25 @@ resource "aws_lb" "monitoring_external_alb" {
     local.default_tags,
     var.additional_tags,
     map("Stackname", "${var.stack_name}"),
-    map("Name", "${var.stack_name}-ecs-monitoring")
+    map("Name", "${var.stack_name}-prometheus-external")
   )}"
 }
 
 resource "aws_route53_record" "prom_alias" {
   zone_id = "${data.terraform_remote_state.infra_networking.public_zone_id}"
   name    = "prom-1"
+  type    = "A"
+
+  alias {
+    name                   = "${aws_lb.monitoring_external_alb.dns_name}"
+    zone_id                = "${aws_lb.monitoring_external_alb.zone_id}"
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "alerts_alias" {
+  zone_id = "${data.terraform_remote_state.infra_networking.public_zone_id}"
+  name    = "alerts-1"
   type    = "A"
 
   alias {
@@ -141,9 +153,125 @@ resource "aws_lb_listener" "monitoring_external_listener" {
   }
 }
 
+resource "aws_lb" "alertmanager_external_alb" {
+  name               = "${var.stack_name}-alertmanager"
+  internal           = true
+  load_balancer_type = "application"
+  security_groups    = ["${data.terraform_remote_state.infra_security_groups.aletmanager_external_sg_id}"]
+
+  subnets = [
+    "${element(data.terraform_remote_state.infra_networking.public_subnets, 0)}",
+    "${element(data.terraform_remote_state.infra_networking.public_subnets, 1)}",
+    "${element(data.terraform_remote_state.infra_networking.public_subnets, 2)}",
+  ]
+
+  tags = "${merge(
+    local.default_tags,
+    var.additional_tags,
+    map("Stackname", "${var.stack_name}"),
+    map("Name", "${var.stack_name}-alertmanager-external")
+  )}"
+}
+
+resource "aws_lb_listener" "alertmanager_listener" {
+  load_balancer_arn = "${aws_lb.alertmanager_external_alb.arn}"
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    target_group_arn = "${aws_lb_target_group.alertmanager_endpoint.arn}"
+    type             = "forward"
+  }
+}
+
+resource "aws_lb_target_group" "alertmanager_endpoint" {
+  name     = "${var.stack_name}-alertmanager"
+  port     = "9093"
+  protocol = "HTTP"
+  vpc_id   = "${data.terraform_remote_state.infra_networking.vpc_id}"
+
+  health_check {
+    interval            = "10"
+    path                = "/"
+    matcher             = "200"
+    protocol            = "HTTP"
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = "5"
+  }
+}
+
+resource "aws_lb_listener" "paas_proxy_listener" {
+  load_balancer_arn = "${aws_lb.alertmanager_external_alb.arn}"
+  port              = "8080"
+  protocol          = "HTTP"
+
+  default_action {
+    target_group_arn = "${aws_lb_target_group.paas_proxy_endpoint.arn}"
+    type             = "forward"
+  }
+}
+
+resource "aws_lb_target_group" "paas_proxy_endpoint" {
+  name     = "${var.stack_name}-paas-proxy"
+  protocol = "HTTP"
+  port     = "8080"
+  vpc_id   = "${data.terraform_remote_state.infra_networking.vpc_id}"
+
+  health_check {
+    interval            = "10"
+    path                = "/health"
+    matcher             = "200"
+    protocol            = "HTTP"
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = "5"
+  }
+}
+
 ## Outputs
 
 output "monitoring_external_tg" {
   value       = "${aws_lb_target_group.monitoring_external_tg.arn}"
   description = "External Monitoring ALB target group"
+}
+
+output "prometheus_alb_dns" {
+  value       = "${aws_lb.monitoring_external_alb.dns_name}"
+  description = "External Monitoring ALB DNS name"
+}
+
+output "zone_id" {
+  value       = "${aws_lb.monitoring_external_alb.zone_id}"
+  description = "External Monitoring ALB hosted zone ID"
+}
+
+output "alertmanager_external_tg" {
+  value       = "${aws_lb_target_group.alertmanager_endpoint.arn}"
+  description = "External Alertmanager ALB target group"
+}
+
+output "alertmanager_alb_zoneid" {
+  value       = "${aws_lb.alertmanager_external_alb.zone_id}"
+  description = "External Alertmanager ALB zone id"
+}
+
+output "alertmanager_alb_dns" {
+  value       = "${aws_lb.alertmanager_external_alb.dns_name}"
+  description = "External Alertmanager ALB DNS name"
+}
+
+output "paas_proxy_alb_zoneid" {
+  value       = "${aws_lb.alertmanager_external_alb.zone_id}"
+  description = "Internal PaaS ALB target group"
+}
+
+output "paas_proxy_alb_dns" {
+  value       = "${aws_lb.alertmanager_external_alb.dns_name}"
+  description = "Internal PaaS ALB DNS name"
+}
+
+output "pass_proxy_tg" {
+  value       = "${aws_lb_target_group.paas_proxy_endpoint.arn}"
+  description = "Paas proxy target group"
 }
