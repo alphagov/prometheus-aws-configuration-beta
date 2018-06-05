@@ -7,8 +7,8 @@ ROOTPROJ=$(pwd)
 TERRAFORMPROJ=$(pwd)/terraform/projects/
 SHARED_DEV_SUBDOMAIN_RESOURCE=aws_route53_zone.shared_dev_subdomain
 SHARED_DEV_DNS_ZONE=Z3702PZTSCDWPA  # this is the dev.gds-reliability.engineering DNS hosted zone ID
-declare -a COMPONENTS=("infra-networking" "infra-security-groups" "app-ecs-instances" "app-ecs-albs" "infra-networking-route53"  "app-ecs-services")
-declare -a COMPONENTSDESTROY=("app-ecs-services" "infra-networking-route53" "app-ecs-albs" "app-ecs-instances" "infra-security-groups" "infra-networking")
+declare -a COMPONENTS=("infra-networking" "infra-security-groups" "app-ecs-instances" "app-ecs-albs" "app-ecs-services")
+declare -a COMPONENTSDESTROY=("app-ecs-services" "app-ecs-albs" "app-ecs-instances" "infra-security-groups" "infra-networking")
 
 
 ############ Actions #################
@@ -114,9 +114,9 @@ apply () {
 
         cd $TERRAFORMPROJ$1
 
-        # For development stacks, for the `infra-networking-route53` project, ensure that
+        # For development stacks, for the `infra-networking` project, ensure that
         # the shared_dev_route53 resource has been imported into terraform before applying
-        if [ $ENV != 'production' -a $ENV != 'staging' -a "$1" = 'infra-networking-route53' ] ; then
+        if [ $ENV != 'production' -a $ENV != 'staging' -a "$1" = 'infra-networking' ] ; then
                 import_shared_dev_route53
         fi
 
@@ -129,9 +129,9 @@ destroy () {
 
         cd $TERRAFORMPROJ$1
 
-        # For development stacks, for the `infra-networking-route53` project,
+        # For development stacks, for the `infra-networking` project,
         # remove the shared_dev_subdomain route53 state file
-        if [ $ENV != 'production' -a $ENV != 'staging' -a "$1" = 'infra-networking-route53' ] ; then
+        if [ $ENV != 'production' -a $ENV != 'staging' -a "$1" = 'infra-networking' ] ; then
                 remove_shared_dev_route53
         fi
 

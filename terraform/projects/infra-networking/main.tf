@@ -24,6 +24,12 @@ variable "stack_name" {
   default     = "ecs-monitoring"
 }
 
+variable "prometheus_subdomain" {
+  type        = "string"
+  description = "Subdomain for prometheus"
+  default     = "monitoring"
+}
+
 # locals
 # --------------------------------------------------------------
 
@@ -32,10 +38,10 @@ locals {
     Terraform = "true"
     Project   = "infra-networking"
   }
-}
 
-# Resources
-# --------------------------------------------------------------
+  create_dev_count = "${(var.stack_name == "production" || var.stack_name == "staging") ? 0 : 1}"
+  subdomain_name   = "${(var.stack_name == "production" || var.stack_name == "staging") ? "${var.prometheus_subdomain}.gds-reliability.engineering" : "${var.prometheus_subdomain}.${aws_route53_zone.shared_dev_subdomain.name}"}"
+}
 
 ## Providers
 
@@ -80,6 +86,35 @@ module "vpc" {
   )}"
 }
 
+resource "aws_route53_zone" "subdomain" {
+  name = "${local.subdomain_name}"
+}
+
+## Development resources
+# --------------------------------------------------------------
+# These resources are only created for development environments (not staging or prod)
+# This is to add the extra delegation from dev.gds-reliability.engineering to the prometheus subdomain
+
+resource "aws_route53_zone" "shared_dev_subdomain" {
+  count = "${local.create_dev_count}"
+  name  = "dev.gds-reliability.engineering"
+}
+
+resource "aws_route53_record" "shared_dev_ns" {
+  count   = "${local.create_dev_count}"
+  zone_id = "${aws_route53_zone.shared_dev_subdomain.zone_id}"
+  name    = "${var.stack_name}.${aws_route53_zone.shared_dev_subdomain.name}"
+  type    = "NS"
+  ttl     = "30"
+
+  records = [
+    "${aws_route53_zone.subdomain.name_servers.0}",
+    "${aws_route53_zone.subdomain.name_servers.1}",
+    "${aws_route53_zone.subdomain.name_servers.2}",
+    "${aws_route53_zone.subdomain.name_servers.3}",
+  ]
+}
+
 ## Outputs
 
 output "az_names" {
@@ -100,4 +135,9 @@ output "private_subnets" {
 output "public_subnets" {
   value       = "${module.vpc.public_subnets}"
   description = "List of public subnet IDs"
+}
+
+output "public_zone_id" {
+  value       = "${aws_route53_zone.subdomain.zone_id}"
+  description = "Route 53 Zone ID for publicly visible zone"
 }
