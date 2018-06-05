@@ -154,7 +154,7 @@ resource "aws_ecs_service" "prometheus_server" {
   name            = "${var.stack_name}-prometheus-server"
   cluster         = "${var.stack_name}-ecs-monitoring"
   task_definition = "${aws_ecs_task_definition.prometheus_server.arn}"
-  desired_count   = 1
+  desired_count   = 3
 
   load_balancer {
     target_group_arn = "${data.terraform_remote_state.app_ecs_albs.monitoring_external_tg}"
@@ -180,7 +180,7 @@ resource "aws_ecs_service" "config_updater" {
   name            = "${var.stack_name}-targets-grabber"
   cluster         = "${var.stack_name}-ecs-monitoring"
   task_definition = "${aws_ecs_task_definition.config_updater.arn}"
-  desired_count   = 1
+  desired_count   = 3
 }
 
 data "template_file" "config_updater_defn" {
