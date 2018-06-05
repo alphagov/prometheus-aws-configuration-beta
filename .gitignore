@@ -14,3 +14,7 @@ environment.sh
 .idea
 .idea/*/**
 .vscode
+.*.swp
+
+# os files 
+.DS_Store
