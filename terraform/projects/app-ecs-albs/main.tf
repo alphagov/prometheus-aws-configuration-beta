@@ -100,6 +100,18 @@ resource "aws_lb" "monitoring_external_alb" {
   )}"
 }
 
+resource "aws_route53_record" "prom_alias" {
+  zone_id = "${data.terraform_remote_state.infra_networking.public_zone_id}"
+  name    = "prom-1"
+  type    = "A"
+
+  alias {
+    name                   = "${aws_lb.monitoring_external_alb.dns_name}"
+    zone_id                = "${aws_lb.monitoring_external_alb.zone_id}"
+    evaluate_target_health = false
+  }
+}
+
 resource "aws_lb_target_group" "monitoring_external_tg" {
   name                 = "${var.stack_name}-ext-tg"
   port                 = 80
@@ -134,14 +146,4 @@ resource "aws_lb_listener" "monitoring_external_listener" {
 output "monitoring_external_tg" {
   value       = "${aws_lb_target_group.monitoring_external_tg.arn}"
   description = "External Monitoring ALB target group"
-}
-
-output "dns_name" {
-  value       = "${aws_lb.monitoring_external_alb.dns_name}"
-  description = "External Monitoring ALB dns_name"
-}
-
-output "zone_id" {
-  value       = "${aws_lb.monitoring_external_alb.zone_id}"
-  description = "External Monitoring ALB hosted zone ID"
 }

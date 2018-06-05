@@ -29,12 +29,11 @@ Before using the Makefile or shell script you will need to make a copy of the `e
 
 ```shell
 export TERRAFORM_BUCKET=<terraform state bucket name, should be unique or match `remote_state_bucket` in `tfvars` file for staging / production>
-export PROFILE_NAME=<if you are using `aws-vault` your profile name in `~/.aws/config` to access RE AWS>
-export USE_AWS_VAULT=<`true` if you are using `aws-vault`>
+export PROFILE_NAME=<your profile name in `~/.aws/config` to access RE AWS>
 export ENV=<your test environment, or `staging` / `production`>
 ```
 
-Applying or destroying the stack on the staging and production environments has been blocked but is possible on other development environments.
+Applying or destroying the entire stack on the staging and production environments has been blocked but is possible on other development environments.
 
 <details>
 <summary>
@@ -46,12 +45,11 @@ Executing `make` on the command line will give you a list of possible commands t
 In order to create a new stack you can run these make commands in order:
 
 ```shell
-# ensure that you have set up and sourced your environment variables in `environment.sh`
+# ensure that you have set up and sourced your environment variables using `source environment.sh`
 
 make create-stack   # Create the terraform stack env vars
 make create-bucket  # Create the terraform state bucket
 make init           # Initialise terraform
-make plan           # Plan all terraform
 make apply          # Apply all terraform, auto approves
 ```
 
@@ -76,12 +74,11 @@ How to use the setup.sh shell script
 In order to create a new stack run the following commands in order:
 
 ```shell
-# ensure that you have set up and sourced your environment variables in `environment.sh`
+# ensure that you have set up and sourced your environment variables using `source environment.sh`
 
-. ./setup.sh -s     # create stack config files `backend` and `tfvars` 
+. ./setup.sh -s     # create stack config files `backend` and `tfvars`
 . ./setup.sh -b     # create the terraform bucket for holding the state
 . ./setup.sh -i     # initialise the terraform state
-. ./setup.sh -p     # plan terraform to see what will change in the stack
 . ./setup.sh -a     # apply terraform
 ```
 
@@ -98,6 +95,14 @@ To apply terraform for a particular project:
 `. ./setup.sh -a <project name in terraform/projects>`
 
 </details>
+
+Once you have deployed your development stack you should be able to reach the prometheus dashboard using this url pattern:
+
+`http://prom-1.<your test environment specified in the ENV environment variable>.dev.reliability.engineering`
+
+e.g.
+
+`http://prom-1.your-test-stack.dev.reliability.engineering`
 
 ## Development process
 

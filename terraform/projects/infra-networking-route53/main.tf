@@ -1,7 +1,15 @@
 /**
 * ## Project: infra-networking-route53
 *
-* Terraform project to setup route53
+* Terraform project to setup route53 with alias records to our ALBs.
+*
+* When running for `staging` and `production` environments, this will set up a
+* new DNS hosted zone, for example `monitoring-staging.gds-reliability.engineering` using the
+* `prometheus_subdomain` variable from the `tfvars` file.
+*
+* When running for development environments, this will create a new zone and
+* delegate it to our shared `dev.gds-reliability.engineering` zone
+* for example `your-stack.dev.gds-reliability.engineering`.
 *
 */
 
@@ -11,23 +19,10 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
-variable "prometheus_subdomain" {
-  type        = "string"
-  description = "Subdomain for prometheus"
-  default     = "monitoring"
-}
-
-variable "remote_state_bucket" {
-  type        = "string"
-  description = "S3 bucket we store our terraform state in"
-  default     = "ecs-monitoring"
-}
-
 # locals
 # --------------------------------------------------------------
 
-# Resources
-# --------------------------------------------------------------
+locals {}
 
 ## Providers
 
@@ -44,35 +39,15 @@ provider "aws" {
   region  = "${var.aws_region}"
 }
 
-## Data sources
-
-data "terraform_remote_state" "app-ecs-albs" {
-  backend = "s3"
-
-  config {
-    bucket = "${var.remote_state_bucket}"
-    key    = "app-ecs-albs.tfstate"
-    region = "${var.aws_region}"
-  }
-}
-
 ## Resources
+# --------------------------------------------------------------
+# These resources are only created for staging or production environments (not dev)
 
-resource "aws_route53_zone" "subdomain" {
-  name = "${var.prometheus_subdomain}.gds-reliability.engineering"
-}
 
-resource "aws_route53_record" "prom-alias" {
-  zone_id = "${aws_route53_zone.subdomain.zone_id}"
-  name    = "prom-1"
-  type    = "A"
+## Development resources
+# --------------------------------------------------------------
+# These resources are only created for development environments (not staging or prod)
 
-  alias {
-    name                   = "${data.terraform_remote_state.app-ecs-albs.dns_name}"
-    zone_id                = "${data.terraform_remote_state.app-ecs-albs.zone_id}"
-    evaluate_target_health = false
-  }
-}
 
 ## Outputs
 
