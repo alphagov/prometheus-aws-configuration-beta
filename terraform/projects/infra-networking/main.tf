@@ -39,8 +39,9 @@ locals {
     Project   = "infra-networking"
   }
 
-  create_dev_count = "${(var.stack_name == "production" || var.stack_name == "staging") ? 0 : 1}"
-  subdomain_name   = "${(var.stack_name == "production" || var.stack_name == "staging") ? "${var.prometheus_subdomain}.gds-reliability.engineering" : "${var.prometheus_subdomain}.${aws_route53_zone.shared_dev_subdomain.name}"}"
+  create_dev_count          = "${(var.stack_name == "production" || var.stack_name == "staging") ? 0 : 1}"
+  shared_dev_subdomain_name = "dev.gds-reliability.engineering"
+  subdomain_name            = "${(var.stack_name == "production" || var.stack_name == "staging") ? "${var.prometheus_subdomain}.gds-reliability.engineering" : "${var.prometheus_subdomain}.${local.shared_dev_subdomain_name}"}"
 }
 
 ## Providers
@@ -97,7 +98,7 @@ resource "aws_route53_zone" "subdomain" {
 
 resource "aws_route53_zone" "shared_dev_subdomain" {
   count = "${local.create_dev_count}"
-  name  = "dev.gds-reliability.engineering"
+  name  = "${local.shared_dev_subdomain_name}"
 }
 
 resource "aws_route53_record" "shared_dev_ns" {
