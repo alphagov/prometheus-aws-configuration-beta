@@ -82,32 +82,35 @@ data "terraform_remote_state" "infra_security_groups" {
 ## Resources
 
 resource "aws_lb" "monitoring_external_alb" {
-  name               = "${var.stack_name}-ext-alb"
+  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+
+  name               = "${var.stack_name}-ext-alb-${count.index + 1}"
   internal           = false
   load_balancer_type = "application"
   security_groups    = ["${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}"]
 
   subnets = [
-    "${element(data.terraform_remote_state.infra_networking.public_subnets, 0)}",
-    "${element(data.terraform_remote_state.infra_networking.public_subnets, 1)}",
+    "${data.terraform_remote_state.infra_networking.public_subnets}",
   ]
 
   tags = "${merge(
     local.default_tags,
     var.additional_tags,
     map("Stackname", "${var.stack_name}"),
-    map("Name", "${var.stack_name}-prometheus-external")
+    map("Name", "${var.stack_name}-prometheus-external-${count.index + 1}")
   )}"
 }
 
 resource "aws_route53_record" "prom_alias" {
+  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+
   zone_id = "${data.terraform_remote_state.infra_networking.public_zone_id}"
-  name    = "prom-1"
+  name    = "prom-${count.index + 1}"
   type    = "A"
 
   alias {
-    name                   = "${aws_lb.monitoring_external_alb.dns_name}"
-    zone_id                = "${aws_lb.monitoring_external_alb.zone_id}"
+    name                   = "${element(aws_lb.monitoring_external_alb.*.dns_name, count.index)}"
+    zone_id                = "${element(aws_lb.monitoring_external_alb.*.zone_id, count.index)}"
     evaluate_target_health = false
   }
 }
@@ -125,7 +128,9 @@ resource "aws_route53_record" "alerts_alias" {
 }
 
 resource "aws_lb_target_group" "monitoring_external_tg" {
-  name                 = "${var.stack_name}-ext-tg"
+  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+
+  name                 = "${var.stack_name}-ext-tg-${count.index + 1}"
   port                 = 80
   protocol             = "HTTP"
   vpc_id               = "${data.terraform_remote_state.infra_networking.vpc_id}"
@@ -143,12 +148,14 @@ resource "aws_lb_target_group" "monitoring_external_tg" {
 }
 
 resource "aws_lb_listener" "monitoring_external_listener" {
-  load_balancer_arn = "${aws_lb.monitoring_external_alb.arn}"
+  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+
+  load_balancer_arn = "${element(aws_lb.monitoring_external_alb.*.arn, count.index)}"
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = "${aws_lb_target_group.monitoring_external_tg.arn}"
+    target_group_arn = "${element(aws_lb_target_group.monitoring_external_tg.*.arn, count.index)}"
     type             = "forward"
   }
 }
@@ -232,7 +239,7 @@ resource "aws_lb_target_group" "paas_proxy_endpoint" {
 ## Outputs
 
 output "monitoring_external_tg" {
-  value       = "${aws_lb_target_group.monitoring_external_tg.arn}"
+  value       = "${aws_lb_target_group.monitoring_external_tg.*.arn}"
   description = "External Monitoring ALB target group"
 }
 
