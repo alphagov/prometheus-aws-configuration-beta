@@ -157,7 +157,7 @@ resource "aws_lb" "alertmanager_external_alb" {
   name               = "${var.stack_name}-alertmanager"
   internal           = true
   load_balancer_type = "application"
-  security_groups    = ["${data.terraform_remote_state.infra_security_groups.aletmanager_external_sg_id}"]
+  security_groups    = ["${data.terraform_remote_state.infra_security_groups.alertmanager_external_sg_id}"]
 
   subnets = [
     "${element(data.terraform_remote_state.infra_networking.public_subnets, 0)}",
