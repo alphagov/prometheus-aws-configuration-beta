@@ -81,7 +81,7 @@ data "template_file" "prometheus_config_file" {
   template = "${file("templates/prometheus.tpl")}"
 
   vars {
-    alertmanager_dns_name = "${data.terraform_remote_state.app_ecs_albs.alertmanager_alb_dns}"
+    alertmanager_dns_name = "${join("\",\"", data.terraform_remote_state.app_ecs_albs.alertmanager_alb_dns)}"
   }
 }
 
@@ -166,13 +166,14 @@ resource "aws_ecs_service" "prometheus_server" {
 }
 
 resource "aws_ecs_service" "paas_proxy_service" {
-  name            = "${var.stack_name}-paas-proxy"
+  count = 3 
+  name            = "${var.stack_name}-paas-proxy-${count.index}"
   cluster         = "${var.stack_name}-ecs-monitoring"
   task_definition = "${aws_ecs_task_definition.paas_proxy.arn}"
   desired_count   = 1
 
   load_balancer {
-    target_group_arn = "${data.terraform_remote_state.app_ecs_albs.pass_proxy_tg}"
+    target_group_arn = "${element(data.terraform_remote_state.app_ecs_albs.pass_proxy_tg, count.index)}"
     container_name   = "paas-proxy"
     container_port   = 8080
   }
@@ -227,7 +228,7 @@ data "template_file" "auth_proxy_config_file" {
   template = "${file("templates/auth-proxy.conf.tpl")}"
 
   vars {
-    alertmanager_dns_name = "${data.terraform_remote_state.app_ecs_albs.alertmanager_alb_dns}"
+    alertmanager_dns_name = "${data.terraform_remote_state.app_ecs_albs.alertmanager_alb_dns[0]}"
   }
 }
 
