@@ -53,7 +53,7 @@ provider "template" {
 
 provider "pass" {
   store_dir     = "~/.reng-pass"
-  refresh_store = true           # will call `git pull`
+  refresh_store = false          # do not call `git pull`
 }
 
 ## Data sources
@@ -102,6 +102,46 @@ resource "aws_s3_bucket" "config_bucket" {
   versioning {
     enabled = true
   }
+}
+
+resource "aws_s3_bucket_policy" "config_bucket_policy" {
+  /* As suggested by https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingServerSideEncryption.html
+  to ensure all objects in our config bucket are encrypted */
+
+  bucket = "${aws_s3_bucket.config_bucket.id}"
+
+  policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Id": "PutObjPolicy",
+  "Statement": [
+    {
+      "Sid": "DenyIncorrectEncryptionHeader",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::${aws_s3_bucket.config_bucket.id}/*",
+      "Condition": {
+        "StringNotEquals": {
+          "s3:x-amz-server-side-encryption": "AES256"
+        }
+      }
+    },
+    {
+      "Sid": "DenyUnEncryptedObjectUploads",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::${aws_s3_bucket.config_bucket.id}/*",
+      "Condition": {
+        "Null": {
+          "s3:x-amz-server-side-encryption": "true"
+        }
+      }
+    }
+  ]
+}
+POLICY
 }
 
 ## Outputs
