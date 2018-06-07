@@ -11,6 +11,12 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
+variable "dev_environment" {
+  type        = "string"
+  description = "Boolean flag for development environments"
+  default     = "true"
+}
+
 variable "remote_state_bucket" {
   type        = "string"
   description = "S3 bucket we store our terraform state in"

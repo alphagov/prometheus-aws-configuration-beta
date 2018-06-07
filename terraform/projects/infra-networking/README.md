@@ -11,6 +11,7 @@ related services. You will often have multiple VPCs in an account
 |------|-------------|:----:|:-----:|:-----:|
 | additional_tags | Stack specific tags to apply | map | `<map>` | no |
 | aws_region | AWS region | string | `eu-west-1` | no |
+| dev_environment | Boolean flag for development environments | string | `true` | no |
 | prometheus_subdomain | Subdomain for prometheus | string | `monitoring` | no |
 | stack_name | Unique name for this collection of resources | string | `ecs-monitoring` | no |
 

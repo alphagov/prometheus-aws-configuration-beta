@@ -41,6 +41,7 @@ Before using the Makefile or shell script you will need to make a copy of the `e
 export TERRAFORM_BUCKET=<terraform state bucket name, should be unique or match `remote_state_bucket` in `tfvars` file for staging / production>
 export PROFILE_NAME=<your profile name in `~/.aws/config` to access RE AWS>
 export ENV=<desired name of your test environment, or `staging` / `production`>
+export DEV_ENVIRONMENT=<'true' or 'false'>
 ```
 
 Applying or destroying the entire stack on the staging and production environments has been blocked but is possible on other development environments.

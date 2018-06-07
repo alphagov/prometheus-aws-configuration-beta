@@ -18,6 +18,12 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
+variable "dev_environment" {
+  type        = "string"
+  description = "Boolean flag for development environments"
+  default     = "true"
+}
+
 variable "stack_name" {
   type        = "string"
   description = "Unique name for this collection of resources"
@@ -39,9 +45,8 @@ locals {
     Project   = "infra-networking"
   }
 
-  create_dev_count          = "${(var.stack_name == "production" || var.stack_name == "staging") ? 0 : 1}"
   shared_dev_subdomain_name = "dev.gds-reliability.engineering"
-  subdomain_name            = "${(var.stack_name == "production" || var.stack_name == "staging") ? "${var.prometheus_subdomain}.gds-reliability.engineering" : "${var.prometheus_subdomain}.${local.shared_dev_subdomain_name}"}"
+  subdomain_name            = "${var.dev_environment == "true" ? "${var.prometheus_subdomain}.${local.shared_dev_subdomain_name}" : "${var.prometheus_subdomain}.gds-reliability.engineering"}"
 }
 
 ## Providers
@@ -97,12 +102,12 @@ resource "aws_route53_zone" "subdomain" {
 # This is to add the extra delegation from dev.gds-reliability.engineering to the prometheus subdomain
 
 resource "aws_route53_zone" "shared_dev_subdomain" {
-  count = "${local.create_dev_count}"
+  count = "${var.dev_environment == "true" ? 1 : 0}"
   name  = "${local.shared_dev_subdomain_name}"
 }
 
 resource "aws_route53_record" "shared_dev_ns" {
-  count   = "${local.create_dev_count}"
+  count   = "${var.dev_environment == "true" ? 1 : 0}"
   zone_id = "${aws_route53_zone.shared_dev_subdomain.zone_id}"
   name    = "${var.stack_name}.${aws_route53_zone.shared_dev_subdomain.name}"
   type    = "NS"

@@ -7,18 +7,6 @@
 *
 */
 
-# locals
-# --------------------------------------------------------------
-
-locals {
-  default_tags = {
-    Terraform = "true"
-    Project   = "app-ecs-services"
-  }
-
-  create_dev = "${(var.stack_name == "production" || var.stack_name == "staging") ? 0 : 1}"
-}
-
 ## IAM roles & policies
 
 resource "aws_iam_role" "alertmanager_task_iam_role" {
@@ -137,6 +125,6 @@ data "template_file" "alertmanager_dev_config_file" {
 resource "aws_s3_bucket_object" "alertmanager" {
   bucket                 = "${aws_s3_bucket.config_bucket.id}"
   key                    = "alertmanager/alertmanager.yml"
-  content                = "${local.create_dev == 0 ? data.template_file.alertmanager_config_file.rendered : data.template_file.alertmanager_dev_config_file.rendered}"
+  content                = "${var.dev_environment == "true" ? data.template_file.alertmanager_dev_config_file.rendered : data.template_file.alertmanager_config_file.rendered}"
   server_side_encryption = "AES256"
 }
