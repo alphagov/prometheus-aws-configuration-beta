@@ -232,7 +232,7 @@ output "monitoring_external_sg_id" {
   description = "monitoring_external_sg ID"
 }
 
-output "aletmanager_external_sg_id" {
+output "alertmanager_external_sg_id" {
   value       = "${aws_security_group.alertmanager_external_sg.id}"
   description = "alertmanager_external_sg ID"
 }

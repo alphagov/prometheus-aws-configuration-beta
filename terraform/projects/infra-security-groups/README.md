@@ -22,7 +22,7 @@ and cascade issues.
 
 | Name | Description |
 |------|-------------|
-| aletmanager_external_sg_id | alertmanager_external_sg ID |
+| alertmanager_external_sg_id | alertmanager_external_sg ID |
 | monitoring_external_sg_id | monitoring_external_sg ID |
 | monitoring_internal_sg_id | monitoring_internal_sg ID |
 
