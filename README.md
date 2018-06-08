@@ -6,7 +6,8 @@ Terraform configuration to manage a Prometheus server running on AWS.
 
 ### Install Terraform
 
-    brew install terraform@0.11.7
+    brew install tfenv
+    tfenv install # this will pick up the version from .terraform-version
 
 ### Set up AWS Vault so you can assume AWS roles
 
