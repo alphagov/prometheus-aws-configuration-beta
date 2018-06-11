@@ -2,21 +2,10 @@ groups:
 - name: HTTP-SVC-BASE-CHECKS
   rules:
   - alert: RequestsReponseTimeBelow
-    expr: up{job="paas-targets"} == 0
+    expr: up{job="tools-test-app"} == 0
     for: 1m
     labels:
         severity: "P3"
     annotations:
         summary: "Service is taking longer than 2 seconds to respond"
         description: "The service name is {{ $labels.job }}. The URL under test is {{ $labels.instance }}"
-        #receivers:
-
-  - alert: RequestsReponseCheck
-    expr: up{job="dropwizard-example"} == 0
-    for: 4m
-    labels:
-        severity: "P3"
-    annotations:
-        summary: "Service is taking longer than 2 seconds to respond"
-        description: "The service name is {{ $labels.job }}. The URL under test is {{ $labels.instance }}"
-        #receivers:
