@@ -206,17 +206,17 @@ resource "aws_ecs_task_definition" "config_updater" {
 }
 
 resource "aws_s3_bucket_object" "prometheus-config" {
-  bucket                 = "${aws_s3_bucket.config_bucket.id}"
-  key                    = "prometheus/prometheus.yml"
-  content                = "${data.template_file.prometheus_config_file.rendered}"
-  server_side_encryption = "AES256"
+  bucket  = "${aws_s3_bucket.config_bucket.id}"
+  key     = "prometheus/prometheus.yml"
+  content = "${data.template_file.prometheus_config_file.rendered}"
+  etag    = "${md5(data.template_file.prometheus_config_file.rendered)}"
 }
 
 resource "aws_s3_bucket_object" "alerts-config" {
-  bucket                 = "${aws_s3_bucket.config_bucket.id}"
-  key                    = "prometheus/alerts/alerts.yml"
-  source                 = "config/alerts.yml"
-  server_side_encryption = "AES256"
+  bucket = "${aws_s3_bucket.config_bucket.id}"
+  key    = "prometheus/alerts/alerts.yml"
+  source = "config/alerts.yml"
+  etag   = "${md5(file("config/alerts.yml"))}"
 }
 
 #### nginx reverse proxy
@@ -230,27 +230,27 @@ data "template_file" "auth_proxy_config_file" {
 }
 
 resource "aws_s3_bucket_object" "nginx-reverse-proxy" {
-  bucket                 = "${aws_s3_bucket.config_bucket.id}"
-  key                    = "prometheus/auth-proxy/conf.d/prometheus-auth-proxy.conf"
-  content                = "${data.template_file.auth_proxy_config_file.rendered}"
-  server_side_encryption = "AES256"
+  bucket  = "${aws_s3_bucket.config_bucket.id}"
+  key     = "prometheus/auth-proxy/conf.d/prometheus-auth-proxy.conf"
+  content = "${data.template_file.auth_proxy_config_file.rendered}"
+  etag    = "${md5(data.template_file.auth_proxy_config_file.rendered)}"
 }
 
 # The htpasswd file is in bcrypt format, which is only supported
 # by the nginx:alpine image, not the plain nginx image
 # https://github.com/nginxinc/docker-nginx/issues/29
 resource "aws_s3_bucket_object" "nginx-htpasswd" {
-  bucket                 = "${aws_s3_bucket.config_bucket.id}"
-  key                    = "prometheus/auth-proxy/conf.d/.htpasswd"
-  source                 = "config/vhosts/.htpasswd"
-  server_side_encryption = "AES256"
+  bucket = "${aws_s3_bucket.config_bucket.id}"
+  key    = "prometheus/auth-proxy/conf.d/.htpasswd"
+  source = "config/vhosts/.htpasswd"
+  etag   = "${md5(file("config/vhosts/.htpasswd"))}"
 }
 
 #### paas proxy
 
 resource "aws_s3_bucket_object" "nginx-paas-proxy" {
-  bucket                 = "${aws_s3_bucket.config_bucket.id}"
-  key                    = "prometheus/paas-proxy/conf.d/prometheus-paas-proxy.conf"
-  source                 = "config/vhosts/paas-proxy.conf"
-  server_side_encryption = "AES256"
+  bucket = "${aws_s3_bucket.config_bucket.id}"
+  key    = "prometheus/paas-proxy/conf.d/prometheus-paas-proxy.conf"
+  source = "config/vhosts/paas-proxy.conf"
+  etag   = "${md5(file("config/vhosts/paas-proxy.conf"))}"
 }
