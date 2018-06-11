@@ -117,6 +117,34 @@ resource "aws_lb" "monitoring_internal_alb" {
   )}"
 }
 
+# AWS should manage the certificate renewal automatically
+# https://docs.aws.amazon.com/acm/latest/userguide/managed-renewal.html
+# If this fails, AWS will email associated with the AWS account
+resource "aws_acm_certificate" "monitoring_cert" {
+  domain_name       = "${data.terraform_remote_state.infra_networking.public_subdomain}"
+  validation_method = "DNS"
+  subject_alternative_names = ["${aws_route53_record.prom_alias.*.fqdn}", "${aws_route53_record.alerts_alias.*.fqdn}"]
+}
+
+resource "aws_route53_record" "monitoring_cert_validation" {
+  # Count is hardcoded due to https://github.com/hashicorp/terraform/issues/10857 meaning that we can
+  # not have a count based on a computed value on the first deploy. `7` represents one record for the
+  # aws_acm_certificate.monitoring_cert domain and six for it's subject_alternative_names (our prometheis and alertmanagers)
+  count = 7
+
+  name       = "${lookup(aws_acm_certificate.monitoring_cert.domain_validation_options[count.index], "resource_record_name")}"
+  type       = "${lookup(aws_acm_certificate.monitoring_cert.domain_validation_options[count.index], "resource_record_type")}"
+  zone_id    = "${data.terraform_remote_state.infra_networking.public_zone_id}"
+  records    = ["${lookup(aws_acm_certificate.monitoring_cert.domain_validation_options[count.index], "resource_record_value")}"]
+  ttl        = 60
+  depends_on = ["aws_acm_certificate.monitoring_cert"]
+}
+
+resource "aws_acm_certificate_validation" "monitoring_cert" {
+  certificate_arn         = "${aws_acm_certificate.monitoring_cert.arn}"
+  validation_record_fqdns = ["${aws_route53_record.monitoring_cert_validation.*.fqdn}"]
+}
+
 resource "aws_route53_record" "prom_alias" {
   count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
 
@@ -169,6 +197,19 @@ resource "aws_lb_listener" "nginx_auth_external_listener" {
   load_balancer_arn = "${aws_lb.nginx_auth_external_alb.arn}"
   port              = "80"
   protocol          = "HTTP"
+
+  default_action {
+    target_group_arn = "${aws_lb_target_group.nginx_auth_external_endpoint.0.arn}"
+    type             = "forward"
+  }
+}
+
+resource "aws_lb_listener" "nginx_auth_external_listener_https" {
+  load_balancer_arn = "${aws_lb.nginx_auth_external_alb.arn}"
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = "${aws_acm_certificate.monitoring_cert.arn}"
 
   default_action {
     target_group_arn = "${aws_lb_target_group.nginx_auth_external_endpoint.0.arn}"
