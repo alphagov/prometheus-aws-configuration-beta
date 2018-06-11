@@ -11,6 +11,12 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
+variable "dev_environment" {
+  type        = "string"
+  description = "Boolean flag for development environments"
+  default     = "true"
+}
+
 variable "remote_state_bucket" {
   type        = "string"
   description = "S3 bucket we store our terraform state in"
@@ -51,6 +57,15 @@ provider "template" {
   version = "~> 1.0.0"
 }
 
+provider "pass" {
+  store_dir = "~/.reng-pass"
+
+  # This pulls reng-pass from git to make sure we're using the most up to date credentials.
+  # If `reng-pass git pull` fails ten terraform will fail. Git fail for various
+  # reasons so if this becomes flakey we can set this to false and update reng-pass manually.
+  refresh_store = true
+}
+
 ## Data sources
 
 data "terraform_remote_state" "infra_networking" {
@@ -59,16 +74,6 @@ data "terraform_remote_state" "infra_networking" {
   config {
     bucket = "${var.remote_state_bucket}"
     key    = "infra-networking.tfstate"
-    region = "${var.aws_region}"
-  }
-}
-
-data "terraform_remote_state" "infra-networking" {
-  backend = "s3"
-
-  config {
-    bucket = "${var.remote_state_bucket}"
-    key    = "infra-networking-route53.tfstate"
     region = "${var.aws_region}"
   }
 }
@@ -107,6 +112,46 @@ resource "aws_s3_bucket" "config_bucket" {
   versioning {
     enabled = true
   }
+}
+
+resource "aws_s3_bucket_policy" "config_bucket_policy" {
+  /* As suggested by https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingServerSideEncryption.html
+  to ensure all objects in our config bucket are encrypted */
+
+  bucket = "${aws_s3_bucket.config_bucket.id}"
+
+  policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Id": "PutObjPolicy",
+  "Statement": [
+    {
+      "Sid": "DenyIncorrectEncryptionHeader",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::${aws_s3_bucket.config_bucket.id}/*",
+      "Condition": {
+        "StringNotEquals": {
+          "s3:x-amz-server-side-encryption": "AES256"
+        }
+      }
+    },
+    {
+      "Sid": "DenyUnEncryptedObjectUploads",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::${aws_s3_bucket.config_bucket.id}/*",
+      "Condition": {
+        "Null": {
+          "s3:x-amz-server-side-encryption": "true"
+        }
+      }
+    }
+  ]
+}
+POLICY
 }
 
 ## Outputs

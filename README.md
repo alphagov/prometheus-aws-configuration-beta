@@ -23,6 +23,16 @@ You should end up with something similar to this in your `.aws/config` file:
     role_arn=arn:aws:iam::<account-number>:role/<iam-role-name>
     mfa_serial=arn:aws:iam::<iam-user-id>:mfa/<iam-user-name>
 
+### Set up the `terraform-provider-pass` third-party Terraform plugin
+
+This acts as middleware between terraform and the reng-pass password store and enables us to pass secrets into terraform.
+
+```shell
+go get github.com/camptocamp/terraform-provider-pass
+GOBIN=~/.terraform.d/plugins/darwin_amd64 go install github.com/camptocamp/terraform-provider-pass
+```
+
+
 ### Developing with the `Makefile` or `setup.sh` shell script
 
 Before using the Makefile or shell script you will need to make a copy of the `environment_sample.sh` to `environment.sh`.
@@ -30,7 +40,8 @@ Before using the Makefile or shell script you will need to make a copy of the `e
 ```shell
 export TERRAFORM_BUCKET=<terraform state bucket name, should be unique or match `remote_state_bucket` in `tfvars` file for staging / production>
 export PROFILE_NAME=<your profile name in `~/.aws/config` to access RE AWS>
-export ENV=<your test environment, or `staging` / `production`>
+export ENV=<desired name of your test environment, or `staging` / `production`>
+export DEV_ENVIRONMENT=<'true' or 'false'>
 ```
 
 Applying or destroying the entire stack on the staging and production environments has been blocked but is possible on other development environments.

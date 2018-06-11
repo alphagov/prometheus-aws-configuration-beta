@@ -33,6 +33,7 @@ else
 cat <<EOF >stacks/${ENV}.tfvars
 remote_state_bucket = "${TERRAFORM_BUCKET}"
 stack_name = "${ENV}"
+dev_environment = "${DEV_ENVIRONMENT}"
 prometheus_subdomain = "${ENV}"
 additional_tags = {
   "Environment" = "${ENV}"
@@ -89,7 +90,7 @@ import_shared_dev_route53 () {
 remove_shared_dev_route53 () {
 # Remove the shared development route 53 zone from the state file
         echo "remove shared dev route53"
-        aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH state rm aws_route53_zone.shared_dev_subdomain
+        aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH state rm $SHARED_DEV_SUBDOMAIN_RESOURCE
 }
 
 init () {
@@ -116,7 +117,7 @@ apply () {
 
         # For development stacks, for the `infra-networking` project, ensure that
         # the shared_dev_route53 resource has been imported into terraform before applying
-        if [ $ENV != 'production' -a $ENV != 'staging' -a "$1" = 'infra-networking' ] ; then
+        if [ $DEV_ENVIRONMENT = 'true' -a "$1" = 'infra-networking' ] ; then
                 import_shared_dev_route53
         fi
 
@@ -131,7 +132,7 @@ destroy () {
 
         # For development stacks, for the `infra-networking` project,
         # remove the shared_dev_subdomain route53 state file
-        if [ $ENV != 'production' -a $ENV != 'staging' -a "$1" = 'infra-networking' ] ; then
+        if [ $DEV_ENVIRONMENT = 'true' -a "$1" = 'infra-networking' ] ; then
                 remove_shared_dev_route53
         fi
 
@@ -164,7 +165,10 @@ if [ -z "${PROFILE_NAME}" ] ; then
         echo "Please set your PROFILE_NAME environment variable";
         ENV_VARS_SET=0
 fi
-
+if [ -z "${DEV_ENVIRONMENT}" ] ; then
+        echo "Please set your DEV_ENVIRONMENT environment variable";
+        ENV_VARS_SET=0
+fi
 
 if [ "${ENV_VARS_SET}" = 0 ] ; then
         echo "Your environment hasn't been set correctly"
@@ -216,7 +220,7 @@ else
                         if [ $2 ] ; then
                                 apply $2
                         else
-                                if [ "${ENV}" = 'staging' -o "${ENV}" = 'production' ] ; then
+                                if [ $DEV_ENVIRONMENT != 'true' ] ; then
                                         echo "Cannot run terraform apply all on ${ENV}"
                                 else
                                         for folder in ${COMPONENTS[@]}
@@ -232,7 +236,7 @@ else
                         if [ $2 ] ; then
                                 destroy $2
                         else
-                                if [ "${ENV}" = 'staging' -o "${ENV}" = 'production' ] ; then
+                                if [ $DEV_ENVIRONMENT != 'true' ] ; then
                                         echo "Cannot run terraform destroy all on ${ENV}"
                                 else
                                         read -p 'Are you sure? (yN)' answer

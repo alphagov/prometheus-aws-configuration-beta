@@ -106,9 +106,25 @@ resource "aws_ecs_service" "alertmanager_server" {
 
 #### alertmanager
 
+data "pass_password" "pagerduty_service_key" {
+  path = "pagerduty/integration-keys/production"
+}
+
+data "template_file" "alertmanager_config_file" {
+  template = "${file("templates/alertmanager.tpl")}"
+
+  vars {
+    pagerduty_service_key = "${data.pass_password.pagerduty_service_key.password}"
+  }
+}
+
+data "template_file" "alertmanager_dev_config_file" {
+  template = "${file("templates/alertmanager-dev.tpl")}"
+}
+
 resource "aws_s3_bucket_object" "alertmanager" {
-  bucket = "${aws_s3_bucket.config_bucket.id}"
-  key    = "alertmanager/alertmanager.yml"
-  source = "config/alertmanager.yml"
-  etag   = "${md5(file("config/alertmanager.yml"))}"
+  bucket                 = "${aws_s3_bucket.config_bucket.id}"
+  key                    = "alertmanager/alertmanager.yml"
+  content                = "${var.dev_environment == "true" ? data.template_file.alertmanager_dev_config_file.rendered : data.template_file.alertmanager_config_file.rendered}"
+  server_side_encryption = "AES256"
 }
