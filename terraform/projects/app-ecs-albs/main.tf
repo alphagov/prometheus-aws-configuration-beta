@@ -182,6 +182,48 @@ resource "aws_lb_listener" "nginx_auth_external_listener" {
   }
 }
 
+resource "aws_lb_listener_rule" "prom_public_listener" {
+  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+
+  listener_arn = "${element(aws_lb_listener.nginx_auth_external_listener.*.arn, count.index)}"
+  priority     = "${200 + count.index}"
+
+  action {
+    type             = "forward"
+    target_group_arn = "${element(aws_lb_target_group.nginx_auth_external_endpoint.*.arn, count.index)}"
+  }
+
+  condition {
+    field = "host-header"
+
+    values = [
+      "prom-${count.index}.*",
+    ]
+  }
+}
+
+resource "aws_lb_listener_rule" "alerts_public_listener" {
+  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+
+  listener_arn = "${element(aws_lb_listener.nginx_auth_external_listener.*.arn, count.index)}"
+  priority     = "${100 + count.index}"
+
+  action {
+    type             = "forward"
+    target_group_arn = "${element(aws_lb_target_group.nginx_auth_external_endpoint.*.arn, count.index)}"
+  }
+
+  condition {
+    field = "host-header"
+
+    values = [
+      "alerts-${count.index}.*",
+    ]
+  }
+}
+
+
+
 
 resource "aws_lb_target_group" "alertmanager_internal_endpoint" {
   count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
