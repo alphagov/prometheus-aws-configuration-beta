@@ -18,7 +18,7 @@ server {
     return 200 "Static health check";
   }
 
-  resolver 8.8.8.8 valid=10s;
+  resolver 10.0.0.2 valid=10s;
 }
 
 server {
@@ -29,13 +29,14 @@ server {
 
   server_name ~(alert*);
 
+  set $alert "${alertmanager_dns_name}";
 
   location / {
-    proxy_pass http://${alertmanager_dns_name}/;
+    proxy_pass  http://$alert;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
   }
 
-  resolver 8.8.8.8 valid=10s;
+  resolver 10.0.0.2 valid=10s;
 }

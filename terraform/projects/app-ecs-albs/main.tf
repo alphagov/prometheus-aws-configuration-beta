@@ -82,9 +82,7 @@ data "terraform_remote_state" "infra_security_groups" {
 ## Resources
 
 resource "aws_lb" "nginx_auth_external_alb" {
-  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
-
-  name               = "${var.stack_name}-external-alb-${count.index + 1}"
+  name               = "${var.stack_name}-external-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = ["${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}"]
@@ -97,14 +95,14 @@ resource "aws_lb" "nginx_auth_external_alb" {
     local.default_tags,
     var.additional_tags,
     map("Stackname", "${var.stack_name}"),
-    map("Name", "${var.stack_name}-prometheus-external-${count.index + 1}")
+    map("Name", "${var.stack_name}-prometheus-external")
   )}"
 }
 
 resource "aws_lb" "monitoring_internal_alb" {
-  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
-  
-  name               = "${var.stack_name}-internal-alb-${count.index}"
+  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+
+  name               = "${var.stack_name}-internal-alb-${count.index + 1}"
   internal           = true
   load_balancer_type = "application"
   security_groups    = ["${data.terraform_remote_state.infra_security_groups.alertmanager_external_sg_id}"]
@@ -117,7 +115,7 @@ resource "aws_lb" "monitoring_internal_alb" {
     local.default_tags,
     var.additional_tags,
     map("Stackname", "${var.stack_name}"),
-    map("Name", "${var.stack_name}-monitoring-internal-${count.index}")
+    map("Name", "${var.stack_name}-monitoring-internal-${count.index + 1}")
   )}"
 }
 
@@ -129,8 +127,8 @@ resource "aws_route53_record" "prom_alias" {
   type    = "A"
 
   alias {
-    name                   = "${element(aws_lb.nginx_auth_external_alb.*.dns_name, count.index)}"
-    zone_id                = "${element(aws_lb.nginx_auth_external_alb.*.zone_id, count.index)}"
+    name                   = "${aws_lb.nginx_auth_external_alb.dns_name}"
+    zone_id                = "${aws_lb.nginx_auth_external_alb.zone_id}"
     evaluate_target_health = false
   }
 }
@@ -143,8 +141,8 @@ resource "aws_route53_record" "alerts_alias" {
   type    = "A"
 
   alias {
-    name                   = "${element(aws_lb.nginx_auth_external_alb.*.dns_name, count.index)}"
-    zone_id                = "${element(aws_lb.nginx_auth_external_alb.*.zone_id, count.index)}"
+    name                   = "${aws_lb.nginx_auth_external_alb.dns_name}"
+    zone_id                = "${aws_lb.nginx_auth_external_alb.zone_id}"
     evaluate_target_health = false
   }
 }
@@ -170,14 +168,12 @@ resource "aws_lb_target_group" "nginx_auth_external_endpoint" {
 }
 
 resource "aws_lb_listener" "nginx_auth_external_listener" {
-  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
-
-  load_balancer_arn = "${element(aws_lb.nginx_auth_external_alb.*.arn, count.index)}"
+  load_balancer_arn = "${aws_lb.nginx_auth_external_alb.arn}"
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = "${element(aws_lb_target_group.nginx_auth_external_endpoint.*.arn, count.index)}"
+    target_group_arn = "${aws_lb_target_group.nginx_auth_external_endpoint.0.arn}"
     type             = "forward"
   }
 }
@@ -185,7 +181,7 @@ resource "aws_lb_listener" "nginx_auth_external_listener" {
 resource "aws_lb_listener_rule" "prom_public_listener" {
   count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
 
-  listener_arn = "${element(aws_lb_listener.nginx_auth_external_listener.*.arn, count.index)}"
+  listener_arn = "${aws_lb_listener.nginx_auth_external_listener.arn}"
   priority     = "${200 + count.index}"
 
   action {
@@ -205,7 +201,7 @@ resource "aws_lb_listener_rule" "prom_public_listener" {
 resource "aws_lb_listener_rule" "alerts_public_listener" {
   count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
 
-  listener_arn = "${element(aws_lb_listener.nginx_auth_external_listener.*.arn, count.index)}"
+  listener_arn = "${aws_lb_listener.nginx_auth_external_listener.arn}"
   priority     = "${100 + count.index}"
 
   action {
@@ -221,9 +217,6 @@ resource "aws_lb_listener_rule" "alerts_public_listener" {
     ]
   }
 }
-
-
-
 
 resource "aws_lb_target_group" "alertmanager_internal_endpoint" {
   count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
