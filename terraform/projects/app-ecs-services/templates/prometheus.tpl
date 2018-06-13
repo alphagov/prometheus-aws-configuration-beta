@@ -19,7 +19,7 @@ scrape_configs:
       - targets: ["${alertmanager_dns_name}"]
   - job_name: paas-targets
     scheme: http
-    proxy_url: 'http://${alertmanager_dns_name}:8080'
+    proxy_url: 'http://${paas_proxy_dns_name}:8080'
     file_sd_configs:
       - files: ['/etc/prometheus/targets/*.json']
         refresh_interval: 30s

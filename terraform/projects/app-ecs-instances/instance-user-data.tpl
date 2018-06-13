@@ -5,12 +5,16 @@ sudo yum install -y aws-cli wget
 
 REGION="${region}"
 DEVICE="xvdf"
-VOLUME_ID="${volume_id}"
+VOLUME_IDS="${volume_ids}"
 
 echo "[$(date '+%H:%M:%S %d-%m-%Y')] finding current instance ID"
 INSTANCE_ID="`wget -q -O - http://169.254.169.254/latest/meta-data/instance-id`"
 
-echo "[$(date '+%H:%M:%S %d-%m-%Y')] attaching volume"
+echo "[$(date '+%H:%M:%S %d-%m-%Y')] finding volume to attach"
+AZ="$(wget -q -O - http://169.254.169.254/latest/meta-data/placement/availability-zone)"
+VOLUME_ID="$(aws ec2 describe-volumes --filters Name=availability-zone,Values=$AZ --volume-ids $VOLUME_IDS --region $REGION --query Volumes[*].VolumeId --output text)"
+
+echo "[$(date '+%H:%M:%S %d-%m-%Y')] attaching volume: $VOLUME_ID"
 aws ec2 attach-volume --volume-id $VOLUME_ID --instance-id $INSTANCE_ID --device /dev/$DEVICE --region $REGION
 
 # Waiting for volume to finish attaching

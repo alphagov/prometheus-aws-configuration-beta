@@ -20,19 +20,19 @@ variable "aws_region" {
 variable "autoscaling_group_min_size" {
   type        = "string"
   description = "Minimum desired number of ECS container instances"
-  default     = 1
+  default     = 3
 }
 
 variable "autoscaling_group_max_size" {
   type        = "string"
   description = "Maximum desired number of ECS container instances"
-  default     = 1
+  default     = 3
 }
 
 variable "autoscaling_group_desired_capacity" {
   type        = "string"
   description = "Desired number of ECS container instances"
-  default     = 1
+  default     = 3
 }
 
 variable "ecs_image_id" {
@@ -138,7 +138,7 @@ data "template_file" "instance_user_data" {
 
   vars {
     cluster_name = "${local.cluster_name}"
-    volume_id    = "${aws_ebs_volume.prometheus_ebs_volume.id}"
+    volume_ids   = "${join(" ", aws_ebs_volume.prometheus_ebs_volume.*.id)}"
     region       = "${var.aws_region}"
   }
 }
@@ -146,12 +146,12 @@ data "template_file" "instance_user_data" {
 module "ecs_instance" {
   source = "terraform-aws-modules/autoscaling/aws"
 
-  name = "${var.stack_name}-ecs-instance"
+  name = "${var.stack_name}-ecs-instances"
 
   key_name = "${var.ecs_instance_ssh_keyname}"
 
   # Launch configuration
-  lc_name = "${var.stack_name}-ecs-instance"
+  lc_name = "${var.stack_name}-ecs-instances"
 
   image_id             = "${var.ecs_image_id}"
   instance_type        = "${var.ecs_instance_type}"
@@ -169,7 +169,7 @@ module "ecs_instance" {
 
   # Auto scaling group
   asg_name                  = "${var.stack_name}-ecs-instance"
-  vpc_zone_identifier       = ["${element(data.terraform_remote_state.infra_networking.private_subnets, 0)}"]
+  vpc_zone_identifier       = ["${data.terraform_remote_state.infra_networking.private_subnets}"]
   health_check_type         = "EC2"
   min_size                  = "${var.autoscaling_group_min_size}"
   max_size                  = "${var.autoscaling_group_max_size}"
@@ -185,7 +185,9 @@ module "ecs_instance" {
 }
 
 resource "aws_ebs_volume" "prometheus_ebs_volume" {
-  availability_zone = "${element(data.terraform_remote_state.infra_networking.az_names, 0)}"
+  count = "${length(data.terraform_remote_state.infra_networking.az_names)}"
+
+  availability_zone = "${element(data.terraform_remote_state.infra_networking.az_names, count.index)}"
   size              = 500
   type              = "gp2"
 

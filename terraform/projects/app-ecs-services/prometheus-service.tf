@@ -81,7 +81,8 @@ data "template_file" "prometheus_config_file" {
   template = "${file("templates/prometheus.tpl")}"
 
   vars {
-    alertmanager_dns_name = "${data.terraform_remote_state.app_ecs_albs.alertmanager_alb_dns}"
+    alertmanager_dns_name = "${join("\",\"", data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdn)}"
+    paas_proxy_dns_name   = "${join("\",\"", data.terraform_remote_state.app_ecs_albs.paas_proxy_private_record_fqdn)}"
   }
 }
 
@@ -151,26 +152,29 @@ resource "aws_ecs_task_definition" "paas_proxy" {
 }
 
 resource "aws_ecs_service" "prometheus_server" {
-  name            = "${var.stack_name}-prometheus-server"
+  count = "${length(data.terraform_remote_state.app_ecs_albs.monitoring_external_tg)}"
+
+  name            = "${var.stack_name}-prometheus-server-${count.index}"
   cluster         = "${var.stack_name}-ecs-monitoring"
   task_definition = "${aws_ecs_task_definition.prometheus_server.arn}"
   desired_count   = 1
 
   load_balancer {
-    target_group_arn = "${data.terraform_remote_state.app_ecs_albs.monitoring_external_tg}"
+    target_group_arn = "${element(data.terraform_remote_state.app_ecs_albs.monitoring_external_tg, count.index)}"
     container_name   = "auth-proxy"
     container_port   = 9090
   }
 }
 
 resource "aws_ecs_service" "paas_proxy_service" {
-  name            = "${var.stack_name}-paas-proxy"
+  count           = 3
+  name            = "${var.stack_name}-paas-proxy-${count.index}"
   cluster         = "${var.stack_name}-ecs-monitoring"
   task_definition = "${aws_ecs_task_definition.paas_proxy.arn}"
   desired_count   = 1
 
   load_balancer {
-    target_group_arn = "${data.terraform_remote_state.app_ecs_albs.pass_proxy_tg}"
+    target_group_arn = "${data.terraform_remote_state.app_ecs_albs.paas_proxy_tg}"
     container_name   = "paas-proxy"
     container_port   = 8080
   }
@@ -180,7 +184,7 @@ resource "aws_ecs_service" "config_updater" {
   name            = "${var.stack_name}-targets-grabber"
   cluster         = "${var.stack_name}-ecs-monitoring"
   task_definition = "${aws_ecs_task_definition.config_updater.arn}"
-  desired_count   = 1
+  desired_count   = 3
 }
 
 data "template_file" "config_updater_defn" {
@@ -225,7 +229,9 @@ data "template_file" "auth_proxy_config_file" {
   template = "${file("templates/auth-proxy.conf.tpl")}"
 
   vars {
-    alertmanager_dns_name = "${data.terraform_remote_state.app_ecs_albs.alertmanager_alb_dns}"
+    alertmanager_1_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdn.0}"
+    alertmanager_2_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdn.1}"
+    alertmanager_3_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdn.2}"
   }
 }
 
