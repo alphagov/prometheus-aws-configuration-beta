@@ -47,6 +47,8 @@ locals {
 
   shared_dev_subdomain_name = "dev.gds-reliability.engineering"
   subdomain_name            = "${var.dev_environment == "true" ? "${var.prometheus_subdomain}.${local.shared_dev_subdomain_name}" : "${var.prometheus_subdomain}.gds-reliability.engineering"}"
+  shared_dev_private_name   = "dev.monitoring.private"
+  private_subdomain_name    = "${var.stack_name}.${local.shared_dev_private_name}"
 }
 
 ## Providers
@@ -84,6 +86,12 @@ module "vpc" {
 
   enable_nat_gateway = true
 
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+
+  enable_dhcp_options      = true
+  dhcp_options_domain_name = "${local.private_subdomain_name}"
+
   # no `Name` tag unlike other resources as this is taken care of by the vpc module `name` property
   tags = "${merge(
     local.default_tags,
@@ -94,6 +102,11 @@ module "vpc" {
 
 resource "aws_route53_zone" "subdomain" {
   name = "${local.subdomain_name}"
+}
+
+resource "aws_route53_zone" "private" {
+  vpc_id = "${module.vpc.vpc_id}"
+  name   = "${local.private_subdomain_name}"
 }
 
 ## Development resources
@@ -146,6 +159,11 @@ output "public_subnets" {
 output "public_zone_id" {
   value       = "${aws_route53_zone.subdomain.zone_id}"
   description = "Route 53 Zone ID for publicly visible zone"
+}
+
+output "private_zone_id" {
+  value       = "${aws_route53_zone.private.zone_id}"
+  description = "Route 53 Zone ID for the internal zone"
 }
 
 output "private_subnets_ips" {

@@ -100,9 +100,7 @@ resource "aws_lb" "nginx_auth_external_alb" {
 }
 
 resource "aws_lb" "monitoring_internal_alb" {
-  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
-
-  name               = "${var.stack_name}-internal-alb-${count.index + 1}"
+  name               = "${var.stack_name}-internal-alb"
   internal           = true
   load_balancer_type = "application"
   security_groups    = ["${data.terraform_remote_state.infra_security_groups.alertmanager_external_sg_id}"]
@@ -193,7 +191,7 @@ resource "aws_lb_listener_rule" "prom_public_listener" {
     field = "host-header"
 
     values = [
-      "prom-${count.index}.*",
+      "prom-${count.index + 1}.*",
     ]
   }
 }
@@ -213,7 +211,7 @@ resource "aws_lb_listener_rule" "alerts_public_listener" {
     field = "host-header"
 
     values = [
-      "alerts-${count.index}.*",
+      "alerts-${count.index + 1}.*",
     ]
   }
 }
@@ -238,14 +236,12 @@ resource "aws_lb_target_group" "alertmanager_internal_endpoint" {
 }
 
 resource "aws_lb_listener" "alertmanager_internal_listener" {
-  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
-
-  load_balancer_arn = "${element(aws_lb.monitoring_internal_alb.*.arn, count.index)}"
+  load_balancer_arn = "${aws_lb.monitoring_internal_alb.arn}"
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = "${element(aws_lb_target_group.alertmanager_internal_endpoint.*.arn, count.index)}"
+    target_group_arn = "${aws_lb_target_group.alertmanager_internal_endpoint.0.arn}"
     type             = "forward"
   }
 }
@@ -270,15 +266,28 @@ resource "aws_lb_target_group" "paas_proxy_internal_endpoint" {
 }
 
 resource "aws_lb_listener" "paas_proxy_internal_listener" {
-  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
-
-  load_balancer_arn = "${element(aws_lb.monitoring_internal_alb.*.arn, count.index)}"
+  load_balancer_arn = "${aws_lb.monitoring_internal_alb.arn}"
   port              = "8080"
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = "${element(aws_lb_target_group.paas_proxy_internal_endpoint.*.arn, count.index)}"
+    target_group_arn = "${aws_lb_target_group.paas_proxy_internal_endpoint.0.arn}"
     type             = "forward"
+  }
+}
+
+
+resource "aws_route53_record" "alerts_private_record" {
+  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
+
+  zone_id = "${data.terraform_remote_state.infra_networking.private_zone_id}"
+  name    = "alerts-${count.index + 1}"
+  type    = "A"
+
+  alias {
+    name                   = "${aws_lb.monitoring_internal_alb.dns_name}"
+    zone_id                = "${aws_lb.monitoring_internal_alb.zone_id}"
+    evaluate_target_health = false
   }
 }
 
@@ -328,4 +337,9 @@ output "paas_proxy_alb_dns" {
 output "pass_proxy_tg" {
   value       = "${aws_lb_target_group.paas_proxy_internal_endpoint.*.arn}"
   description = "Paas proxy target group"
+}
+
+output "alerts_private_record_fqdn" {
+  value       = "${aws_route53_record.alerts_private_record.*.fqdn}"
+  description = "Alert Managers private DNS fqdn"
 }

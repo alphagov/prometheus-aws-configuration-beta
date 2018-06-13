@@ -228,7 +228,7 @@ data "template_file" "auth_proxy_config_file" {
   template = "${file("templates/auth-proxy.conf.tpl")}"
 
   vars {
-    alertmanager_dns_name = "${data.terraform_remote_state.app_ecs_albs.alertmanager_alb_dns[0]}"
+    alertmanager_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdn.0}"
   }
 }
 
