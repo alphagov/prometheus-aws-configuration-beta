@@ -47,8 +47,7 @@ locals {
 
   shared_dev_subdomain_name = "dev.gds-reliability.engineering"
   subdomain_name            = "${var.dev_environment == "true" ? "${var.prometheus_subdomain}.${local.shared_dev_subdomain_name}" : "${var.prometheus_subdomain}.gds-reliability.engineering"}"
-  shared_dev_private_name   = "dev.monitoring.private"
-  private_subdomain_name    = "${var.stack_name}.${local.shared_dev_private_name}"
+  private_subdomain_name    = "${var.stack_name}.monitoring.private"
 }
 
 ## Providers
