@@ -105,7 +105,7 @@ resource "aws_lb" "monitoring_internal_alb" {
   load_balancer_type = "application"
   security_groups    = ["${data.terraform_remote_state.infra_security_groups.alertmanager_external_sg_id}"]
 
-  subnets = [ 
+  subnets = [
     "${data.terraform_remote_state.infra_networking.private_subnets}",
   ]
 
@@ -133,7 +133,7 @@ resource "aws_route53_record" "prom_alias" {
 
 resource "aws_route53_record" "alerts_alias" {
   count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
-  
+
   zone_id = "${data.terraform_remote_state.infra_networking.public_zone_id}"
   name    = "alerts-${count.index + 1}"
   type    = "A"
@@ -293,7 +293,6 @@ resource "aws_lb_listener" "paas_proxy_internal_listener" {
     type             = "forward"
   }
 }
-
 
 resource "aws_route53_record" "alerts_private_record" {
   count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
