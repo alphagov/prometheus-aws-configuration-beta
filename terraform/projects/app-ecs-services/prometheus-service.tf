@@ -81,7 +81,8 @@ data "template_file" "prometheus_config_file" {
   template = "${file("templates/prometheus.tpl")}"
 
   vars {
-    alertmanager_dns_name = "${join("\",\"", data.terraform_remote_state.app_ecs_albs.alertmanager_alb_dns)}"
+    alertmanager_dns_name = "${join("\",\"", data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdn)}"
+    paas_proxy_dns_name = "${join("\",\"", data.terraform_remote_state.app_ecs_albs.paas_proxy_private_record_fqdn)}"
   }
 }
 
@@ -173,7 +174,7 @@ resource "aws_ecs_service" "paas_proxy_service" {
   desired_count   = 1
 
   load_balancer {
-    target_group_arn = "${element(data.terraform_remote_state.app_ecs_albs.pass_proxy_tg, count.index)}"
+    target_group_arn = "${data.terraform_remote_state.app_ecs_albs.paas_proxy_tg}"
     container_name   = "paas-proxy"
     container_port   = 8080
   }
