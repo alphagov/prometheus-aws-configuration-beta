@@ -246,6 +246,26 @@ resource "aws_lb_listener" "alertmanager_internal_listener" {
   }
 }
 
+resource "aws_lb_listener_rule" "alerts_private_listener" {
+  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
+
+  listener_arn = "${aws_lb_listener.alertmanager_internal_listener.arn}"
+  priority     = "${100 + count.index}"
+
+  action {
+    type             = "forward"
+    target_group_arn = "${element(aws_lb_target_group.alertmanager_internal_endpoint.*.arn, count.index)}"
+  }
+
+  condition {
+    field = "host-header"
+
+    values = [
+      "alerts-${count.index + 1}.*",
+    ]
+  }
+}
+
 resource "aws_lb_target_group" "paas_proxy_internal_endpoint" {
   count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
 
