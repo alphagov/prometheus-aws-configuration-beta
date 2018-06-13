@@ -118,11 +118,6 @@ resource "aws_ecs_task_definition" "prometheus_server" {
     host_path = "/ecs/config-from-s3/auth-proxy/conf.d"
   }
 
-  volume {
-    name      = "paas-proxy"
-    host_path = "/ecs/config-from-s3/paas-proxy/conf.d"
-  }
-
   # We mount this at /prometheus which is the expected location for the prom/prometheus docker image
   volume {
     name      = "prometheus-timeseries-storage"
