@@ -127,10 +127,8 @@ resource "aws_acm_certificate" "monitoring_cert" {
 }
 
 resource "aws_route53_record" "monitoring_cert_validation" {
-  # Count is hardcoded due to https://github.com/hashicorp/terraform/issues/10857 meaning that we can
-  # not have a count based on a computed value on the first deploy. `7` represents one record for the
-  # aws_acm_certificate.monitoring_cert domain and six for it's subject_alternative_names (our prometheis and alertmanagers)
-  count = 7
+  # Count matches the domain_name plus each `subject_alternative_domain`
+  count = "${1 + length(concat(aws_route53_record.prom_alias.*.fqdn, aws_route53_record.alerts_alias.*.fqdn))}"
 
   name       = "${lookup(aws_acm_certificate.monitoring_cert.domain_validation_options[count.index], "resource_record_name")}"
   type       = "${lookup(aws_acm_certificate.monitoring_cert.domain_validation_options[count.index], "resource_record_type")}"
