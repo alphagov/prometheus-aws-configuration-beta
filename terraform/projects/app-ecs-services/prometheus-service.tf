@@ -118,11 +118,6 @@ resource "aws_ecs_task_definition" "prometheus_server" {
     host_path = "/ecs/config-from-s3/auth-proxy/conf.d"
   }
 
-  volume {
-    name      = "paas-proxy"
-    host_path = "/ecs/config-from-s3/paas-proxy/conf.d"
-  }
-
   # We mount this at /prometheus which is the expected location for the prom/prometheus docker image
   volume {
     name      = "prometheus-timeseries-storage"
@@ -167,16 +162,20 @@ resource "aws_ecs_service" "prometheus_server" {
 }
 
 resource "aws_ecs_service" "paas_proxy_service" {
-  count           = 3
-  name            = "${var.stack_name}-paas-proxy-${count.index}"
+  name            = "${var.stack_name}-paas-proxy"
   cluster         = "${var.stack_name}-ecs-monitoring"
   task_definition = "${aws_ecs_task_definition.paas_proxy.arn}"
-  desired_count   = 1
+  desired_count   = 3
 
   load_balancer {
     target_group_arn = "${data.terraform_remote_state.app_ecs_albs.paas_proxy_tg}"
     container_name   = "paas-proxy"
     container_port   = 8080
+  }
+
+  ordered_placement_strategy {
+    type  = "spread"
+    field = "attribute:ecs.availability-zone"
   }
 }
 
