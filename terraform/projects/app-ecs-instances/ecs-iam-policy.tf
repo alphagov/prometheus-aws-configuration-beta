@@ -60,14 +60,6 @@ data "aws_iam_policy_document" "ecs_instance_document" {
       "ec2:DetachVolume",
     ]
   }
-
-  statement {
-    resources = ["*"]
-
-    actions = [
-      "ec2:DescribeVolumes",
-    ]
-  }
 }
 
 resource "aws_iam_policy" "ecs_instance_policy" {

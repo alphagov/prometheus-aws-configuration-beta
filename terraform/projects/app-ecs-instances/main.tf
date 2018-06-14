@@ -17,24 +17,6 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
-variable "autoscaling_group_min_size" {
-  type        = "string"
-  description = "Minimum desired number of ECS container instances"
-  default     = 3
-}
-
-variable "autoscaling_group_max_size" {
-  type        = "string"
-  description = "Maximum desired number of ECS container instances"
-  default     = 3
-}
-
-variable "autoscaling_group_desired_capacity" {
-  type        = "string"
-  description = "Desired number of ECS container instances"
-  default     = 3
-}
-
 variable "ecs_image_id" {
   type        = "string"
   description = "AMI ID to use for the ECS container instances"
@@ -127,6 +109,11 @@ data "terraform_remote_state" "infra_security_groups" {
   }
 }
 
+data "aws_subnet" "private_subnets" {
+  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
+  id    = "${data.terraform_remote_state.infra_networking.private_subnets[count.index]}"
+}
+
 ## Resources
 
 resource "aws_ecs_cluster" "prometheus_cluster" {
@@ -134,24 +121,27 @@ resource "aws_ecs_cluster" "prometheus_cluster" {
 }
 
 data "template_file" "instance_user_data" {
+  count = 3
+
   template = "${file("instance-user-data.tpl")}"
 
   vars {
-    cluster_name = "${local.cluster_name}"
-    volume_ids   = "${join(" ", aws_ebs_volume.prometheus_ebs_volume.*.id)}"
-    region       = "${var.aws_region}"
+    cluster_name  = "${local.cluster_name}"
+    prom_instance = "prom-${count.index}"
+    volume_id     = "${element(aws_ebs_volume.prometheus_ebs_volume.*.id, count.index)}"
+    region        = "${var.aws_region}"
   }
 }
 
-module "ecs_instance" {
+module "ecs_instance_0" {
   source = "terraform-aws-modules/autoscaling/aws"
 
-  name = "${var.stack_name}-ecs-instances"
+  name = "${var.stack_name}-ecs-instance-0"
 
   key_name = "${var.ecs_instance_ssh_keyname}"
 
   # Launch configuration
-  lc_name = "${var.stack_name}-ecs-instances"
+  lc_name = "${var.stack_name}-ecs-instance-0"
 
   image_id             = "${var.ecs_image_id}"
   instance_type        = "${var.ecs_instance_type}"
@@ -165,29 +155,111 @@ module "ecs_instance" {
     },
   ]
 
-  user_data = "${data.template_file.instance_user_data.rendered}"
+  user_data = "${data.template_file.instance_user_data.0.rendered}"
 
   # Auto scaling group
   asg_name                  = "${var.stack_name}-ecs-instance"
-  vpc_zone_identifier       = ["${data.terraform_remote_state.infra_networking.private_subnets}"]
+  vpc_zone_identifier       = ["${data.aws_subnet.private_subnets.0.id}"]
   health_check_type         = "EC2"
-  min_size                  = "${var.autoscaling_group_min_size}"
-  max_size                  = "${var.autoscaling_group_max_size}"
-  desired_capacity          = "${var.autoscaling_group_desired_capacity}"
+  min_size                  = 1
+  max_size                  = 1
+  desired_capacity          = 1
   wait_for_capacity_timeout = 0
 
   tags_as_map = "${merge(
     local.default_tags,
     var.additional_tags,
     map("Stackname", "${var.stack_name}"),
-    map("Name", "${var.stack_name}-ecs-instance")
+    map("Name", "${var.stack_name}-ecs-instance-0")
+  )}"
+}
+
+module "ecs_instance_1" {
+  source = "terraform-aws-modules/autoscaling/aws"
+
+  name = "${var.stack_name}-ecs-instance-1"
+
+  key_name = "${var.ecs_instance_ssh_keyname}"
+
+  # Launch configuration
+  lc_name = "${var.stack_name}-ecs-instance-1"
+
+  image_id             = "${var.ecs_image_id}"
+  instance_type        = "${var.ecs_instance_type}"
+  security_groups      = ["${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}"]
+  iam_instance_profile = "${var.stack_name}-ecs-profile"
+
+  root_block_device = [
+    {
+      volume_size = "${var.ecs_instance_root_size}"
+      volume_type = "gp2"
+    },
+  ]
+
+  user_data = "${data.template_file.instance_user_data.1.rendered}"
+
+  # Auto scaling group
+  asg_name                  = "${var.stack_name}-ecs-instance"
+  vpc_zone_identifier       = ["${data.aws_subnet.private_subnets.1.id}"]
+  health_check_type         = "EC2"
+  min_size                  = 1
+  max_size                  = 1
+  desired_capacity          = 1
+  wait_for_capacity_timeout = 0
+
+  tags_as_map = "${merge(
+    local.default_tags,
+    var.additional_tags,
+    map("Stackname", "${var.stack_name}"),
+    map("Name", "${var.stack_name}-ecs-instance-1")
+  )}"
+}
+
+module "ecs_instance_2" {
+  source = "terraform-aws-modules/autoscaling/aws"
+
+  name = "${var.stack_name}-ecs-instance-2"
+
+  key_name = "${var.ecs_instance_ssh_keyname}"
+
+  # Launch configuration
+  lc_name = "${var.stack_name}-ecs-instance-2"
+
+  image_id             = "${var.ecs_image_id}"
+  instance_type        = "${var.ecs_instance_type}"
+  security_groups      = ["${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}"]
+  iam_instance_profile = "${var.stack_name}-ecs-profile"
+
+  root_block_device = [
+    {
+      volume_size = "${var.ecs_instance_root_size}"
+      volume_type = "gp2"
+    },
+  ]
+
+  user_data = "${data.template_file.instance_user_data.2.rendered}"
+
+  # Auto scaling group
+  asg_name                  = "${var.stack_name}-ecs-instance"
+  vpc_zone_identifier       = ["${data.aws_subnet.private_subnets.2.id}"]
+  health_check_type         = "EC2"
+  min_size                  = 1
+  max_size                  = 1
+  desired_capacity          = 1
+  wait_for_capacity_timeout = 0
+
+  tags_as_map = "${merge(
+    local.default_tags,
+    var.additional_tags,
+    map("Stackname", "${var.stack_name}"),
+    map("Name", "${var.stack_name}-ecs-instance-2")
   )}"
 }
 
 resource "aws_ebs_volume" "prometheus_ebs_volume" {
-  count = "${length(data.terraform_remote_state.infra_networking.az_names)}"
+  count = 3
 
-  availability_zone = "${element(data.terraform_remote_state.infra_networking.az_names, count.index)}"
+  availability_zone = "${element(data.aws_subnet.private_subnets.*.availability_zone, count.index)}"
   size              = 500
   type              = "gp2"
 
@@ -207,11 +279,4 @@ resource "aws_ebs_volume" "prometheus_ebs_volume" {
     map("Stackname", "${var.stack_name}"),
     map("Name", "${var.stack_name}-prometheus-ebs-volume")
   )}"
-}
-
-## Outputs
-
-output "ecs_instance_asg_id" {
-  value       = "${module.ecs_instance.this_autoscaling_group_id}"
-  description = "ecs-instance ASG ID"
 }

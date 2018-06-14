@@ -5,16 +5,12 @@ sudo yum install -y aws-cli wget
 
 REGION="${region}"
 DEVICE="xvdf"
-VOLUME_IDS="${volume_ids}"
+VOLUME_ID="${volume_id}"
 
 echo "[$(date '+%H:%M:%S %d-%m-%Y')] finding current instance ID"
 INSTANCE_ID="`wget -q -O - http://169.254.169.254/latest/meta-data/instance-id`"
 
-echo "[$(date '+%H:%M:%S %d-%m-%Y')] finding volume to attach"
-AZ="$(wget -q -O - http://169.254.169.254/latest/meta-data/placement/availability-zone)"
-VOLUME_ID="$(aws ec2 describe-volumes --filters Name=availability-zone,Values=$AZ --volume-ids $VOLUME_IDS --region $REGION --query Volumes[*].VolumeId --output text)"
-
-echo "[$(date '+%H:%M:%S %d-%m-%Y')] attaching volume: $VOLUME_ID"
+echo "[$(date '+%H:%M:%S %d-%m-%Y')] attaching volume"
 aws ec2 attach-volume --volume-id $VOLUME_ID --instance-id $INSTANCE_ID --device /dev/$DEVICE --region $REGION
 
 # Waiting for volume to finish attaching
@@ -52,7 +48,10 @@ chown prometheus:prometheus /ecs/prometheus_data
 chmod -R 760 /ecs/prometheus_data
 
 # Set any ECS agent configuration options
-echo 'ECS_CLUSTER=${cluster_name}' >> /etc/ecs/ecs.config
+cat <<EOF > /etc/ecs/ecs.config
+ECS_CLUSTER=${cluster_name}
+ECS_INSTANCE_ATTRIBUTES={"prometheus-instance":"${prom_instance}"}
+EOF
 yum install -y ecs-init
 start ecs
 service docker start
