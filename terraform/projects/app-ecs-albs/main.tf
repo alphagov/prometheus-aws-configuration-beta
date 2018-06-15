@@ -191,7 +191,7 @@ resource "aws_lb_target_group" "nginx_auth_external_endpoint" {
   }
 }
 
-resource "aws_lb_listener" "nginx_auth_external_listener" {
+resource "aws_lb_listener" "nginx_auth_external_listener_http" {
   load_balancer_arn = "${aws_lb.nginx_auth_external_alb.arn}"
   port              = "80"
   protocol          = "HTTP"
@@ -215,10 +215,10 @@ resource "aws_lb_listener" "nginx_auth_external_listener_https" {
   }
 }
 
-resource "aws_lb_listener_rule" "prom_public_listener" {
+resource "aws_lb_listener_rule" "prom_public_listener_http" {
   count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
 
-  listener_arn = "${aws_lb_listener.nginx_auth_external_listener.arn}"
+  listener_arn = "${aws_lb_listener.nginx_auth_external_listener_http.arn}"
   priority     = "${200 + count.index}"
 
   action {
@@ -235,10 +235,50 @@ resource "aws_lb_listener_rule" "prom_public_listener" {
   }
 }
 
-resource "aws_lb_listener_rule" "alerts_public_listener" {
+resource "aws_lb_listener_rule" "prom_public_listener_https" {
   count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
 
-  listener_arn = "${aws_lb_listener.nginx_auth_external_listener.arn}"
+  listener_arn = "${aws_lb_listener.nginx_auth_external_listener_https.arn}"
+  priority     = "${200 + count.index}"
+
+  action {
+    type             = "forward"
+    target_group_arn = "${element(aws_lb_target_group.nginx_auth_external_endpoint.*.arn, count.index)}"
+  }
+
+  condition {
+    field = "host-header"
+
+    values = [
+      "prom-${count.index + 1}.*",
+    ]
+  }
+}
+
+resource "aws_lb_listener_rule" "alerts_public_listener_http" {
+  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+
+  listener_arn = "${aws_lb_listener.nginx_auth_external_listener_http.arn}"
+  priority     = "${100 + count.index}"
+
+  action {
+    type             = "forward"
+    target_group_arn = "${element(aws_lb_target_group.nginx_auth_external_endpoint.*.arn, count.index)}"
+  }
+
+  condition {
+    field = "host-header"
+
+    values = [
+      "alerts-${count.index + 1}.*",
+    ]
+  }
+}
+
+resource "aws_lb_listener_rule" "alerts_public_listener_https" {
+  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+
+  listener_arn = "${aws_lb_listener.nginx_auth_external_listener_https.arn}"
   priority     = "${100 + count.index}"
 
   action {
