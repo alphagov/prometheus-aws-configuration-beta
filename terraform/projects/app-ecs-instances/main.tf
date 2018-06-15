@@ -127,6 +127,11 @@ data "terraform_remote_state" "infra_security_groups" {
   }
 }
 
+data "aws_subnet" "private_subnets" {
+  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
+  id    = "${data.terraform_remote_state.infra_networking.private_subnets[count.index]}"
+}
+
 ## Resources
 
 resource "aws_ecs_cluster" "prometheus_cluster" {
@@ -169,7 +174,7 @@ module "ecs_instance" {
 
   # Auto scaling group
   asg_name                  = "${var.stack_name}-ecs-instance"
-  vpc_zone_identifier       = ["${data.terraform_remote_state.infra_networking.private_subnets}"]
+  vpc_zone_identifier       = ["${data.aws_subnet.private_subnets.*.id}"]
   health_check_type         = "EC2"
   min_size                  = "${var.autoscaling_group_min_size}"
   max_size                  = "${var.autoscaling_group_max_size}"
@@ -185,9 +190,9 @@ module "ecs_instance" {
 }
 
 resource "aws_ebs_volume" "prometheus_ebs_volume" {
-  count = "${length(data.terraform_remote_state.infra_networking.az_names)}"
+  count = 3
 
-  availability_zone = "${element(data.terraform_remote_state.infra_networking.az_names, count.index)}"
+  availability_zone = "${element(data.aws_subnet.private_subnets.*.availability_zone, count.index)}"
   size              = 500
   type              = "gp2"
 
@@ -207,11 +212,4 @@ resource "aws_ebs_volume" "prometheus_ebs_volume" {
     map("Stackname", "${var.stack_name}"),
     map("Name", "${var.stack_name}-prometheus-ebs-volume")
   )}"
-}
-
-## Outputs
-
-output "ecs_instance_asg_id" {
-  value       = "${module.ecs_instance.this_autoscaling_group_id}"
-  description = "ecs-instance ASG ID"
 }

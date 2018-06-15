@@ -20,9 +20,3 @@ Create ECS container instances
 | remote_state_bucket | S3 bucket we store our terraform state in | string | `ecs-monitoring` | no |
 | stack_name | Unique name for this collection of resources | string | `ecs-monitoring` | no |
 
-## Outputs
-
-| Name | Description |
-|------|-------------|
-| ecs_instance_asg_id | ecs-instance ASG ID |
-
