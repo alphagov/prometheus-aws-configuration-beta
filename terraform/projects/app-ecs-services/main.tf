@@ -98,9 +98,14 @@ data "terraform_remote_state" "app_ecs_albs" {
   }
 }
 
-data "aws_subnet" "private_subnets" {
-  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
-  id    = "${data.terraform_remote_state.infra_networking.private_subnets[count.index]}"
+data "terraform_remote_state" "app_ecs_instances" {
+  backend = "s3"
+
+  config {
+    bucket = "${var.remote_state_bucket}"
+    key    = "app-ecs-instances.tfstate"
+    region = "${var.aws_region}"
+  }
 }
 
 ## Resources

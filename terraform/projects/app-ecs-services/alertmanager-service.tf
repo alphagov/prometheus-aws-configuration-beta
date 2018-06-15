@@ -92,7 +92,7 @@ resource "aws_ecs_task_definition" "alertmanager_server" {
 }
 
 resource "aws_ecs_service" "alertmanager_server" {
-  count = 3
+  count = "${length(data.terraform_remote_state.app_ecs_instances.available_azs)}"
 
   name            = "${var.stack_name}-alertmanager-server-${count.index + 1}"
   cluster         = "${var.stack_name}-ecs-monitoring"
@@ -107,7 +107,7 @@ resource "aws_ecs_service" "alertmanager_server" {
 
   placement_constraints {
     type       = "memberOf"
-    expression = "attribute:ecs.availability-zone == ${element(data.aws_subnet.private_subnets.*.availability_zone, count.index)}"
+    expression = "attribute:ecs.availability-zone == ${data.terraform_remote_state.app_ecs_instances.available_azs[count.index]}"
   }
 }
 
