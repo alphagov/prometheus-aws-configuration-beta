@@ -110,11 +110,11 @@ To apply terraform for a particular project:
 
 Once you have deployed your development stack you should be able to reach the prometheus dashboard using this url pattern:
 
-`http://prom-1.<your test environment specified in the ENV environment variable>.dev.reliability.engineering`
+`https://prom-1.<your test environment specified in the ENV environment variable>.dev.gds-reliability.engineering`
 
 e.g.
 
-`http://prom-1.your-test-stack.dev.reliability.engineering`
+`https://prom-1.your-test-stack.dev.gds-reliability.engineering`
 
 ## Development process
 

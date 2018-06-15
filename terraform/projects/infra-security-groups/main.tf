@@ -145,6 +145,15 @@ resource "aws_security_group_rule" "monitoring_external_sg_ingress_any_http" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
+resource "aws_security_group_rule" "monitoring_external_sg_ingress_any_https" {
+  type              = "ingress"
+  to_port           = 443
+  from_port         = 443
+  protocol          = "tcp"
+  security_group_id = "${aws_security_group.monitoring_external_sg.id}"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
 resource "aws_security_group_rule" "allow_prometheus_access_alertmanager" {
   type              = "ingress"
   to_port           = 80

@@ -160,6 +160,11 @@ output "public_zone_id" {
   description = "Route 53 Zone ID for publicly visible zone"
 }
 
+output "public_subdomain" {
+  value       = "${aws_route53_zone.subdomain.name}"
+  description = "This is the subdomain for root zone"
+}
+
 output "private_zone_id" {
   value       = "${aws_route53_zone.private.zone_id}"
   description = "Route 53 Zone ID for the internal zone"

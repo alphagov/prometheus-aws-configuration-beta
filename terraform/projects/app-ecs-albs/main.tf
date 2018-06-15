@@ -117,6 +117,32 @@ resource "aws_lb" "monitoring_internal_alb" {
   )}"
 }
 
+# AWS should manage the certificate renewal automatically
+# https://docs.aws.amazon.com/acm/latest/userguide/managed-renewal.html
+# If this fails, AWS will email associated with the AWS account
+resource "aws_acm_certificate" "monitoring_cert" {
+  domain_name               = "${data.terraform_remote_state.infra_networking.public_subdomain}"
+  validation_method         = "DNS"
+  subject_alternative_names = ["${aws_route53_record.prom_alias.*.fqdn}", "${aws_route53_record.alerts_alias.*.fqdn}"]
+}
+
+resource "aws_route53_record" "monitoring_cert_validation" {
+  # Count matches the domain_name plus each `subject_alternative_domain`
+  count = "${1 + length(concat(aws_route53_record.prom_alias.*.fqdn, aws_route53_record.alerts_alias.*.fqdn))}"
+
+  name       = "${lookup(aws_acm_certificate.monitoring_cert.domain_validation_options[count.index], "resource_record_name")}"
+  type       = "${lookup(aws_acm_certificate.monitoring_cert.domain_validation_options[count.index], "resource_record_type")}"
+  zone_id    = "${data.terraform_remote_state.infra_networking.public_zone_id}"
+  records    = ["${lookup(aws_acm_certificate.monitoring_cert.domain_validation_options[count.index], "resource_record_value")}"]
+  ttl        = 60
+  depends_on = ["aws_acm_certificate.monitoring_cert"]
+}
+
+resource "aws_acm_certificate_validation" "monitoring_cert" {
+  certificate_arn         = "${aws_acm_certificate.monitoring_cert.arn}"
+  validation_record_fqdns = ["${aws_route53_record.monitoring_cert_validation.*.fqdn}"]
+}
+
 resource "aws_route53_record" "prom_alias" {
   count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
 
@@ -165,7 +191,7 @@ resource "aws_lb_target_group" "nginx_auth_external_endpoint" {
   }
 }
 
-resource "aws_lb_listener" "nginx_auth_external_listener" {
+resource "aws_lb_listener" "nginx_auth_external_listener_http" {
   load_balancer_arn = "${aws_lb.nginx_auth_external_alb.arn}"
   port              = "80"
   protocol          = "HTTP"
@@ -176,10 +202,23 @@ resource "aws_lb_listener" "nginx_auth_external_listener" {
   }
 }
 
-resource "aws_lb_listener_rule" "prom_public_listener" {
+resource "aws_lb_listener" "nginx_auth_external_listener_https" {
+  load_balancer_arn = "${aws_lb.nginx_auth_external_alb.arn}"
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  certificate_arn   = "${aws_acm_certificate.monitoring_cert.arn}"
+
+  default_action {
+    target_group_arn = "${aws_lb_target_group.nginx_auth_external_endpoint.0.arn}"
+    type             = "forward"
+  }
+}
+
+resource "aws_lb_listener_rule" "prom_public_listener_http" {
   count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
 
-  listener_arn = "${aws_lb_listener.nginx_auth_external_listener.arn}"
+  listener_arn = "${aws_lb_listener.nginx_auth_external_listener_http.arn}"
   priority     = "${200 + count.index}"
 
   action {
@@ -196,10 +235,50 @@ resource "aws_lb_listener_rule" "prom_public_listener" {
   }
 }
 
-resource "aws_lb_listener_rule" "alerts_public_listener" {
+resource "aws_lb_listener_rule" "prom_public_listener_https" {
   count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
 
-  listener_arn = "${aws_lb_listener.nginx_auth_external_listener.arn}"
+  listener_arn = "${aws_lb_listener.nginx_auth_external_listener_https.arn}"
+  priority     = "${200 + count.index}"
+
+  action {
+    type             = "forward"
+    target_group_arn = "${element(aws_lb_target_group.nginx_auth_external_endpoint.*.arn, count.index)}"
+  }
+
+  condition {
+    field = "host-header"
+
+    values = [
+      "prom-${count.index + 1}.*",
+    ]
+  }
+}
+
+resource "aws_lb_listener_rule" "alerts_public_listener_http" {
+  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+
+  listener_arn = "${aws_lb_listener.nginx_auth_external_listener_http.arn}"
+  priority     = "${100 + count.index}"
+
+  action {
+    type             = "forward"
+    target_group_arn = "${element(aws_lb_target_group.nginx_auth_external_endpoint.*.arn, count.index)}"
+  }
+
+  condition {
+    field = "host-header"
+
+    values = [
+      "alerts-${count.index + 1}.*",
+    ]
+  }
+}
+
+resource "aws_lb_listener_rule" "alerts_public_listener_https" {
+  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+
+  listener_arn = "${aws_lb_listener.nginx_auth_external_listener_https.arn}"
   priority     = "${100 + count.index}"
 
   action {
