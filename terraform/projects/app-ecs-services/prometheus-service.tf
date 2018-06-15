@@ -149,7 +149,7 @@ resource "aws_ecs_task_definition" "paas_proxy" {
 resource "aws_ecs_service" "prometheus_server" {
   count = "${length(data.terraform_remote_state.app_ecs_albs.monitoring_external_tg)}"
 
-  name            = "${var.stack_name}-prometheus-server-${count.index}"
+  name            = "${var.stack_name}-prometheus-server-${count.index + 1}"
   cluster         = "${var.stack_name}-ecs-monitoring"
   task_definition = "${aws_ecs_task_definition.prometheus_server.arn}"
   desired_count   = 1
