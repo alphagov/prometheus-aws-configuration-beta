@@ -159,6 +159,11 @@ resource "aws_ecs_service" "prometheus_server" {
     container_name   = "auth-proxy"
     container_port   = 9090
   }
+
+  placement_constraints {
+    type       = "memberOf"
+    expression = "attribute:ecs.availability-zone == ${element(data.aws_subnet.private_subnets.*.availability_zone, count.index)}"
+  }
 }
 
 resource "aws_ecs_service" "paas_proxy_service" {

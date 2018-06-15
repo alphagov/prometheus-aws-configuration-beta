@@ -104,6 +104,11 @@ resource "aws_ecs_service" "alertmanager_server" {
     container_name   = "alertmanager"
     container_port   = 9093
   }
+
+  placement_constraints {
+    type       = "memberOf"
+    expression = "attribute:ecs.availability-zone == ${element(data.aws_subnet.private_subnets.*.availability_zone, count.index)}"
+  }
 }
 
 #### alertmanager

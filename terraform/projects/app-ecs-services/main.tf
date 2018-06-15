@@ -98,6 +98,11 @@ data "terraform_remote_state" "app_ecs_albs" {
   }
 }
 
+data "aws_subnet" "private_subnets" {
+  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
+  id    = "${data.terraform_remote_state.infra_networking.private_subnets[count.index]}"
+}
+
 ## Resources
 
 resource "aws_cloudwatch_log_group" "task_logs" {
