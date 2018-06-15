@@ -14,7 +14,7 @@ variable "aws_region" {
 variable "dev_environment" {
   type        = "string"
   description = "Boolean flag for development environments"
-  default     = "true"
+  default     = "false"
 }
 
 variable "remote_state_bucket" {
