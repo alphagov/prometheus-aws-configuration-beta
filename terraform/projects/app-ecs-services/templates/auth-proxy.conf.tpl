@@ -5,6 +5,10 @@ server {
 
   server_name ~(prom*);
 
+  if ($http_x_forwarded_proto = 'http') {
+    return 301 https://$host$request_uri;
+  }
+
   location / {
     proxy_pass  http://prometheus:9090;
   }
@@ -29,6 +33,10 @@ server {
 
   server_name alerts-1.*;
 
+  if ($http_x_forwarded_proto = 'http') {
+    return 301 https://$host$request_uri;
+  }
+
   set $alert "${alertmanager_1_dns_name}";
 
   location / {
@@ -49,6 +57,10 @@ server {
 
   server_name alerts-2.*;
 
+  if ($http_x_forwarded_proto = 'http') {
+    return 301 https://$host$request_uri;
+  }
+
   set $alert "${alertmanager_2_dns_name}";
 
   location / {
@@ -68,6 +80,10 @@ server {
 
 
   server_name alerts-3.*;
+
+  if ($http_x_forwarded_proto = 'http') {
+    return 301 https://$host$request_uri;
+  }
 
   set $alert "${alertmanager_3_dns_name}";
 
