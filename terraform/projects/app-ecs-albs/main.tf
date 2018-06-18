@@ -128,7 +128,10 @@ resource "aws_acm_certificate" "monitoring_cert" {
 
 resource "aws_route53_record" "monitoring_cert_validation" {
   # Count matches the domain_name plus each `subject_alternative_domain`
-  count = "${1 + length(concat(aws_route53_record.prom_alias.*.fqdn, aws_route53_record.alerts_alias.*.fqdn))}"
+  # This was originally the sum of the alerts.fqdn and prom.fqdns which was nice and self documenting
+  # unfortunately terraform was not always able to resolve the count. We have therefore had to switch to
+  # using the count of the subnets which was the source of the count in the respective dns record resources
+  count = "${1 + (2 * length(data.terraform_remote_state.infra_networking.public_subnets))}"
 
   name       = "${lookup(aws_acm_certificate.monitoring_cert.domain_validation_options[count.index], "resource_record_name")}"
   type       = "${lookup(aws_acm_certificate.monitoring_cert.domain_validation_options[count.index], "resource_record_type")}"
