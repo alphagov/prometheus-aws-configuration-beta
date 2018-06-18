@@ -218,8 +218,8 @@ resource "aws_s3_bucket_object" "prometheus-config" {
 resource "aws_s3_bucket_object" "alerts-config" {
   bucket = "${aws_s3_bucket.config_bucket.id}"
   key    = "prometheus/alerts/alerts.yml"
-  source = "config/alerts.yml"
-  etag   = "${md5(file("config/alerts.yml"))}"
+  source = "config/alerts/alerts.yml"
+  etag   = "${md5(file("config/alerts/alerts.yml"))}"
 }
 
 #### nginx reverse proxy
