@@ -23,12 +23,6 @@ variable "prometheis_total" {
   default     = "3"
 }
 
-variable "ecs_image_id" {
-  type        = "string"
-  description = "AMI ID to use for the ECS container instances"
-  default     = "ami-2d386654"                                  # Latest Amazon ECS optimised AMI
-}
-
 variable "ecs_instance_type" {
   type        = "string"
   description = "ECS container instance type"
@@ -45,6 +39,10 @@ variable "ecs_instance_ssh_keyname" {
   type        = "string"
   description = "SSH keyname for ECS container instances"
   default     = "ecs-monitoring-ssh-test"
+}
+
+variable "ecs_optimised_ami_version" {
+  default = "2018.03.a"
 }
 
 variable "remote_state_bucket" {
@@ -137,6 +135,11 @@ data "template_file" "instance_user_data" {
   }
 }
 
+module "ami" {
+  source         = "../../modules/common/ami"
+  amazon_release = "${var.ecs_optimised_ami_version}"
+}
+
 module "ecs_instance" {
   source = "terraform-aws-modules/autoscaling/aws"
 
@@ -147,9 +150,13 @@ module "ecs_instance" {
   # Launch configuration
   lc_name = "${var.stack_name}-ecs-instances"
 
-  image_id             = "${var.ecs_image_id}"
-  instance_type        = "${var.ecs_instance_type}"
-  security_groups      = ["${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}"]
+  image_id      = "${module.ami.ami_id}"
+  instance_type = "${var.ecs_instance_type}"
+
+  security_groups = ["${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}",
+    "${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}",
+  ]
+
   iam_instance_profile = "${var.stack_name}-ecs-profile"
 
   root_block_device = [
