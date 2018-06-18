@@ -1,4 +1,5 @@
 #!/bin/bash
+DEFAULT_DEV_TARGETS_S3_BUCKET=gds-prometheus-targets-dev
 TERRAFORM_BUCKET=${TERRAFORM_BUCKET}
 TERRAFORMPATH=$(which terraform)
 TERRAFORMBACKVARS=$(pwd)/stacks/${ENV}.backend
@@ -33,8 +34,9 @@ else
 cat <<EOF >stacks/${ENV}.tfvars
 remote_state_bucket = "${TERRAFORM_BUCKET}"
 stack_name = "${ENV}"
-dev_environment = "${DEV_ENVIRONMENT}"
+dev_environment = "true"
 prometheus_subdomain = "${ENV}"
+targets_s3_bucket="$DEFAULT_DEV_TARGETS_S3_BUCKET"
 additional_tags = {
   "Environment" = "${ENV}"
 }
@@ -120,7 +122,6 @@ apply () {
         if [ $DEV_ENVIRONMENT = 'true' -a "$1" = 'infra-networking' ] ; then
                 import_shared_dev_route53
         fi
-
         aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH apply --var-file=$TERRAFORMTFVARS --auto-approve
 }
 
