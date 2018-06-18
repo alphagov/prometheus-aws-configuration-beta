@@ -2,6 +2,11 @@
 
 Terraform configuration to manage a Prometheus server running on AWS.
 
+## Deployment ##
+
+We track deployments in this spreadsheeet: https://docs.google.com/spreadsheets/d/1Kd390OLID_ZL8U9_wdoEJCkiDU3nSHsbKzovcRIUsW4/edit#gid=413288099
+Please follow the deployment checklist and keep the deployment log up to date
+
 ## Setup ##
 
 ### Install Terraform
