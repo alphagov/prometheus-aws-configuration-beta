@@ -222,6 +222,13 @@ resource "aws_s3_bucket_object" "alerts-config" {
   etag   = "${md5(file("config/alerts/alerts.yml"))}"
 }
 
+resource "aws_s3_bucket_object" "alerts-registers-config" {
+  bucket = "${aws_s3_bucket.config_bucket.id}"
+  key    = "prometheus/alerts/registers.yml"
+  source = "config/alerts/registers.yml"
+  etag   = "${md5(file("config/alerts/registers.yml"))}"
+}
+
 #### nginx reverse proxy
 
 data "template_file" "auth_proxy_config_file" {
