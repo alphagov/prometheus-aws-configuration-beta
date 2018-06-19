@@ -19,7 +19,6 @@ related services. You will often have multiple VPCs in an account
 
 | Name | Description |
 |------|-------------|
-| az_names | Names of available availability zones |
 | nat_gateway | List of nat gateway IP |
 | private_subnets | List of private subnet IDs |
 | private_subnets_ips | List of public subnet IDs |

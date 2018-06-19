@@ -37,6 +37,7 @@ stack_name = "${ENV}"
 dev_environment = "true"
 prometheus_subdomain = "${ENV}"
 targets_s3_bucket="$DEFAULT_DEV_TARGETS_S3_BUCKET"
+prometheis_total=1
 additional_tags = {
   "Environment" = "${ENV}"
 }

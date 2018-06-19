@@ -17,22 +17,10 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
-variable "autoscaling_group_min_size" {
+variable "prometheis_total" {
   type        = "string"
-  description = "Minimum desired number of ECS container instances"
-  default     = 3
-}
-
-variable "autoscaling_group_max_size" {
-  type        = "string"
-  description = "Maximum desired number of ECS container instances"
-  default     = 3
-}
-
-variable "autoscaling_group_desired_capacity" {
-  type        = "string"
-  description = "Desired number of ECS container instances"
-  default     = 3
+  description = "Desired number of prometheus servers.  Maximum 3."
+  default     = "3"
 }
 
 variable "ecs_image_id" {
@@ -127,6 +115,12 @@ data "terraform_remote_state" "infra_security_groups" {
   }
 }
 
+data "aws_subnet" "subnets_for_prometheus" {
+  # only use enough subnets to fit the desired number of prometheus servers
+  count = "${var.prometheis_total}"
+  id    = "${data.terraform_remote_state.infra_networking.private_subnets[count.index]}"
+}
+
 ## Resources
 
 resource "aws_ecs_cluster" "prometheus_cluster" {
@@ -169,11 +163,11 @@ module "ecs_instance" {
 
   # Auto scaling group
   asg_name                  = "${var.stack_name}-ecs-instance"
-  vpc_zone_identifier       = ["${data.terraform_remote_state.infra_networking.private_subnets}"]
+  vpc_zone_identifier       = ["${data.aws_subnet.subnets_for_prometheus.*.id}"]
   health_check_type         = "EC2"
-  min_size                  = "${var.autoscaling_group_min_size}"
-  max_size                  = "${var.autoscaling_group_max_size}"
-  desired_capacity          = "${var.autoscaling_group_desired_capacity}"
+  min_size                  = "${var.prometheis_total}"
+  max_size                  = "${var.prometheis_total}"
+  desired_capacity          = "${var.prometheis_total}"
   wait_for_capacity_timeout = 0
 
   tags_as_map = "${merge(
@@ -185,9 +179,9 @@ module "ecs_instance" {
 }
 
 resource "aws_ebs_volume" "prometheus_ebs_volume" {
-  count = "${length(data.terraform_remote_state.infra_networking.az_names)}"
+  count = "${length(data.aws_subnet.subnets_for_prometheus.*.availability_zone)}"
 
-  availability_zone = "${element(data.terraform_remote_state.infra_networking.az_names, count.index)}"
+  availability_zone = "${element(data.aws_subnet.subnets_for_prometheus.*.availability_zone, count.index)}"
   size              = 500
   type              = "gp2"
 
@@ -211,7 +205,7 @@ resource "aws_ebs_volume" "prometheus_ebs_volume" {
 
 ## Outputs
 
-output "ecs_instance_asg_id" {
-  value       = "${module.ecs_instance.this_autoscaling_group_id}"
-  description = "ecs-instance ASG ID"
+output "available_azs" {
+  value       = "${data.aws_subnet.subnets_for_prometheus.*.availability_zone}"
+  description = "AZs available with running container instances"
 }

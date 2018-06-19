@@ -92,7 +92,7 @@ resource "aws_ecs_task_definition" "alertmanager_server" {
 }
 
 resource "aws_ecs_service" "alertmanager_server" {
-  count = 3
+  count = "${length(data.terraform_remote_state.app_ecs_instances.available_azs)}"
 
   name            = "${var.stack_name}-alertmanager-server-${count.index + 1}"
   cluster         = "${var.stack_name}-ecs-monitoring"
@@ -103,6 +103,11 @@ resource "aws_ecs_service" "alertmanager_server" {
     target_group_arn = "${element(data.terraform_remote_state.app_ecs_albs.monitoring_internal_tg, count.index)}"
     container_name   = "alertmanager"
     container_port   = 9093
+  }
+
+  placement_constraints {
+    type       = "memberOf"
+    expression = "attribute:ecs.availability-zone == ${data.terraform_remote_state.app_ecs_instances.available_azs[count.index]}"
   }
 }
 

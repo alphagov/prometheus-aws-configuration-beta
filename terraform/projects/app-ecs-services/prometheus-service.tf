@@ -147,9 +147,9 @@ resource "aws_ecs_task_definition" "paas_proxy" {
 }
 
 resource "aws_ecs_service" "prometheus_server" {
-  count = "${length(data.terraform_remote_state.app_ecs_albs.monitoring_external_tg)}"
+  count = "${length(data.terraform_remote_state.app_ecs_instances.available_azs)}"
 
-  name            = "${var.stack_name}-prometheus-server-${count.index}"
+  name            = "${var.stack_name}-prometheus-server-${count.index + 1}"
   cluster         = "${var.stack_name}-ecs-monitoring"
   task_definition = "${aws_ecs_task_definition.prometheus_server.arn}"
   desired_count   = 1
@@ -159,13 +159,18 @@ resource "aws_ecs_service" "prometheus_server" {
     container_name   = "auth-proxy"
     container_port   = 9090
   }
+
+  placement_constraints {
+    type       = "memberOf"
+    expression = "attribute:ecs.availability-zone == ${data.terraform_remote_state.app_ecs_instances.available_azs[count.index]}"
+  }
 }
 
 resource "aws_ecs_service" "paas_proxy_service" {
   name            = "${var.stack_name}-paas-proxy"
   cluster         = "${var.stack_name}-ecs-monitoring"
   task_definition = "${aws_ecs_task_definition.paas_proxy.arn}"
-  desired_count   = 3
+  desired_count   = "${length(data.terraform_remote_state.app_ecs_instances.available_azs)}"
 
   load_balancer {
     target_group_arn = "${data.terraform_remote_state.app_ecs_albs.paas_proxy_tg}"
