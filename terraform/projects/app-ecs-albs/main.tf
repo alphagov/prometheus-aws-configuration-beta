@@ -446,12 +446,12 @@ output "paas_proxy_tg" {
   description = "Paas proxy target group"
 }
 
-output "alerts_private_record_fqdn" {
+output "alerts_private_record_fqdns" {
   value       = "${aws_route53_record.alerts_private_record.*.fqdn}"
-  description = "Alert Managers private DNS fqdn"
+  description = "Alertmanagers private DNS FQDNs"
 }
 
 output "paas_proxy_private_record_fqdn" {
-  value       = "${aws_route53_record.paas_proxy_private_record.*.fqdn}"
-  description = "PaaS Proxy private DNS fqdn"
+  value       = "${aws_route53_record.paas_proxy_private_record.fqdn}"
+  description = "PaaS Proxy private DNS FQDN"
 }
