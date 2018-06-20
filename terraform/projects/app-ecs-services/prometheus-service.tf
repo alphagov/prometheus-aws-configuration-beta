@@ -7,6 +7,12 @@
 *
 */
 
+locals {
+  num_azs = "${length(data.terraform_remote_state.app_ecs_instances.available_azs)}"
+
+  active_alertmanager_private_fqdns = "${slice(data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdns, 0, local.num_azs)}"
+}
+
 ## IAM roles & policies
 
 resource "aws_iam_role" "prometheus_task_iam_role" {
@@ -81,8 +87,8 @@ data "template_file" "prometheus_config_file" {
   template = "${file("templates/prometheus.tpl")}"
 
   vars {
-    alertmanager_dns_name = "${join("\",\"", data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdn)}"
-    paas_proxy_dns_name   = "${join("\",\"", data.terraform_remote_state.app_ecs_albs.paas_proxy_private_record_fqdn)}"
+    alertmanager_dns_names = "${join("\",\"", local.active_alertmanager_private_fqdns)}"
+    paas_proxy_dns_name    = "${data.terraform_remote_state.app_ecs_albs.paas_proxy_private_record_fqdn}"
   }
 }
 
@@ -240,9 +246,9 @@ data "template_file" "auth_proxy_config_file" {
   template = "${file("templates/auth-proxy.conf.tpl")}"
 
   vars {
-    alertmanager_1_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdn.0}"
-    alertmanager_2_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdn.1}"
-    alertmanager_3_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdn.2}"
+    alertmanager_1_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdns.0}"
+    alertmanager_2_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdns.1}"
+    alertmanager_3_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdns.2}"
   }
 }
 

@@ -4,7 +4,7 @@ alerting:
   alertmanagers:
   - scheme: http
     static_configs:
-      - targets: ["${alertmanager_dns_name}"]
+      - targets: ["${alertmanager_dns_names}"]
 rule_files:
   - "/etc/prometheus/alerts/*"
 scrape_configs:
@@ -16,7 +16,7 @@ scrape_configs:
     scheme: http
     scrape_interval: 5s
     static_configs:
-      - targets: ["${alertmanager_dns_name}"]
+      - targets: ["${alertmanager_dns_names}"]
   - job_name: paas-targets
     scheme: http
     proxy_url: 'http://${paas_proxy_dns_name}:8080'
