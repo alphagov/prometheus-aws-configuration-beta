@@ -6,6 +6,7 @@ groups:
     for: 1m
     labels:
         severity: "P3"
+        product: "tools"
     annotations:
         summary: "Service is taking longer than 2 seconds to respond"
         description: "The service name is {{ $labels.job }}. The URL under test is {{ $labels.instance }}"
