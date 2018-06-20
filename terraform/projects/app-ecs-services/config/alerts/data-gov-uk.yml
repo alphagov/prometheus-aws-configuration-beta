@@ -1,0 +1,26 @@
+groups:
+- name: DataGovUk
+  rules:
+  - alert: NoInstancesForSomeTime
+    expr: count(sum(cpu{job="metric-exporter"}) without (cell_id)) by (app) == 0
+    for: 30m
+    labels:
+        product: "data-gov-uk"
+    annotations:
+        summary: "App {{ $labels.app }} has no instances"
+        description: "Application {{ $labels.app }} has had no instances for half an hour."
+  - alert: HighCpuUsage
+    expr: avg(cpu{job="metric-exporter"}) by (app) >= 80
+    for: 5m
+    labels:
+        product: "data-gov-uk"
+    annotations:
+        summary: "App {{ $labels.app }} has high CPU usage"
+        description: "Application {{ $labels.app }} has been using over 80% CPU (averaged over all instances) for 5 minutes or more."
+  - alert: HighDiskUsage
+    expr: max(disk_utilization{job="metric-exporter"}) by (app) >= 80
+    labels:
+        product: "data-gov-uk"
+    annotations:
+        summary: "App {{ $labels.app }} has high disk usage"
+        description: "Application {{ $labels.app }} has an instance which is using over 80% disk."
