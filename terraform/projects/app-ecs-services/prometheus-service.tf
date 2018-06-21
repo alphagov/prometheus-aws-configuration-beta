@@ -240,6 +240,13 @@ resource "aws_s3_bucket_object" "alerts-data-gov-uk-config" {
   etag   = "${md5(file("config/alerts/data-gov-uk.yml"))}"
 }
 
+resource "aws_s3_bucket_object" "alerts-prometheus-config" {
+  bucket = "${aws_s3_bucket.config_bucket.id}"
+  key    = "prometheus/alerts/prometheus.yml"
+  source = "config/alerts/prometheus.yml"
+  etag   = "${md5(file("config/alerts/prometheus.yml"))}"
+}
+
 resource "aws_s3_bucket_object" "alerts-registers-config" {
   bucket = "${aws_s3_bucket.config_bucket.id}"
   key    = "prometheus/alerts/registers.yml"
