@@ -37,6 +37,9 @@ locals {
     Terraform = "true"
     Project   = "app-ecs-albs"
   }
+
+  alerts_records_count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+  prom_records_count   = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
 }
 
 # Resources
@@ -131,7 +134,7 @@ resource "aws_route53_record" "monitoring_cert_validation" {
   # This was originally the sum of the alerts.fqdn and prom.fqdns which was nice and self documenting
   # unfortunately terraform was not always able to resolve the count. We have therefore had to switch to
   # using the count of the subnets which was the source of the count in the respective dns record resources
-  count = "${1 + (2 * length(data.terraform_remote_state.infra_networking.public_subnets))}"
+  count = "${1 + (local.alerts_records_count + local.prom_records_count)}"
 
   name       = "${lookup(aws_acm_certificate.monitoring_cert.domain_validation_options[count.index], "resource_record_name")}"
   type       = "${lookup(aws_acm_certificate.monitoring_cert.domain_validation_options[count.index], "resource_record_type")}"
@@ -147,7 +150,7 @@ resource "aws_acm_certificate_validation" "monitoring_cert" {
 }
 
 resource "aws_route53_record" "prom_alias" {
-  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+  count = "${local.prom_records_count}"
 
   zone_id = "${data.terraform_remote_state.infra_networking.public_zone_id}"
   name    = "prom-${count.index + 1}"
@@ -161,7 +164,7 @@ resource "aws_route53_record" "prom_alias" {
 }
 
 resource "aws_route53_record" "alerts_alias" {
-  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+  count = "${local.alerts_records_count}"
 
   zone_id = "${data.terraform_remote_state.infra_networking.public_zone_id}"
   name    = "alerts-${count.index + 1}"
