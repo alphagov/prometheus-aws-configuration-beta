@@ -57,8 +57,6 @@ Applying or destroying the entire stack on the staging and production environmen
 How to use the Makefile
 </summary>
 
-Executing `make` on the command line will give you a list of possible commands to run your terraform.
-
 In order to create a new stack you can run these make commands in order:
 
 ```shell
@@ -81,6 +79,12 @@ To delete a stack:
 To apply terraform for a particular project:
 
 `make apply-single project=<project name in terraform/projects>`
+
+To apply terraform for a list of projects:
+
+`make apply-list list="<1st project>,<2nd project>,<3rd project>"`
+
+Execute `make` to give you a list of other possible commands to run against your terraform projects.
 </details>
 
 <details>
@@ -111,6 +115,9 @@ To apply terraform for a particular project:
 
 `. ./setup.sh -a <project name in terraform/projects>`
 
+To apply terraform for a list of projects:
+
+`. ./setup.sh -a list "<1st project>,<2nd project>,<3rd project>"`
 </details>
 
 Once you have deployed your development stack you should be able to reach the prometheus dashboard using this url pattern:

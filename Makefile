@@ -29,6 +29,10 @@ plan:  ## Plan all terraform
 apply: ## Apply all terraform, auto approves
 	. ./setup.sh -a
 
+.PHONY: destroy
+destroy: ## Destroy stack
+	. ./setup.sh -d
+
 .PHONY: clean-single
 clean-single: ## Clean terraform state for a project, make clean-single project=<project name>
 	. ./setup.sh -c ${project}
@@ -49,9 +53,17 @@ apply-single: ## Apply terraform for a project, make apply-single project=<proje
 destroy-single: ## Destroy terraform for a project, make destroy-single project=<project name>
 	. ./setup.sh -d ${project}
 
-.PHONY: destroy
-destroy: ## Destroy stack
-	. ./setup.sh -d
+.PHONY: init-list
+init-list: ## Init terraform for a list of projects, make init-list list="<comma separated list of projects>"
+	. ./setup.sh -i list ${list}
+
+.PHONY: apply-list
+apply-list: ## Apply terraform for a list of projects, make apply-list list="<comma separated list of projects>"
+	. ./setup.sh -a list ${list}
+
+.PHONY: destroy-list
+destroy-list: ## Destroy terraform for a list of projects, make destroy-list list="<comma separated list of projects>"
+	. ./setup.sh -d list ${list}
 
 .PHONY: taint
 taint: ## Taint a resource, make taint project=<project name> resource=<resource name>

@@ -123,6 +123,7 @@ apply () {
         if [ $DEV_ENVIRONMENT = 'true' -a "$1" = 'infra-networking' ] ; then
                 import_shared_dev_route53
         fi
+
         aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH apply --var-file=$TERRAFORMTFVARS --auto-approve
 }
 
@@ -195,7 +196,17 @@ else
         ;;
         -i) echo "Initialize terraform dir: ${ENV}"
                 if does_stack_config_exist; then
-                        if [ $2 ] ; then
+                        if [ "$2" = 'list' -a "$3" ] ; then
+                                PROJECTS=$(echo "${3//,/ }")
+                                declare -a LIST=($PROJECTS)
+                                for folder in ${LIST[@]}
+                                do
+                                        init $folder
+                                        if [ $? != 0 ] ; then
+                                                exit
+                                        fi
+                                done
+                        elif [ $2 ] ; then
                                 init $2
                         else
                                 for folder in ${COMPONENTS[@]}
@@ -219,7 +230,17 @@ else
         ;;
         -a) echo "Apply terraform plan to environment: ${ENV}"
                 if does_stack_config_exist; then
-                        if [ $2 ] ; then
+                        if [ "$2" = 'list' -a "$3" ] ; then
+                                PROJECTS=$(echo "${3//,/ }")
+                                declare -a LIST=($PROJECTS)
+                                for folder in ${LIST[@]}
+                                do
+                                        apply $folder
+                                        if [ $? != 0 ] ; then
+                                                exit
+                                        fi
+                                done
+                        elif [ $2 ] ; then
                                 apply $2
                         else
                                 if [ $DEV_ENVIRONMENT != 'true' ] ; then
@@ -235,7 +256,17 @@ else
         ;;
         -d) echo "Destroy terraform plan to environment: ${ENV}"
                 if does_stack_config_exist; then
-                        if [ $2 ] ; then
+                        if [ "$2" = 'list' -a "$3" ] ; then
+                                PROJECTS=$(echo "${3//,/ }")
+                                declare -a LIST=($PROJECTS)
+                                for folder in ${LIST[@]}
+                                do
+                                        destroy $folder
+                                        if [ $? != 0 ] ; then
+                                                exit
+                                        fi
+                                done
+                        elif [ $2 ] ; then
                                 destroy $2
                         else
                                 if [ $DEV_ENVIRONMENT != 'true' ] ; then
