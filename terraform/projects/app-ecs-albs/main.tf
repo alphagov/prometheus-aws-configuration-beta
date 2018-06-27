@@ -38,8 +38,9 @@ locals {
     Project   = "app-ecs-albs"
   }
 
-  alerts_records_count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
-  prom_records_count   = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+  infra_network_public_subnets_count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+  alerts_records_count               = "${local.infra_network_public_subnets_count}"
+  prom_records_count                 = "${local.infra_network_public_subnets_count}"
 }
 
 # Resources
@@ -131,10 +132,7 @@ resource "aws_acm_certificate" "monitoring_cert" {
 
 resource "aws_route53_record" "monitoring_cert_validation" {
   # Count matches the domain_name plus each `subject_alternative_domain`
-  # This was originally the sum of the alerts.fqdn and prom.fqdns which was nice and self documenting
-  # unfortunately terraform was not always able to resolve the count. We have therefore had to switch to
-  # using the count of the subnets which was the source of the count in the respective dns record resources
-  count = "${1 + (local.alerts_records_count + local.prom_records_count)}"
+  count = "${1 + local.alerts_records_count + local.prom_records_count}"
 
   name       = "${lookup(aws_acm_certificate.monitoring_cert.domain_validation_options[count.index], "resource_record_name")}"
   type       = "${lookup(aws_acm_certificate.monitoring_cert.domain_validation_options[count.index], "resource_record_type")}"
@@ -178,7 +176,7 @@ resource "aws_route53_record" "alerts_alias" {
 }
 
 resource "aws_lb_target_group" "nginx_auth_external_endpoint" {
-  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+  count = "${local.infra_network_public_subnets_count}"
 
   name                 = "${var.stack_name}-ext-tg-${count.index + 1}"
   port                 = 80
@@ -222,7 +220,7 @@ resource "aws_lb_listener" "nginx_auth_external_listener_https" {
 }
 
 resource "aws_lb_listener_rule" "prom_public_listener_http" {
-  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+  count = "${local.infra_network_public_subnets_count}"
 
   listener_arn = "${aws_lb_listener.nginx_auth_external_listener_http.arn}"
   priority     = "${200 + count.index}"
@@ -242,7 +240,7 @@ resource "aws_lb_listener_rule" "prom_public_listener_http" {
 }
 
 resource "aws_lb_listener_rule" "prom_public_listener_https" {
-  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+  count = "${local.infra_network_public_subnets_count}"
 
   listener_arn = "${aws_lb_listener.nginx_auth_external_listener_https.arn}"
   priority     = "${200 + count.index}"
@@ -262,7 +260,7 @@ resource "aws_lb_listener_rule" "prom_public_listener_https" {
 }
 
 resource "aws_lb_listener_rule" "alerts_public_listener_http" {
-  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+  count = "${local.infra_network_public_subnets_count}"
 
   listener_arn = "${aws_lb_listener.nginx_auth_external_listener_http.arn}"
   priority     = "${100 + count.index}"
@@ -282,7 +280,7 @@ resource "aws_lb_listener_rule" "alerts_public_listener_http" {
 }
 
 resource "aws_lb_listener_rule" "alerts_public_listener_https" {
-  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+  count = "${local.infra_network_public_subnets_count}"
 
   listener_arn = "${aws_lb_listener.nginx_auth_external_listener_https.arn}"
   priority     = "${100 + count.index}"
@@ -302,7 +300,7 @@ resource "aws_lb_listener_rule" "alerts_public_listener_https" {
 }
 
 resource "aws_lb_target_group" "alertmanager_internal_endpoint" {
-  count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
+  count = "${local.infra_network_public_subnets_count}"
 
   name     = "${var.stack_name}-alerts-internal-${count.index + 1}"
   port     = "9093"
