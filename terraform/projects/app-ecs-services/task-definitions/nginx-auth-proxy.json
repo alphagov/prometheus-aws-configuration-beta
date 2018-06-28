@@ -1,0 +1,29 @@
+[
+{
+  "name": "nginx-auth-proxy",
+  "image": "nginx:alpine",
+  "cpu": 128,
+  "memory": 128,
+  "essential": true,
+  "portMappings": [
+    {
+      "containerPort": 8181
+    }
+  ],
+  "mountPoints": [
+    {
+      "sourceVolume": "nginx-auth-proxy",
+      "containerPath": "/etc/nginx/conf.d",
+      "readOnly": true
+    }
+  ],
+  "logConfiguration": {
+    "logDriver": "awslogs",
+    "options": {
+      "awslogs-group": "${log_group}",
+      "awslogs-region": "${region}",
+      "awslogs-stream-prefix": "prometheus"
+    }
+  }
+}
+]

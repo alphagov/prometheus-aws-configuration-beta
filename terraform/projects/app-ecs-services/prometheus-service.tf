@@ -183,8 +183,8 @@ resource "aws_ecs_service" "prometheus_server" {
   desired_count   = 1
 
   load_balancer {
-    target_group_arn = "${element(data.terraform_remote_state.app_ecs_albs.monitoring_external_tg, count.index)}"
-    container_name   = "auth-proxy"
+    target_group_arn = "${element(data.terraform_remote_state.app_ecs_albs.prometheus_internal_tg, count.index)}"
+    container_name   = "prometheus"
     container_port   = 9090
   }
 
@@ -267,35 +267,6 @@ resource "aws_s3_bucket_object" "alerts-registers-config" {
   key    = "prometheus/alerts/registers.yml"
   source = "config/alerts/registers.yml"
   etag   = "${md5(file("config/alerts/registers.yml"))}"
-}
-
-#### nginx reverse proxy
-
-data "template_file" "auth_proxy_config_file" {
-  template = "${file("templates/auth-proxy.conf.tpl")}"
-
-  vars {
-    alertmanager_1_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdns.0}"
-    alertmanager_2_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdns.1}"
-    alertmanager_3_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdns.2}"
-  }
-}
-
-resource "aws_s3_bucket_object" "nginx-reverse-proxy" {
-  bucket  = "${aws_s3_bucket.config_bucket.id}"
-  key     = "prometheus/auth-proxy/conf.d/prometheus-auth-proxy.conf"
-  content = "${data.template_file.auth_proxy_config_file.rendered}"
-  etag    = "${md5(data.template_file.auth_proxy_config_file.rendered)}"
-}
-
-# The htpasswd file is in bcrypt format, which is only supported
-# by the nginx:alpine image, not the plain nginx image
-# https://github.com/nginxinc/docker-nginx/issues/29
-resource "aws_s3_bucket_object" "nginx-htpasswd" {
-  bucket = "${aws_s3_bucket.config_bucket.id}"
-  key    = "prometheus/auth-proxy/conf.d/.htpasswd"
-  source = "config/vhosts/.htpasswd"
-  etag   = "${md5(file("config/vhosts/.htpasswd"))}"
 }
 
 #### paas proxy

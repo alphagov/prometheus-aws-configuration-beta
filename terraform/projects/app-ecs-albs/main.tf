@@ -85,7 +85,7 @@ data "terraform_remote_state" "infra_security_groups" {
 
 ## Resources
 
-resource "aws_lb" "nginx_auth_external_alb" {
+resource "aws_lb" "monitoring_external_alb" {
   name               = "${var.stack_name}-external-alb"
   internal           = false
   load_balancer_type = "application"
@@ -155,8 +155,8 @@ resource "aws_route53_record" "prom_alias" {
   type    = "A"
 
   alias {
-    name                   = "${aws_lb.nginx_auth_external_alb.dns_name}"
-    zone_id                = "${aws_lb.nginx_auth_external_alb.zone_id}"
+    name                   = "${aws_lb.monitoring_external_alb.dns_name}"
+    zone_id                = "${aws_lb.monitoring_external_alb.zone_id}"
     evaluate_target_health = false
   }
 }
@@ -169,17 +169,15 @@ resource "aws_route53_record" "alerts_alias" {
   type    = "A"
 
   alias {
-    name                   = "${aws_lb.nginx_auth_external_alb.dns_name}"
-    zone_id                = "${aws_lb.nginx_auth_external_alb.zone_id}"
+    name                   = "${aws_lb.monitoring_external_alb.dns_name}"
+    zone_id                = "${aws_lb.monitoring_external_alb.zone_id}"
     evaluate_target_health = false
   }
 }
 
-resource "aws_lb_target_group" "nginx_auth_external_endpoint" {
-  count = "${local.infra_network_public_subnets_count}"
-
-  name                 = "${var.stack_name}-ext-tg-${count.index + 1}"
-  port                 = 80
+resource "aws_lb_target_group" "nginx_auth_proxy_external_endpoint" {
+  name                 = "${var.stack_name}-ext-tg"
+  port                 = 8181
   protocol             = "HTTP"
   vpc_id               = "${data.terraform_remote_state.infra_networking.vpc_id}"
   deregistration_delay = 30
@@ -195,107 +193,27 @@ resource "aws_lb_target_group" "nginx_auth_external_endpoint" {
   }
 }
 
-resource "aws_lb_listener" "nginx_auth_external_listener_http" {
-  load_balancer_arn = "${aws_lb.nginx_auth_external_alb.arn}"
+resource "aws_lb_listener" "external_listener_http" {
+  load_balancer_arn = "${aws_lb.monitoring_external_alb.arn}"
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = "${aws_lb_target_group.nginx_auth_external_endpoint.0.arn}"
+    target_group_arn = "${aws_lb_target_group.nginx_auth_proxy_external_endpoint.arn}"
     type             = "forward"
   }
 }
 
-resource "aws_lb_listener" "nginx_auth_external_listener_https" {
-  load_balancer_arn = "${aws_lb.nginx_auth_external_alb.arn}"
+resource "aws_lb_listener" "external_listener_https" {
+  load_balancer_arn = "${aws_lb.monitoring_external_alb.arn}"
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
   certificate_arn   = "${aws_acm_certificate.monitoring_cert.arn}"
 
   default_action {
-    target_group_arn = "${aws_lb_target_group.nginx_auth_external_endpoint.0.arn}"
+    target_group_arn = "${aws_lb_target_group.nginx_auth_proxy_external_endpoint.arn}"
     type             = "forward"
-  }
-}
-
-resource "aws_lb_listener_rule" "prom_public_listener_http" {
-  count = "${local.infra_network_public_subnets_count}"
-
-  listener_arn = "${aws_lb_listener.nginx_auth_external_listener_http.arn}"
-  priority     = "${200 + count.index}"
-
-  action {
-    type             = "forward"
-    target_group_arn = "${element(aws_lb_target_group.nginx_auth_external_endpoint.*.arn, count.index)}"
-  }
-
-  condition {
-    field = "host-header"
-
-    values = [
-      "prom-${count.index + 1}.*",
-    ]
-  }
-}
-
-resource "aws_lb_listener_rule" "prom_public_listener_https" {
-  count = "${local.infra_network_public_subnets_count}"
-
-  listener_arn = "${aws_lb_listener.nginx_auth_external_listener_https.arn}"
-  priority     = "${200 + count.index}"
-
-  action {
-    type             = "forward"
-    target_group_arn = "${element(aws_lb_target_group.nginx_auth_external_endpoint.*.arn, count.index)}"
-  }
-
-  condition {
-    field = "host-header"
-
-    values = [
-      "prom-${count.index + 1}.*",
-    ]
-  }
-}
-
-resource "aws_lb_listener_rule" "alerts_public_listener_http" {
-  count = "${local.infra_network_public_subnets_count}"
-
-  listener_arn = "${aws_lb_listener.nginx_auth_external_listener_http.arn}"
-  priority     = "${100 + count.index}"
-
-  action {
-    type             = "forward"
-    target_group_arn = "${element(aws_lb_target_group.nginx_auth_external_endpoint.*.arn, count.index)}"
-  }
-
-  condition {
-    field = "host-header"
-
-    values = [
-      "alerts-${count.index + 1}.*",
-    ]
-  }
-}
-
-resource "aws_lb_listener_rule" "alerts_public_listener_https" {
-  count = "${local.infra_network_public_subnets_count}"
-
-  listener_arn = "${aws_lb_listener.nginx_auth_external_listener_https.arn}"
-  priority     = "${100 + count.index}"
-
-  action {
-    type             = "forward"
-    target_group_arn = "${element(aws_lb_target_group.nginx_auth_external_endpoint.*.arn, count.index)}"
-  }
-
-  condition {
-    field = "host-header"
-
-    values = [
-      "alerts-${count.index + 1}.*",
-    ]
   }
 }
 
@@ -318,7 +236,26 @@ resource "aws_lb_target_group" "alertmanager_internal_endpoint" {
   }
 }
 
-resource "aws_lb_listener" "alertmanager_internal_listener" {
+resource "aws_lb_target_group" "prometheus_internal_endpoint" {
+  count = "${local.infra_network_public_subnets_count}"
+
+  name     = "${var.stack_name}-prom-internal-${count.index + 1}"
+  port     = "9090"
+  protocol = "HTTP"
+  vpc_id   = "${data.terraform_remote_state.infra_networking.vpc_id}"
+
+  health_check {
+    interval            = "10"
+    path                = "/graph"
+    matcher             = "200"
+    protocol            = "HTTP"
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = "5"
+  }
+}
+
+resource "aws_lb_listener" "internal_listener" {
   load_balancer_arn = "${aws_lb.monitoring_internal_alb.arn}"
   port              = "80"
   protocol          = "HTTP"
@@ -332,7 +269,7 @@ resource "aws_lb_listener" "alertmanager_internal_listener" {
 resource "aws_lb_listener_rule" "alerts_private_listener" {
   count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
 
-  listener_arn = "${aws_lb_listener.alertmanager_internal_listener.arn}"
+  listener_arn = "${aws_lb_listener.internal_listener.arn}"
   priority     = "${100 + count.index}"
 
   action {
@@ -345,6 +282,26 @@ resource "aws_lb_listener_rule" "alerts_private_listener" {
 
     values = [
       "alerts-${count.index + 1}.*",
+    ]
+  }
+}
+
+resource "aws_lb_listener_rule" "prom_private_listener" {
+  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
+
+  listener_arn = "${aws_lb_listener.internal_listener.arn}"
+  priority     = "${200 + count.index}"
+
+  action {
+    type             = "forward"
+    target_group_arn = "${element(aws_lb_target_group.prometheus_internal_endpoint.*.arn, count.index)}"
+  }
+
+  condition {
+    field = "host-header"
+
+    values = [
+      "prom-${count.index + 1}.*",
     ]
   }
 }
@@ -377,6 +334,20 @@ resource "aws_lb_listener" "paas_proxy_internal_listener" {
   }
 }
 
+resource "aws_route53_record" "prom_private_record" {
+  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
+
+  zone_id = "${data.terraform_remote_state.infra_networking.private_zone_id}"
+  name    = "prom-${count.index + 1}"
+  type    = "A"
+
+  alias {
+    name                   = "${aws_lb.monitoring_internal_alb.dns_name}"
+    zone_id                = "${aws_lb.monitoring_internal_alb.zone_id}"
+    evaluate_target_health = false
+  }
+}
+
 resource "aws_route53_record" "alerts_private_record" {
   count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
 
@@ -404,19 +375,23 @@ resource "aws_route53_record" "paas_proxy_private_record" {
 }
 
 ## Outputs
-
 output "monitoring_external_tg" {
-  value       = "${aws_lb_target_group.nginx_auth_external_endpoint.*.arn}"
-  description = "External Monitoring ALB target group"
+  value       = "${aws_lb_target_group.nginx_auth_proxy_external_endpoint.arn}"
+  description = "Monitoring external target group"
+}
+
+output "prometheus_internal_tg" {
+  value       = "${aws_lb_target_group.prometheus_internal_endpoint.*.arn}"
+  description = "Internal Prometheus target group"
 }
 
 output "prometheus_alb_dns" {
-  value       = "${aws_lb.nginx_auth_external_alb.*.dns_name}"
+  value       = "${aws_lb.monitoring_external_alb.*.dns_name}"
   description = "External Monitoring ALB DNS name"
 }
 
 output "zone_id" {
-  value       = "${aws_lb.nginx_auth_external_alb.*.zone_id}"
+  value       = "${aws_lb.monitoring_external_alb.*.zone_id}"
   description = "External Monitoring ALB hosted zone ID"
 }
 
@@ -458,6 +433,11 @@ output "prom_public_record_fqdns" {
 output "alerts_private_record_fqdns" {
   value       = "${aws_route53_record.alerts_private_record.*.fqdn}"
   description = "Alertmanagers private DNS FQDNs"
+}
+
+output "prom_private_record_fqdns" {
+  value       = "${aws_route53_record.prom_private_record.*.fqdn}"
+  description = "Prometheus private DNS FQDNs"
 }
 
 output "paas_proxy_private_record_fqdn" {

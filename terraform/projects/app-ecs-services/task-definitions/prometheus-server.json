@@ -5,6 +5,11 @@
     "cpu": ${prom_cpu},
     "memoryReservation": ${prom_memoryReservation},
     "essential": true,
+    "portMappings": [
+      {
+        "containerPort": 9090
+      }
+    ],
     "mountPoints": [
       {
         "sourceVolume": "prometheus-config",
@@ -44,36 +49,6 @@
       }
     ],
     "command": ["s3", "sync", "s3://${config_bucket}/prometheus", "/configs"],
-    "logConfiguration": {
-      "logDriver": "awslogs",
-      "options": {
-        "awslogs-group": "${log_group}",
-        "awslogs-region": "${region}",
-        "awslogs-stream-prefix": "prometheus"
-      }
-    }
-  },
-  {
-    "name": "auth-proxy",
-    "image": "nginx:alpine",
-    "cpu": 128,
-    "memory": 128,
-    "essential": true,
-    "portMappings": [
-      {
-        "containerPort": 9090
-      }
-    ],
-    "mountPoints": [
-      {
-        "sourceVolume": "auth-proxy",
-        "containerPath": "/etc/nginx/conf.d",
-        "readOnly": true
-      }
-    ],
-    "links": [
-      "prometheus"
-    ],
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {
