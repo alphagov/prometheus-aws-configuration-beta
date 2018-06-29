@@ -1,16 +1,4 @@
 groups:
-- name: HTTP-SVC-BASE-CHECKS
-  rules:
-  - alert: RequestsReponseTimeBelow
-    expr: up{job="tools-test-app"} == 0
-    for: 1m
-    labels:
-        severity: "P3"
-        product: "tools"
-    annotations:
-        summary: "Service is taking longer than 2 seconds to respond"
-        description: "The service name is {{ $labels.job }}. The URL under test is {{ $labels.instance }}"
-
 - name: AlertManager
   rules:
   - alert: AlertManager_Below_Threshold
