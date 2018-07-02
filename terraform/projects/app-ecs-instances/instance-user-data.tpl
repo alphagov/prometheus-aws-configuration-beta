@@ -1,6 +1,7 @@
 #!/bin/bash
 # Attach EBS volume to instance
 echo "[$(date '+%H:%M:%S %d-%m-%Y')] installing dependencies for volume attaching"
+sudo yum install -y aws-cli wget
 
 REGION="${region}"
 DEVICE="xvdf"
