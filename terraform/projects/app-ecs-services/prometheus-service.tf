@@ -10,6 +10,8 @@
 locals {
   num_azs = "${length(data.terraform_remote_state.app_ecs_instances.available_azs)}"
 
+  prometheus_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.prom_public_record_fqdns}"
+
   active_alertmanager_private_fqdns = "${slice(data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdns, 0, local.num_azs)}"
 }
 
@@ -95,9 +97,11 @@ data "template_file" "prometheus_config_file" {
 ### container, task, service definitions
 
 data "template_file" "prometheus_container_defn" {
+  count    = "${length(local.prometheus_public_fqdns)}"
   template = "${file("task-definitions/prometheus-server.json")}"
 
   vars {
+    prom_url      = "https://${local.prometheus_public_fqdns[count.index]}"
     log_group     = "${aws_cloudwatch_log_group.task_logs.name}"
     region        = "${var.aws_region}"
     config_bucket = "${aws_s3_bucket.config_bucket.id}"
@@ -105,8 +109,9 @@ data "template_file" "prometheus_container_defn" {
 }
 
 resource "aws_ecs_task_definition" "prometheus_server" {
-  family                = "${var.stack_name}-prometheus-server"
-  container_definitions = "${data.template_file.prometheus_container_defn.rendered}"
+  count                 = "${length(local.prometheus_public_fqdns)}"
+  family                = "${var.stack_name}-prometheus-server-${count.index}"
+  container_definitions = "${element(data.template_file.prometheus_container_defn.*.rendered, count.index)}"
   task_role_arn         = "${aws_iam_role.prometheus_task_iam_role.arn}"
 
   volume {
@@ -157,7 +162,7 @@ resource "aws_ecs_service" "prometheus_server" {
 
   name            = "${var.stack_name}-prometheus-server-${count.index + 1}"
   cluster         = "${var.stack_name}-ecs-monitoring"
-  task_definition = "${aws_ecs_task_definition.prometheus_server.arn}"
+  task_definition = "${element(aws_ecs_task_definition.prometheus_server.*.arn, count.index)}"
   desired_count   = 1
 
   load_balancer {
