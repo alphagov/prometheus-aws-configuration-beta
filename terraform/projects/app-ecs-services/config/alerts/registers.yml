@@ -2,10 +2,10 @@ groups:
 - name: Registers
   rules:
   - alert: RequestsExcess5xx
-    expr: sum(increase(requests{job="openregister-metric-exporter",status_range="5xx"}[5m])) by (app) >= 3
-    for: 15s
+    expr: sum by(app) (rate(requests{job="openregister-metric-exporter",status_range="5xx"}[5m])) / sum by(app) (rate(requests{job="openregister-metric-exporter"}[5m])) >= 0.25
+    for: 120s
     labels:
         product: "registers"
     annotations:
-        summary: "Service has too many 5xx errors"
-        description: "Service {{ $labels.app }} has had too many 5xx errors."
+        summary: "App {{ $labels.app }} has too many 5xx errors"
+        description: "App {{ $labels.app }} has 5xx errors in excess of 25% of total requests"
