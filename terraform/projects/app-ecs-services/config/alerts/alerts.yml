@@ -1,14 +1,30 @@
 groups:
-- name: AlertManager
+- name: PrometheusCore
   rules:
   - alert: AlertManager_Below_Threshold
     expr: up{job="alertmanager"} == 0 and on(job) sum by(job) (up{job="alertmanager"}) <= 1
     for: 10s
     labels:
-        severity: "P2"
-        product: "tools"
+        product: "prometheus"
     annotations:
         summary: "Service is below the expected instance Threshold"
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}"
+  - alert: NoFileSdTargets
+    # this expression is a little weird - count() has no value instead of 0 if there are no
+    # matching metrics.  But no value isn't less than 1 so we aren't able to trigger an alert
+    # that a regular count() is zero.  So we force missing values to be equal to
+    # zero using the `or count(up)*0` expression.
+    # This idea taken from: https://www.robustperception.io/existential-issues-with-metrics/
+    #
+    # Note also that this alert will only fire if there are *no* file_sd targets.
+    # This is useful if we only have one source of file_sd config, but might not be
+    # if we have multiple ways of receiving file_sd configs and only one of them breaks.
+    expr: (count(prometheus_sd_file_mtime_seconds) or count(up)*0) < 1
+    for: 10s
+    labels:
+        product: "prometheus"
+    annotations:
+        summary: "No file_sd targets detected"
+        description: "No file_sd targets were detected.  Is there a problem accessing the targets bucket?"
 
 # this can be improved however maybe this is something we need to focus on in Q2 when working on the support plan
