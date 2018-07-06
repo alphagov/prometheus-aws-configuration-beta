@@ -450,6 +450,11 @@ output "paas_proxy_tg" {
   description = "Paas proxy target group"
 }
 
+output "prom_public_record_fqdns" {
+  value       = "${aws_route53_record.prom_alias.*.fqdn}"
+  description = "Prometheus public DNS FQDNs"
+}
+
 output "alerts_private_record_fqdns" {
   value       = "${aws_route53_record.alerts_private_record.*.fqdn}"
   description = "Alertmanagers private DNS FQDNs"
