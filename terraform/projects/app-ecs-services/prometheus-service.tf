@@ -136,7 +136,7 @@ resource "aws_ecs_task_definition" "prometheus_server" {
   }
 }
 
-data "template_file" "pass_proxy_container_defn" {
+data "template_file" "paas_proxy_container_defn" {
   template = "${file("task-definitions/paas_proxy.json")}"
 
   vars {
@@ -147,8 +147,8 @@ data "template_file" "pass_proxy_container_defn" {
 }
 
 resource "aws_ecs_task_definition" "paas_proxy" {
-  family                = "${var.stack_name}-pass-proxy"
-  container_definitions = "${data.template_file.pass_proxy_container_defn.rendered}"
+  family                = "${var.stack_name}-paas-proxy"
+  container_definitions = "${data.template_file.paas_proxy_container_defn.rendered}"
   task_role_arn         = "${aws_iam_role.prometheus_task_iam_role.arn}"
 
   volume {
