@@ -1,0 +1,19 @@
+groups:
+- name: Prometheus
+  rules:
+  - alert: PrometheusIsDown
+    expr: up{job="prometheus"} == 0
+    for: 5m
+    labels:
+        product: "prometheus"
+    annotations:
+        summary: "Prometheus {{ $labels.instance }} is down"
+        description: "Prometheus {{ $labels.instance }} has not responded to scrapes for 5 minutes."
+
+  - alert: DiskUsageTooHigh
+    expr: disk_utilization{job="tools-metric-exporter", exported_space="prometheus-production"} > 80
+    labels:
+        product: "prometheus"
+    annotations:
+        summary: "{{ $labels.app }} instance: {{ $labels.exported_instance }} disk usage is too high"
+        description: "{{ $labels.app }} instance: {{ $labels.exported_instance }} is using over 80% of disk space."
