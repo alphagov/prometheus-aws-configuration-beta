@@ -26,6 +26,7 @@ Create ALBs for the ECS cluster
 | paas_proxy_alb_zoneid | Internal PaaS ALB target group |
 | paas_proxy_private_record_fqdn | PaaS Proxy private DNS FQDN |
 | paas_proxy_tg | Paas proxy target group |
+| prom_public_record_fqdns | Prometheus public DNS FQDNs |
 | prometheus_alb_dns | External Monitoring ALB DNS name |
 | zone_id | External Monitoring ALB hosted zone ID |
 
