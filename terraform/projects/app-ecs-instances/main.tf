@@ -57,6 +57,20 @@ variable "stack_name" {
   default     = "ecs-monitoring"
 }
 
+variable "dev_environment" {
+  type        = "string"
+  description = "Boolean flag for development environments"
+  default     = "false"
+}
+
+variable "asg_dev_scaledown_schedules" {
+  type        = "list"
+  description = "Schedules for scaling down dev EC2 instances"
+
+  # every hour starting from 6pm - 8am UTC, Monday - Friday, and every hour on the weekend
+  default = ["0 18-23 * * MON,TUE,WED,THU,FRI", "0 0-8 * * MON,TUE,WED,THU,FRI", "0 0 * * SAT,SUN"]
+}
+
 # locals
 # --------------------------------------------------------------
 
@@ -185,6 +199,16 @@ module "ecs_instance" {
   )}"
 }
 
+resource "aws_autoscaling_schedule" "asg_dev_scaledown_schedules" {
+  scheduled_action_name  = "asg_dev_scaledown_schedule-${count.index}"
+  count                  = "${var.dev_environment == "true" ? "${length(var.asg_dev_scaledown_schedules)}" : 0}"
+  min_size               = 0
+  max_size               = "${var.prometheis_total}"
+  desired_capacity       = 0
+  recurrence             = "${element(var.asg_dev_scaledown_schedules, count.index)}"
+  autoscaling_group_name = "${module.ecs_instance.this_autoscaling_group_name}"
+}
+
 resource "aws_ebs_volume" "prometheus_ebs_volume" {
   count = "${length(data.aws_subnet.subnets_for_prometheus.*.availability_zone)}"
 
@@ -215,4 +239,9 @@ resource "aws_ebs_volume" "prometheus_ebs_volume" {
 output "available_azs" {
   value       = "${data.aws_subnet.subnets_for_prometheus.*.availability_zone}"
   description = "AZs available with running container instances"
+}
+
+output "asg_dev_scaledown_schedules" {
+  value       = "${aws_autoscaling_schedule.asg_dev_scaledown_schedules.*.recurrence}"
+  description = "Cron schedule for scaling down dev EC2 instances"
 }
