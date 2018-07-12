@@ -235,8 +235,8 @@ else
                 if [ $2 ] ; then
                         clean $2
                 else
-                        # For a fresh environment, move tfvars in order to force creation of new stack tfvars
-                        if [ -e "${ROOTPROJ}/stacks/${ENV}.tfvars" ] ; then
+                        # For a fresh dev environment, move tfvars in order to force creation of new stack tfvars
+                        if [ $DEV_ENVIRONMENT = 'true' -a -e "${ROOTPROJ}/stacks/${ENV}.tfvars" ] ; then
                                 mv ${ROOTPROJ}/stacks/${ENV}.tfvars ${ROOTPROJ}/stacks/${ENV}.tfvars.old
                                 echo "Moved ${ROOTPROJ}/stacks/${ENV}.tfvars to ${ENV}.tfvars.old"
                         fi
