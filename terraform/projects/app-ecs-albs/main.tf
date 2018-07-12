@@ -177,7 +177,7 @@ resource "aws_route53_record" "alerts_alias" {
 
 resource "aws_lb_target_group" "nginx_auth_proxy_external_endpoint" {
   name                 = "${var.stack_name}-ext-tg"
-  port                 = 8181
+  port                 = 80
   protocol             = "HTTP"
   vpc_id               = "${data.terraform_remote_state.infra_networking.vpc_id}"
   deregistration_delay = 30

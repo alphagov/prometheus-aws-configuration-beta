@@ -7,7 +7,7 @@
   "essential": true,
   "portMappings": [
     {
-      "containerPort": 8181
+      "containerPort": 80
     }
   ],
   "mountPoints": [

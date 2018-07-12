@@ -1,5 +1,5 @@
 server {
-  listen 8181 default_server;
+  listen 80 default_server;
 
   location /health {
     return 200 "Static health check";
@@ -7,7 +7,7 @@ server {
 }
 
 server {
-  listen 8181;
+  listen 80;
   auth_basic "Prometheus";
   auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
 
@@ -31,7 +31,7 @@ server {
 }
 
 server {
-  listen 8181;
+  listen 80;
   auth_basic "Prometheus";
   auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
 
@@ -55,7 +55,7 @@ server {
 }
 
 server {
-  listen 8181;
+  listen 80;
   auth_basic "Prometheus";
   auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
 
@@ -79,7 +79,7 @@ server {
 }
 
 server {
-  listen 8181;
+  listen 80;
   auth_basic "Prometheus";
   auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
 
@@ -103,7 +103,7 @@ server {
 }
 
 server {
-  listen 8181;
+  listen 80;
   auth_basic "Prometheus";
   auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
 
@@ -127,7 +127,7 @@ server {
 }
 
 server {
-  listen 8181;
+  listen 80;
   auth_basic "Prometheus";
   auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
 

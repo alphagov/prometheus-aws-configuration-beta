@@ -31,7 +31,7 @@ resource "aws_ecs_service" "nginx_auth_service" {
   load_balancer {
     target_group_arn = "${data.terraform_remote_state.app_ecs_albs.monitoring_external_tg}"
     container_name   = "nginx-auth-proxy"
-    container_port   = 8181
+    container_port   = 80
   }
 
   ordered_placement_strategy {
