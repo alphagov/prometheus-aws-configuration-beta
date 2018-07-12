@@ -14,7 +14,6 @@ data "template_file" "nginx_auth_container_def" {
 resource "aws_ecs_task_definition" "nginx_auth_server" {
   family                = "${var.stack_name}-nginx-auth"
   container_definitions = "${data.template_file.nginx_auth_container_def.rendered}"
-  task_role_arn         = "${aws_iam_role.alertmanager_task_iam_role.arn}"
 
   volume {
     name      = "nginx-auth-proxy"
