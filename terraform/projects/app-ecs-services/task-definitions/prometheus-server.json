@@ -2,8 +2,8 @@
   {
     "name": "prometheus",
     "image": "prom/prometheus",
-    "cpu": 1024,
-    "memoryReservation": 4096,
+    "cpu": ${prom_cpu},
+    "memoryReservation": ${prom_memoryReservation},
     "essential": true,
     "mountPoints": [
       {

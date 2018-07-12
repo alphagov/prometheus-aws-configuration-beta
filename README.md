@@ -70,7 +70,7 @@ make apply          # Apply all terraform, auto approves
 
 If you are changing stacks or have a problem with the terraform state:
 
-`make clean`
+`make clean create-stack init`
 
 To delete a stack:
 

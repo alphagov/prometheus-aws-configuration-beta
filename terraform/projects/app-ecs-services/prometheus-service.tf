@@ -7,6 +7,21 @@
 *
 */
 
+variable "prom_cpu" {
+  type        = "string"
+  description = "CPU requirement for prometheus"
+  default     = "1024"
+}
+
+variable "prom_memoryReservation" {
+  type        = "string"
+  description = "memory reservation requirement for prometheus"
+  default     = "4096"
+}
+
+# locals
+# --------------------------------------------------------------
+
 locals {
   num_azs = "${length(data.terraform_remote_state.app_ecs_instances.available_azs)}"
 
@@ -101,10 +116,12 @@ data "template_file" "prometheus_container_defn" {
   template = "${file("task-definitions/prometheus-server.json")}"
 
   vars {
-    prom_url      = "https://${local.prometheus_public_fqdns[count.index]}"
-    log_group     = "${aws_cloudwatch_log_group.task_logs.name}"
-    region        = "${var.aws_region}"
-    config_bucket = "${aws_s3_bucket.config_bucket.id}"
+    prom_cpu               = "${var.prom_cpu}"
+    prom_memoryReservation = "${var.prom_memoryReservation}"
+    prom_url               = "https://${local.prometheus_public_fqdns[count.index]}"
+    log_group              = "${aws_cloudwatch_log_group.task_logs.name}"
+    region                 = "${var.aws_region}"
+    config_bucket          = "${aws_s3_bucket.config_bucket.id}"
   }
 }
 

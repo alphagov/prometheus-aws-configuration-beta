@@ -36,11 +36,14 @@ else
 cat <<EOF >stacks/${ENV}.tfvars
 dev_environment = "true"
 ecs_instance_ssh_keyname = "${ENV}-jumpbox-key"
+ecs_instance_type = "t2.small"
+prom_cpu = "128"
+prom_memoryReservation = "512"
 prometheus_subdomain = "${ENV}"
+prometheis_total = 1
 remote_state_bucket = "${TERRAFORM_BUCKET}"
 stack_name = "${ENV}"
 targets_s3_bucket="$DEFAULT_DEV_TARGETS_S3_BUCKET"
-prometheis_total=1
 additional_tags = {
   "Environment" = "${ENV}"
 }
@@ -59,10 +62,10 @@ create_bucket() {
 }
 
 does_stack_config_exist() {
-        if [ -e "${ROOTPROJ}/stacks/${ENV}.backend" ] ; then
+        if [ -e "${ROOTPROJ}/stacks/${ENV}.tfvars" ] ; then
                 return 0
         else
-                echo "stacks/${ENV}.backend doesn't exist, create the stack config files first"
+                echo "stacks/${ENV}.tfvars doesn't exist, create the stack config files first"
                 return 1
         fi
 }
@@ -232,6 +235,12 @@ else
                 if [ $2 ] ; then
                         clean $2
                 else
+                        # For a fresh environment, move tfvars in order to force creation of new stack tfvars
+                        if [ -e "${ROOTPROJ}/stacks/${ENV}.tfvars" ] ; then
+                                mv ${ROOTPROJ}/stacks/${ENV}.tfvars ${ROOTPROJ}/stacks/${ENV}.tfvars.old
+                                echo "Moved ${ROOTPROJ}/stacks/${ENV}.tfvars to ${ENV}.tfvars.old"
+                        fi
+
                         for folder in ${COMPONENTS[@]}
                         do
                                 clean $folder

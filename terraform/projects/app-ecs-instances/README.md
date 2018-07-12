@@ -9,7 +9,9 @@ Create ECS container instances
 | Name | Description | Type | Default | Required |
 |------|-------------|:----:|:-----:|:-----:|
 | additional_tags | Stack specific tags to apply | map | `<map>` | no |
+| asg_dev_scaledown_schedules | Schedules for scaling down dev EC2 instances | list | `<list>` | no |
 | aws_region | AWS region | string | `eu-west-1` | no |
+| dev_environment | Boolean flag for development environments | string | `false` | no |
 | ecs_instance_root_size | ECS container instance root volume size - in GB | string | `50` | no |
 | ecs_instance_ssh_keyname | SSH keyname for ECS container instances | string | `ecs-monitoring-ssh-test` | no |
 | ecs_instance_type | ECS container instance type | string | `m4.xlarge` | no |
@@ -22,5 +24,6 @@ Create ECS container instances
 
 | Name | Description |
 |------|-------------|
+| asg_dev_scaledown_schedules | Cron schedule for scaling down dev EC2 instances |
 | available_azs | AZs available with running container instances |
 
