@@ -20,13 +20,15 @@ Create ALBs for the ECS cluster
 | alertmanager_alb_dns | External Alertmanager ALB DNS name |
 | alertmanager_alb_zoneid | External Alertmanager ALB zone id |
 | alerts_private_record_fqdns | Alertmanagers private DNS FQDNs |
-| monitoring_external_tg | External Monitoring ALB target group |
+| monitoring_external_tg | Monitoring external target group |
 | monitoring_internal_tg | External Alertmanager ALB target group |
 | paas_proxy_alb_dns | Internal PaaS ALB DNS name |
 | paas_proxy_alb_zoneid | Internal PaaS ALB target group |
 | paas_proxy_private_record_fqdn | PaaS Proxy private DNS FQDN |
 | paas_proxy_tg | Paas proxy target group |
+| prom_private_record_fqdns | Prometheus private DNS FQDNs |
 | prom_public_record_fqdns | Prometheus public DNS FQDNs |
 | prometheus_alb_dns | External Monitoring ALB DNS name |
+| prometheus_internal_tg | Internal Prometheus target group |
 | zone_id | External Monitoring ALB hosted zone ID |
 
