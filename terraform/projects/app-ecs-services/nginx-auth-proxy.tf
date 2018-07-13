@@ -25,7 +25,7 @@ resource "aws_ecs_service" "nginx_auth_service" {
   name            = "${var.stack_name}-nginx-auth"
   cluster         = "${var.stack_name}-ecs-monitoring"
   task_definition = "${aws_ecs_task_definition.nginx_auth_server.arn}"
-  desired_count   = 3
+  desired_count   = "${length(data.terraform_remote_state.app_ecs_instances.available_azs)}"
 
   load_balancer {
     target_group_arn = "${data.terraform_remote_state.app_ecs_albs.monitoring_external_tg}"
