@@ -85,7 +85,7 @@ data "terraform_remote_state" "infra_security_groups" {
 
 ## Resources
 
-resource "aws_lb" "monitoring_external_alb" {
+resource "aws_lb" "nginx_auth_external_alb" {
   name               = "${var.stack_name}-external-alb"
   internal           = false
   load_balancer_type = "application"
@@ -155,8 +155,8 @@ resource "aws_route53_record" "prom_alias" {
   type    = "A"
 
   alias {
-    name                   = "${aws_lb.monitoring_external_alb.dns_name}"
-    zone_id                = "${aws_lb.monitoring_external_alb.zone_id}"
+    name                   = "${aws_lb.nginx_auth_external_alb.dns_name}"
+    zone_id                = "${aws_lb.nginx_auth_external_alb.zone_id}"
     evaluate_target_health = false
   }
 }
@@ -169,8 +169,8 @@ resource "aws_route53_record" "alerts_alias" {
   type    = "A"
 
   alias {
-    name                   = "${aws_lb.monitoring_external_alb.dns_name}"
-    zone_id                = "${aws_lb.monitoring_external_alb.zone_id}"
+    name                   = "${aws_lb.nginx_auth_external_alb.dns_name}"
+    zone_id                = "${aws_lb.nginx_auth_external_alb.zone_id}"
     evaluate_target_health = false
   }
 }
@@ -194,7 +194,7 @@ resource "aws_lb_target_group" "nginx_auth_proxy_external_endpoint" {
 }
 
 resource "aws_lb_listener" "external_listener_http" {
-  load_balancer_arn = "${aws_lb.monitoring_external_alb.arn}"
+  load_balancer_arn = "${aws_lb.nginx_auth_external_alb.arn}"
   port              = "80"
   protocol          = "HTTP"
 
@@ -205,7 +205,7 @@ resource "aws_lb_listener" "external_listener_http" {
 }
 
 resource "aws_lb_listener" "external_listener_https" {
-  load_balancer_arn = "${aws_lb.monitoring_external_alb.arn}"
+  load_balancer_arn = "${aws_lb.nginx_auth_external_alb.arn}"
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
@@ -386,12 +386,12 @@ output "prometheus_internal_tg" {
 }
 
 output "prometheus_alb_dns" {
-  value       = "${aws_lb.monitoring_external_alb.*.dns_name}"
+  value       = "${aws_lb.nginx_auth_external_alb.*.dns_name}"
   description = "External Monitoring ALB DNS name"
 }
 
 output "zone_id" {
-  value       = "${aws_lb.monitoring_external_alb.*.zone_id}"
+  value       = "${aws_lb.nginx_auth_external_alb.*.zone_id}"
   description = "External Monitoring ALB hosted zone ID"
 }
 
