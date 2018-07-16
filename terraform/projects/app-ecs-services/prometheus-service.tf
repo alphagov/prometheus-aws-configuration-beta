@@ -28,6 +28,7 @@ locals {
   prometheus_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.prom_public_record_fqdns}"
 
   active_alertmanager_private_fqdns = "${slice(data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdns, 0, local.num_azs)}"
+  active_prometheus_private_fqdns   = "${slice(data.terraform_remote_state.app_ecs_albs.prom_private_record_fqdns, 0, local.num_azs)}"
 }
 
 ## IAM roles & policies
@@ -105,6 +106,7 @@ data "template_file" "prometheus_config_file" {
 
   vars {
     alertmanager_dns_names = "${join("\",\"", local.active_alertmanager_private_fqdns)}"
+    prometheus_dns_names   = "${join("\",\"", local.active_prometheus_private_fqdns)}"
     paas_proxy_dns_name    = "${data.terraform_remote_state.app_ecs_albs.paas_proxy_private_record_fqdn}"
   }
 }

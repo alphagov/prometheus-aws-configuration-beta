@@ -11,7 +11,7 @@ scrape_configs:
   - job_name: prometheus
     scrape_interval: 5s
     static_configs:
-      - targets: ['localhost:9090']
+      - targets: ["${prometheus_dns_names}"]
   - job_name: alertmanager
     scheme: http
     scrape_interval: 5s
