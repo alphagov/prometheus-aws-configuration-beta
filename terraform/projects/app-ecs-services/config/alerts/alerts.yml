@@ -9,6 +9,14 @@ groups:
     annotations:
         summary: "Service is below the expected instance Threshold"
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}"
+  - alert: Prometheus_Below_Threshold
+    expr: up{job="prometheus"} == 0 and on(job) sum by(job) (up{job="prometheus"}) <= 1
+    for: 10s
+    labels:
+        product: "prometheus"
+    annotations:
+        summary: "Service is below the expected instance Threshold"
+        description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}"
   - alert: NoFileSdTargets
     # this expression is a little weird - count() has no value instead of 0 if there are no
     # matching metrics.  But no value isn't less than 1 so we aren't able to trigger an alert
