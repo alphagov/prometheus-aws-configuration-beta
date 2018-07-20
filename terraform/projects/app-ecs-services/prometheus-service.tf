@@ -118,6 +118,7 @@ data "template_file" "prometheus_container_defn" {
   template = "${file("task-definitions/prometheus-server.json")}"
 
   vars {
+    enable_lifecycle       = "true"
     prom_cpu               = "${var.prom_cpu}"
     prom_memoryReservation = "${var.prom_memoryReservation}"
     prom_url               = "https://${local.prometheus_public_fqdns[count.index]}"
