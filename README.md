@@ -9,9 +9,9 @@ Please follow the deployment checklist and keep the deployment log up to date
 
 ## Setup ##
 
-### Install Terraform
+### Install dependencies
 
-    brew install tfenv
+    brew bundle
     tfenv install # this will pick up the version from .terraform-version
 
 ### Set up AWS Vault so you can assume AWS roles
@@ -142,7 +142,6 @@ For other examples on how to set up your own cron schedule have a look at this w
 If you are experiencing problems after creating the stack, you may want to connect to the EC2 instance:
 
 Before using the jump box:
-  - Ensure you have `jq` installed: `brew install jq`
   - Enable ssh forwarding of your private key: `ssh-add ~/.ssh/id_rsa`
 
 Run one of the following commands to connect to the instance:
@@ -179,10 +178,6 @@ If you want to make a change to our Prometheus infrastructure you should:
 
 The projects in this repo use the [terraform-docs](https://github.com/segmentio/terraform-docs)
 to generate the per project documentation.
-
-You can install `terraform-docs` by running:
-
-    brew install terraform-docs
 
 When adding adding or changing terraform projects you should run `make docs`
 and add the changes to your commit.
