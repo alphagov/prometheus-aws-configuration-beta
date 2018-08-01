@@ -10,13 +10,13 @@
 variable "prom_cpu" {
   type        = "string"
   description = "CPU requirement for prometheus"
-  default     = "1024"
+  default     = "512"
 }
 
 variable "prom_memoryReservation" {
   type        = "string"
   description = "memory reservation requirement for prometheus"
-  default     = "4096"
+  default     = "2048"
 }
 
 # locals
