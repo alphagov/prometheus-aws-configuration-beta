@@ -375,6 +375,7 @@ resource "aws_route53_record" "paas_proxy_private_record" {
 }
 
 ## Outputs
+
 output "monitoring_external_tg" {
   value       = "${aws_lb_target_group.nginx_auth_proxy_external_endpoint.arn}"
   description = "Monitoring external target group"
