@@ -431,6 +431,11 @@ output "prom_public_record_fqdns" {
   description = "Prometheus public DNS FQDNs"
 }
 
+output "alerts_public_record_fqdns" {
+  value       = "${aws_route53_record.alerts_alias.*.fqdn}"
+  description = "Alertmanagers public DNS FQDNs"
+}
+
 output "alerts_private_record_fqdns" {
   value       = "${aws_route53_record.alerts_private_record.*.fqdn}"
   description = "Alertmanagers private DNS FQDNs"
