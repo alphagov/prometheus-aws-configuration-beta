@@ -125,12 +125,17 @@ data "pass_password" "pagerduty_service_key" {
   path = "pagerduty/integration-keys/production"
 }
 
+data "pass_password" "dgu_pagerduty_service_key" {
+  path = "pagerduty/integration-keys/dgu"
+}
+
 data "template_file" "alertmanager_config_file" {
   template = "${file("templates/alertmanager.tpl")}"
 
   vars {
-    pagerduty_service_key = "${data.pass_password.pagerduty_service_key.password}"
-    smtp_from             = "alerts@${data.terraform_remote_state.infra_networking.public_subdomain}"
+    pagerduty_service_key     = "${data.pass_password.pagerduty_service_key.password}"
+    dgu_pagerduty_service_key = "${data.pass_password.dgu_pagerduty_service_key.password}"
+    smtp_from                 = "alerts@${data.terraform_remote_state.infra_networking.public_subdomain}"
 
     # Port as requested by https://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-connect.html
     smtp_smarthost         = "email-smtp.${var.aws_region}.amazonaws.com:587"
