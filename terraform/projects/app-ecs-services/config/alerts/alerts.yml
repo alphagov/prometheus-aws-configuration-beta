@@ -6,6 +6,7 @@ groups:
     for: 10s
     labels:
         product: "prometheus"
+        severity: "page"
     annotations:
         summary: "Service is below the expected instance Threshold"
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}"
@@ -14,6 +15,7 @@ groups:
     for: 10s
     labels:
         product: "prometheus"
+        severity: "page"
     annotations:
         summary: "Service is below the expected instance Threshold"
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}"
@@ -31,6 +33,7 @@ groups:
     for: 10s
     labels:
         product: "prometheus"
+        severity: "page"
     annotations:
         summary: "No file_sd targets detected"
         description: "No file_sd targets were detected.  Is there a problem accessing the targets bucket?"
@@ -42,7 +45,7 @@ groups:
     for: 10s
     labels:
         product: "prometheus"
-        severity: page
+        severity: "page"
     annotations:
         summary: "Service is over capacity."
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}"
@@ -51,7 +54,19 @@ groups:
     expr: sum by(instance)(rate(prometheus_engine_query_duration_seconds_sum{job="prometheus"}[2h])) > 4
     labels:
         product: "prometheus"
-        severity: ticket
+        severity: "ticket"
     annotations:
         summary: "Service is approaching capacity."
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}"
+
+# Just for testing, should be removed after testing complete on staging and production
+
+  - alert: AlwaysAlert
+    expr: up{job="alertmanager"}  <= 3
+    for: 10s
+    labels:
+        product: "prometheus"
+        severity: "ticket"
+    annotations:
+        summary: "Always alerting"
+        description: "Always alerting"

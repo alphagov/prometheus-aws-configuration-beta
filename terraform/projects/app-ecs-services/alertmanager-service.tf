@@ -7,6 +7,11 @@
 *
 */
 
+## Locals
+locals {
+  alertmanager_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.alerts_public_record_fqdns}"
+}
+
 ## IAM roles & policies
 
 resource "aws_iam_role" "alertmanager_task_iam_role" {
@@ -66,18 +71,21 @@ resource "aws_iam_role_policy_attachment" "alertmanager_policy_attachment" {
 ### container, task, service definitions
 
 data "template_file" "alertmanager_container_defn" {
+  count    = "${length(local.alertmanager_public_fqdns)}"
   template = "${file("task-definitions/alertmanager-server.json")}"
 
   vars {
-    log_group     = "${aws_cloudwatch_log_group.task_logs.name}"
-    region        = "${var.aws_region}"
-    config_bucket = "${aws_s3_bucket.config_bucket.id}"
+    alertmanager_url = "https://${local.alertmanager_public_fqdns[count.index]}"
+    log_group        = "${aws_cloudwatch_log_group.task_logs.name}"
+    region           = "${var.aws_region}"
+    config_bucket    = "${aws_s3_bucket.config_bucket.id}"
   }
 }
 
 resource "aws_ecs_task_definition" "alertmanager_server" {
+  count                 = "${length(local.alertmanager_public_fqdns)}"
   family                = "${var.stack_name}-alertmanager-server"
-  container_definitions = "${data.template_file.alertmanager_container_defn.rendered}"
+  container_definitions = "${element(data.template_file.alertmanager_container_defn.*.rendered, count.index)}"
   task_role_arn         = "${aws_iam_role.alertmanager_task_iam_role.arn}"
 
   volume {
@@ -96,7 +104,7 @@ resource "aws_ecs_service" "alertmanager_server" {
 
   name            = "${var.stack_name}-alertmanager-server-${count.index + 1}"
   cluster         = "${var.stack_name}-ecs-monitoring"
-  task_definition = "${aws_ecs_task_definition.alertmanager_server.arn}"
+  task_definition = "${element(aws_ecs_task_definition.alertmanager_server.*.arn, count.index)}"
   desired_count   = 1
 
   load_balancer {
@@ -122,11 +130,32 @@ data "template_file" "alertmanager_config_file" {
 
   vars {
     pagerduty_service_key = "${data.pass_password.pagerduty_service_key.password}"
+    smtp_from             = "alerts@${data.terraform_remote_state.infra_networking.public_subdomain}"
+
+    # Port as requested by https://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-connect.html
+    smtp_smarthost         = "email-smtp.${var.aws_region}.amazonaws.com:587"
+    smtp_username          = "${aws_iam_access_key.smtp.id}"
+    smtp_password          = "${aws_iam_access_key.smtp.ses_smtp_password}"
+    ticket_recipient_email = "${var.ticket_recipient_email}"
   }
 }
 
 data "template_file" "alertmanager_dev_config_file" {
   template = "${file("templates/alertmanager-dev.tpl")}"
+
+  # For dev stacks, as we have not requested "AWS SES production access", by default
+  # emails will not be sent unless you verify the recipient's email address
+  # (e.g. your personal email for testing).
+  # https://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses-procedure.html
+  vars {
+    smtp_from = "alerts@${data.terraform_remote_state.infra_networking.public_subdomain}"
+
+    # Port as requested by https://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-connect.html
+    smtp_smarthost         = "email-smtp.${var.aws_region}.amazonaws.com:587"
+    smtp_username          = "${aws_iam_access_key.smtp.id}"
+    smtp_password          = "${aws_iam_access_key.smtp.ses_smtp_password}"
+    ticket_recipient_email = "${var.ticket_recipient_email}"
+  }
 }
 
 resource "aws_s3_bucket_object" "alertmanager" {
@@ -134,4 +163,81 @@ resource "aws_s3_bucket_object" "alertmanager" {
   key     = "alertmanager/alertmanager.yml"
   content = "${var.dev_environment == "true" ? data.template_file.alertmanager_dev_config_file.rendered : data.template_file.alertmanager_config_file.rendered}"
   etag    = "${md5(var.dev_environment == "true" ? data.template_file.alertmanager_dev_config_file.rendered : data.template_file.alertmanager_config_file.rendered)}"
+}
+
+## AWS SES
+
+resource "aws_ses_domain_identity" "main" {
+  domain = "${data.terraform_remote_state.infra_networking.public_subdomain}"
+}
+
+resource "aws_route53_record" "txt_amazonses_verification_record" {
+  zone_id = "${data.terraform_remote_state.infra_networking.public_zone_id}"
+  name    = "_amazonses.${data.terraform_remote_state.infra_networking.public_subdomain}"
+  type    = "TXT"
+  ttl     = "600"
+  records = ["${aws_ses_domain_identity.main.verification_token}"]
+}
+
+resource "aws_ses_domain_dkim" "main" {
+  domain = "${aws_ses_domain_identity.main.domain}"
+}
+
+resource "aws_route53_record" "dkim_amazonses_verification_record" {
+  count   = 3
+  zone_id = "${data.terraform_remote_state.infra_networking.public_zone_id}"
+  name    = "${element(aws_ses_domain_dkim.main.dkim_tokens, count.index)}._domainkey.${data.terraform_remote_state.infra_networking.public_subdomain}"
+  type    = "CNAME"
+  ttl     = "600"
+  records = ["${element(aws_ses_domain_dkim.main.dkim_tokens, count.index)}.dkim.amazonses.com"]
+}
+
+resource "aws_ses_domain_mail_from" "alerts" {
+  domain           = "${aws_ses_domain_identity.main.domain}"
+  mail_from_domain = "mail.${aws_ses_domain_identity.main.domain}"
+}
+
+resource "aws_route53_record" "alerts_ses_domain_mail_from_mx" {
+  zone_id = "${data.terraform_remote_state.infra_networking.public_zone_id}"
+  name    = "${aws_ses_domain_mail_from.alerts.mail_from_domain}"
+  type    = "MX"
+  ttl     = "600"
+  records = ["10 feedback-smtp.${var.aws_region}.amazonses.com"]
+}
+
+resource "aws_route53_record" "alerts_ses_domain_mail_from_txt" {
+  zone_id = "${data.terraform_remote_state.infra_networking.public_zone_id}"
+  name    = "${aws_ses_domain_mail_from.alerts.mail_from_domain}"
+  type    = "TXT"
+  ttl     = "600"
+  records = ["v=spf1 include:amazonses.com -all"]
+}
+
+# IAM for SMTP
+
+resource "aws_iam_user" "smtp" {
+  name = "${var.stack_name}.smtp"
+  path = "/system/"
+}
+
+resource "aws_iam_access_key" "smtp" {
+  user = "${aws_iam_user.smtp.name}"
+}
+
+resource "aws_iam_user_policy" "smtp_ro" {
+  name = "${var.stack_name}.smtp"
+  user = "${aws_iam_user.smtp.name}"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "ses:SendRawEmail",
+      "Resource": "*"
+    }
+  ]
+}
+EOF
 }

@@ -20,6 +20,7 @@ Create ALBs for the ECS cluster
 | alertmanager_alb_dns | External Alertmanager ALB DNS name |
 | alertmanager_alb_zoneid | External Alertmanager ALB zone id |
 | alerts_private_record_fqdns | Alertmanagers private DNS FQDNs |
+| alerts_public_record_fqdns | Alertmanagers public DNS FQDNs |
 | monitoring_external_tg | Monitoring external target group |
 | monitoring_internal_tg | External Alertmanager ALB target group |
 | paas_proxy_alb_dns | Internal PaaS ALB DNS name |

@@ -218,7 +218,7 @@ resource "aws_ecs_service" "config_updater" {
   name            = "${var.stack_name}-targets-grabber"
   cluster         = "${var.stack_name}-ecs-monitoring"
   task_definition = "${aws_ecs_task_definition.config_updater.arn}"
-  desired_count   = 3
+  desired_count   = "${length(data.terraform_remote_state.app_ecs_instances.available_azs)}"
 }
 
 data "template_file" "config_updater_defn" {
