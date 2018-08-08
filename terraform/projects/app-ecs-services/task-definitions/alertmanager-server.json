@@ -9,11 +9,13 @@
       {
         "containerPort": 9093,
         "hostPort": 9093
+      },
+      {
+        "containerPort": 9094,
+        "hostPort": 9094
       }
     ],
-    "command": [
-      "--config.file=/etc/alertmanager/alertmanager.yml"
-    ],
+    "command": ${mesh_servers},
     "mountPoints": [
       {
         "sourceVolume": "alertmanager",

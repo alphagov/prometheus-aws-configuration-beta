@@ -7,6 +7,13 @@
 *
 */
 
+## Dtata enum
+data "aws_instances" "aws_asg" {
+  instance_tags {
+    Name = "${var.stack_name}-ecs-instance"
+  }
+}
+
 ## IAM roles & policies
 
 resource "aws_iam_role" "alertmanager_task_iam_role" {
@@ -72,6 +79,7 @@ data "template_file" "alertmanager_container_defn" {
     log_group     = "${aws_cloudwatch_log_group.task_logs.name}"
     region        = "${var.aws_region}"
     config_bucket = "${aws_s3_bucket.config_bucket.id}"
+    mesh_servers = "${jsonencode(formatlist("--cluster.peer=%s:9094", data.aws_instances.aws_asg.private_ips))}"
   }
 }
 
@@ -131,7 +139,7 @@ data "template_file" "alertmanager_dev_config_file" {
 
 resource "aws_s3_bucket_object" "alertmanager" {
   bucket  = "${aws_s3_bucket.config_bucket.id}"
-  key     = "alertmanager/alertmanager.yml"
+  key     = "alertmanager/config.yml"
   content = "${var.dev_environment == "true" ? data.template_file.alertmanager_dev_config_file.rendered : data.template_file.alertmanager_config_file.rendered}"
   etag    = "${md5(var.dev_environment == "true" ? data.template_file.alertmanager_dev_config_file.rendered : data.template_file.alertmanager_config_file.rendered)}"
 }
