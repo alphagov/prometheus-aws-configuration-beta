@@ -15,4 +15,5 @@ Create services and task definitions for the ECS cluster
 | remote_state_bucket | S3 bucket we store our terraform state in | string | `ecs-monitoring` | no |
 | stack_name | Unique name for this collection of resources | string | `ecs-monitoring` | no |
 | targets_s3_bucket | The default s3 bucket to grab targets | string | `gds-prometheus-targets` | no |
+| ticket_recipient_email | Email address to send ticket alerts to | string | `prometheus-notifications@digital.cabinet-office.gov.uk` | no |
 

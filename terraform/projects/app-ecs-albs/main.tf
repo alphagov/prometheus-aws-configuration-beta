@@ -375,6 +375,7 @@ resource "aws_route53_record" "paas_proxy_private_record" {
 }
 
 ## Outputs
+
 output "monitoring_external_tg" {
   value       = "${aws_lb_target_group.nginx_auth_proxy_external_endpoint.arn}"
   description = "Monitoring external target group"
@@ -428,6 +429,11 @@ output "paas_proxy_tg" {
 output "prom_public_record_fqdns" {
   value       = "${aws_route53_record.prom_alias.*.fqdn}"
   description = "Prometheus public DNS FQDNs"
+}
+
+output "alerts_public_record_fqdns" {
+  value       = "${aws_route53_record.alerts_alias.*.fqdn}"
+  description = "Alertmanagers public DNS FQDNs"
 }
 
 output "alerts_private_record_fqdns" {

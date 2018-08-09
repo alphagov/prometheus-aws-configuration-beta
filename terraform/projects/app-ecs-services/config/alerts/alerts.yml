@@ -6,6 +6,7 @@ groups:
     for: 10s
     labels:
         product: "prometheus"
+        severity: "page"
     annotations:
         summary: "Service is below the expected instance Threshold"
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}"
@@ -14,6 +15,7 @@ groups:
     for: 10s
     labels:
         product: "prometheus"
+        severity: "page"
     annotations:
         summary: "Service is below the expected instance Threshold"
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}"
@@ -31,8 +33,28 @@ groups:
     for: 10s
     labels:
         product: "prometheus"
+        severity: "page"
     annotations:
         summary: "No file_sd targets detected"
         description: "No file_sd targets were detected.  Is there a problem accessing the targets bucket?"
 
 # this can be improved however maybe this is something we need to focus on in Q2 when working on the support plan
+
+  - alert: Prometheus_Over_Capacity
+    expr: sum by(instance)(rate(prometheus_engine_query_duration_seconds_sum{job="prometheus"}[5m])) > 8
+    for: 10s
+    labels:
+        product: "prometheus"
+        severity: "page"
+    annotations:
+        summary: "Service is over capacity."
+        description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}"
+
+  - alert: Prometheus_High_Load
+    expr: sum by(instance)(rate(prometheus_engine_query_duration_seconds_sum{job="prometheus"}[2h])) > 4
+    labels:
+        product: "prometheus"
+        severity: "ticket"
+    annotations:
+        summary: "Service is approaching capacity."
+        description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}"
