@@ -118,7 +118,7 @@ resource "aws_security_group" "alertmanager_external_sg" {
   )}"
 }
 
-resource "aws_security_group_rule" "alertmanager_external_sg_ingress_any_http" {
+resource "aws_security_group_rule" "alertmanager_external_sg_ingress_office_http" {
   type              = "ingress"
   to_port           = 80
   from_port         = 80
@@ -136,7 +136,7 @@ resource "aws_security_group_rule" "alertmanager_internal_alb" {
   source_security_group_id = "${aws_security_group.monitoring_internal_sg.id}"
 }
 
-resource "aws_security_group_rule" "monitoring_external_sg_ingress_any_http" {
+resource "aws_security_group_rule" "monitoring_external_sg_ingress_office_http" {
   type              = "ingress"
   to_port           = 80
   from_port         = 80
@@ -145,7 +145,7 @@ resource "aws_security_group_rule" "monitoring_external_sg_ingress_any_http" {
   cidr_blocks       = ["${var.cidr_admin_whitelist}"]
 }
 
-resource "aws_security_group_rule" "monitoring_external_sg_ingress_any_https" {
+resource "aws_security_group_rule" "monitoring_external_sg_ingress_office_https" {
   type              = "ingress"
   to_port           = 443
   from_port         = 443
