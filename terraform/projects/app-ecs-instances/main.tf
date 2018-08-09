@@ -146,6 +146,8 @@ data "template_file" "instance_user_data" {
     cluster_name = "${local.cluster_name}"
     volume_ids   = "${join(" ", aws_ebs_volume.prometheus_ebs_volume.*.id)}"
     region       = "${var.aws_region}"
+    dns_zone_id  = "${data.terraform_remote_state.infra_networking.private_zone_id}"
+    private_subdomain      = "${data.terraform_remote_state.infra_networking.private_subdomain}"
   }
 }
 
@@ -199,6 +201,25 @@ module "ecs_instance" {
   )}"
 }
 
+data "aws_instances" "aws_asg" {
+  instance_tags {
+    Name = "${var.stack_name}-ecs-instance"
+  }
+}
+
+
+resource "aws_route53_record" "mesh_private_record" {
+  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
+
+  zone_id = "${data.terraform_remote_state.infra_networking.private_zone_id}"
+  name    = "mesh-${count.index + 1}"
+  type    = "A"
+  ttl     = "300"
+  records = ["${data.aws_instances.aws_asg.private_ips[count.index]}"]
+
+}
+
+
 resource "aws_autoscaling_schedule" "asg_dev_scaledown_schedules" {
   scheduled_action_name  = "asg_dev_scaledown_schedule-${count.index}"
   count                  = "${var.dev_environment == "true" ? "${length(var.asg_dev_scaledown_schedules)}" : 0}"
@@ -244,4 +265,9 @@ output "available_azs" {
 output "asg_dev_scaledown_schedules" {
   value       = "${aws_autoscaling_schedule.asg_dev_scaledown_schedules.*.recurrence}"
   description = "Cron schedule for scaling down dev EC2 instances"
+}
+
+output "mesh_private_record_fqdns" {
+  value       = "${aws_route53_record.mesh_private_record.*.fqdn}"
+  description = "Alertmanager mesh private DNS FQDNs"
 }

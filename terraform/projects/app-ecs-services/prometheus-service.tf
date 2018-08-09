@@ -19,6 +19,7 @@ variable "prom_memoryReservation" {
   default     = "2048"
 }
 
+
 # locals
 # --------------------------------------------------------------
 

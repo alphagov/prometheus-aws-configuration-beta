@@ -15,7 +15,7 @@
         "hostPort": 9094
       }
     ],
-    "command": ${mesh_servers},
+    "command": ["${commands}"],
     "mountPoints": [
       {
         "sourceVolume": "alertmanager",

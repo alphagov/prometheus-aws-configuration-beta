@@ -14,6 +14,11 @@ data "aws_instances" "aws_asg" {
   }
 }
 
+variable "mesh_ports" {
+  type = "list"
+
+  default = ["9098","9095","9096"]
+}
 ## IAM roles & policies
 
 resource "aws_iam_role" "alertmanager_task_iam_role" {
@@ -79,7 +84,7 @@ data "template_file" "alertmanager_container_defn" {
     log_group     = "${aws_cloudwatch_log_group.task_logs.name}"
     region        = "${var.aws_region}"
     config_bucket = "${aws_s3_bucket.config_bucket.id}"
-    mesh_servers = "${jsonencode(formatlist("--cluster.peer=%s:9094", data.aws_instances.aws_asg.private_ips))}"
+    commands      = "${join("\",\"", concat(list("--config.file=/etc/alertmanager/alertmanager.yml"), formatlist("--cluster.peer=%s:%s", data.terraform_remote_state.app_ecs_instances.mesh_private_record_fqdns, var.mesh_ports)))}"
   }
 }
 
