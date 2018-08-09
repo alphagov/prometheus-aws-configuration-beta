@@ -144,7 +144,7 @@ data "template_file" "alertmanager_dev_config_file" {
 
 resource "aws_s3_bucket_object" "alertmanager" {
   bucket  = "${aws_s3_bucket.config_bucket.id}"
-  key     = "alertmanager/config.yml"
+  key     = "alertmanager/alertmanager.yml"
   content = "${var.dev_environment == "true" ? data.template_file.alertmanager_dev_config_file.rendered : data.template_file.alertmanager_config_file.rendered}"
   etag    = "${md5(var.dev_environment == "true" ? data.template_file.alertmanager_dev_config_file.rendered : data.template_file.alertmanager_config_file.rendered)}"
 }
