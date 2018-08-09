@@ -58,15 +58,3 @@ groups:
     annotations:
         summary: "Service is approaching capacity."
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}"
-
-# Just for testing, should be removed after testing complete on staging and production
-
-  - alert: AlwaysAlert
-    expr: up{job="alertmanager"}  <= 3
-    for: 10s
-    labels:
-        product: "prometheus"
-        severity: "ticket"
-    annotations:
-        summary: "Always alerting"
-        description: "Always alerting"
