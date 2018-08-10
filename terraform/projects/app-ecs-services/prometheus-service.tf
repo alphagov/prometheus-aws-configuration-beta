@@ -129,7 +129,7 @@ data "template_file" "prometheus_container_defn" {
 
 resource "aws_ecs_task_definition" "prometheus_server" {
   count                 = "${length(local.prometheus_public_fqdns)}"
-  family                = "${var.stack_name}-prometheus-server-${count.index}"
+  family                = "${var.stack_name}-prometheus-server-${count.index + 1}"
   container_definitions = "${element(data.template_file.prometheus_container_defn.*.rendered, count.index)}"
   task_role_arn         = "${aws_iam_role.prometheus_task_iam_role.arn}"
 
