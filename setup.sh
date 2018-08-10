@@ -8,8 +8,9 @@ TERRAFORMBACKVARS=$(pwd)/stacks/${ENV}.backend
 TERRAFORMTFVARS=$(pwd)/stacks/${ENV}.tfvars
 ROOTPROJ=$(pwd)
 TERRAFORMPROJ=$(pwd)/terraform/projects/
+##-----8<----------- please remove me after 2018-08-24 ⤵
 SHARED_DEV_SUBDOMAIN_RESOURCE=aws_route53_zone.shared_dev_subdomain
-SHARED_DEV_DNS_ZONE=Z3702PZTSCDWPA  # this is the dev.gds-reliability.engineering DNS hosted zone ID
+##-----8<----------- please remove me after 2018-08-24 ⤴
 declare -a COMPONENTS=("infra-networking" "infra-security-groups" "infra-jump-instance" "app-ecs-instances" "app-ecs-albs" "app-ecs-services")
 declare -a COMPONENTSDESTROY=("app-ecs-services" "app-ecs-albs" "app-ecs-instances" "infra-jump-instance" "infra-security-groups" "infra-networking")
 
