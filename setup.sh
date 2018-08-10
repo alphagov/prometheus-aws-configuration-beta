@@ -83,25 +83,13 @@ clean() {
         fi
 }
 
-import_shared_dev_route53 () {
-# Imports into terraform the shared development route 53 zone that had not been set up
-# using Terraform
-
-        # check if the resource exists in the state file
-        SHARED_DEV_SUBDOMAIN=`aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH state list $SHARED_DEV_SUBDOMAIN_RESOURCE`
-        if [ "$SHARED_DEV_SUBDOMAIN" = "$SHARED_DEV_SUBDOMAIN_RESOURCE" ] ; then
-                echo "$SHARED_DEV_SUBDOMAIN already imported"
-        else
-                echo "import $SHARED_DEV_SUBDOMAIN_RESOURCE"
-                aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH import $SHARED_DEV_SUBDOMAIN_RESOURCE $SHARED_DEV_DNS_ZONE
-        fi
-}
-
+##-----8<----------- please remove me after 2018-08-24 ⤵
 remove_shared_dev_route53 () {
 # Remove the shared development route 53 zone from the state file
         echo "remove shared dev route53"
         aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH state rm $SHARED_DEV_SUBDOMAIN_RESOURCE
 }
+##-----8<----------- please remove me after 2018-08-24 ⤴
 
 init () {
 # Init a terraform project
@@ -121,6 +109,15 @@ plan () {
         echo $1
 
         cd $TERRAFORMPROJ$1
+
+        ##-----8<----------- please remove me after 2018-08-24 ⤵
+        # For development stacks, for the `infra-networking` project,
+        # remove the shared_dev_subdomain route53 state file
+        # this can be deleted once everyone has removed this from their statefiles
+        if [ $DEV_ENVIRONMENT = 'true' -a "$1" = 'infra-networking' ] ; then
+                remove_shared_dev_route53
+        fi
+        ##-----8<----------- please remove me after 2018-08-24 ⤴
         aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH plan --var-file=$TERRAFORMTFVARS
 }
 
@@ -135,11 +132,14 @@ apply () {
 
         cd $TERRAFORMPROJ$1
 
-        # For development stacks, for the `infra-networking` project, ensure that
-        # the shared_dev_route53 resource has been imported into terraform before applying
+        ##-----8<----------- please remove me after 2018-08-24 ⤵
+        # For development stacks, for the `infra-networking` project,
+        # remove the shared_dev_subdomain route53 state file
+        # this can be deleted once everyone has removed this from their statefiles
         if [ $DEV_ENVIRONMENT = 'true' -a "$1" = 'infra-networking' ] ; then
-                import_shared_dev_route53
+                remove_shared_dev_route53
         fi
+        ##-----8<----------- please remove me after 2018-08-24 ⤴
 
         aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH apply --var-file=$TERRAFORMTFVARS --auto-approve
 }
@@ -154,11 +154,13 @@ destroy () {
 
         cd $TERRAFORMPROJ$1
 
+        ##-----8<----------- please remove me after 2018-08-24 ⤵
         # For development stacks, for the `infra-networking` project,
         # remove the shared_dev_subdomain route53 state file
         if [ $DEV_ENVIRONMENT = 'true' -a "$1" = 'infra-networking' ] ; then
                 remove_shared_dev_route53
         fi
+        ##-----8<----------- please remove me after 2018-08-24 ⤴
 
         aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH destroy --var-file=$TERRAFORMTFVARS --auto-approve
 
