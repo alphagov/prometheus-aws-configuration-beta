@@ -113,15 +113,14 @@ resource "aws_route53_zone" "private" {
 # These resources are only created for development environments (not staging or prod)
 # This is to add the extra delegation from dev.gds-reliability.engineering to the prometheus subdomain
 
-resource "aws_route53_zone" "shared_dev_subdomain" {
-  count = "${var.dev_environment == "true" ? 1 : 0}"
-  name  = "${local.shared_dev_subdomain_name}"
+data "aws_route53_zone" "shared_dev_subdomain" {
+  name = "${local.shared_dev_subdomain_name}"
 }
 
 resource "aws_route53_record" "shared_dev_ns" {
   count   = "${var.dev_environment == "true" ? 1 : 0}"
-  zone_id = "${aws_route53_zone.shared_dev_subdomain.zone_id}"
-  name    = "${var.stack_name}.${aws_route53_zone.shared_dev_subdomain.name}"
+  zone_id = "${data.aws_route53_zone.shared_dev_subdomain.zone_id}"
+  name    = "${var.stack_name}.${data.aws_route53_zone.shared_dev_subdomain.name}"
   type    = "NS"
   ttl     = "30"
 
