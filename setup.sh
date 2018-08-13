@@ -108,6 +108,10 @@ init () {
 plan () {
 # Plan a terraform project
         echo $1
+        # Only plan the jump box for dev stacks
+        if [ $DEV_ENVIRONMENT != 'true' -a "$1" = 'infra-jump-instance' ] ; then
+                return
+        fi
 
         cd $TERRAFORMPROJ$1
 
