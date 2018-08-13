@@ -7,6 +7,19 @@
 *
 */
 
+## Dtata enum
+data "aws_instances" "aws_asg" {
+  instance_tags {
+    Name = "${var.stack_name}-ecs-instance"
+  }
+}
+
+variable "mesh_ports" {
+  type = "list"
+
+  default = ["9098","9095","9096"]
+}
+
 ## Locals
 locals {
   alertmanager_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.alerts_public_record_fqdns}"
@@ -75,10 +88,10 @@ data "template_file" "alertmanager_container_defn" {
   template = "${file("task-definitions/alertmanager-server.json")}"
 
   vars {
-    alertmanager_url = "https://${local.alertmanager_public_fqdns[count.index]}"
     log_group        = "${aws_cloudwatch_log_group.task_logs.name}"
     region           = "${var.aws_region}"
     config_bucket    = "${aws_s3_bucket.config_bucket.id}"
+    commands      = "${join("\",\"", concat(list("--config.file=/etc/alertmanager/alertmanager.yml", "--web.external-url=\"https://${local.alertmanager_public_fqdns[count.index]}\""), formatlist("--cluster.peer=%s:%s", data.terraform_remote_state.app_ecs_instances.mesh_private_record_fqdns, var.mesh_ports)))}"
   }
 }
 

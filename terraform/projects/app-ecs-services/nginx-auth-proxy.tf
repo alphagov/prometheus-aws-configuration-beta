@@ -19,6 +19,12 @@ resource "aws_ecs_task_definition" "nginx_auth_server" {
     name      = "nginx-auth-proxy"
     host_path = "/ecs/config-from-s3/nginx-auth-proxy/conf.d"
   }
+
+  volume {
+    name      = "nginx-config"
+    host_path = "/ecs/config-from-s3/nginx-auth-proxy"
+  }
+
 }
 
 resource "aws_ecs_service" "nginx_auth_service" {
@@ -52,12 +58,31 @@ data "template_file" "nginx-auth-proxy-config-file" {
   }
 }
 
+data "template_file" "nginx-config" {
+  template = "${file("templates/nginx-config.tpl")}"
+
+  vars {
+    mesh_1_dns_name   = "${data.terraform_remote_state.app_ecs_instances.mesh_private_record_fqdns.0}"
+    mesh_2_dns_name   = "${data.terraform_remote_state.app_ecs_instances.mesh_private_record_fqdns.1}"
+    mesh_3_dns_name   = "${data.terraform_remote_state.app_ecs_instances.mesh_private_record_fqdns.2}"
+  }
+}
+
+
 resource "aws_s3_bucket_object" "nginx-auth-proxy" {
   bucket  = "${aws_s3_bucket.config_bucket.id}"
   key     = "prometheus/nginx-auth-proxy/conf.d/auth-proxy.conf"
   content = "${data.template_file.nginx-auth-proxy-config-file.rendered}"
   etag    = "${md5(data.template_file.nginx-auth-proxy-config-file.rendered)}"
 }
+
+resource "aws_s3_bucket_object" "nginx-conf" {
+  bucket  = "${aws_s3_bucket.config_bucket.id}"
+  key     = "prometheus/nginx-auth-proxy/nginx.conf"
+  content = "${data.template_file.nginx-config.rendered}"
+  etag    = "${md5(data.template_file.nginx-config.rendered)}"
+}
+
 
 # The htpasswd file is in bcrypt format, which is only supported
 # by the nginx:alpine image, not the plain nginx image

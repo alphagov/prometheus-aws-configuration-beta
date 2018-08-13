@@ -8,12 +8,30 @@
   "portMappings": [
     {
       "containerPort": 80
+    },
+    {
+      "containerPort": 9094,
+      "hostPort": 9098
+    },
+    {
+      "containerPort": 9095,
+      "hostPort": 9095
+    },
+    {
+      "containerPort": 9096,
+      "hostPort": 9096
     }
   ],
+  "command": ["nginx", "-g", "daemon off;", "-c", "/config/nginx.conf"],
   "mountPoints": [
     {
       "sourceVolume": "nginx-auth-proxy",
       "containerPath": "/etc/nginx/conf.d",
+      "readOnly": true
+    },
+    {
+      "sourceVolume": "nginx-config",
+      "containerPath": "/config",
       "readOnly": true
     }
   ],
