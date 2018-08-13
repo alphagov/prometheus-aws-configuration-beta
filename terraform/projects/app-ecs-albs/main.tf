@@ -108,8 +108,9 @@ resource "aws_lb" "monitoring_internal_alb" {
   internal           = true
   load_balancer_type = "application"
   security_groups    = ["${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}"]
+
   subnets = [
-    "${data.terraform_remote_state.infra_networking.private_subnets}"
+    "${data.terraform_remote_state.infra_networking.private_subnets}",
   ]
 
   tags = "${merge(

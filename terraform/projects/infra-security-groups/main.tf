@@ -157,7 +157,6 @@ resource "aws_security_group_rule" "permit_internal_any_any" {
   source_security_group_id = "${aws_security_group.monitoring_internal_sg.id}"
 }
 
-
 resource "aws_security_group_rule" "monitoring_internal_sg_ingress_alb_http" {
   type      = "ingress"
   from_port = 0
