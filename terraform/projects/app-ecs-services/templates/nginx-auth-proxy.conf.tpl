@@ -1,5 +1,11 @@
+satisfy any;
 auth_basic "Prometheus";
 auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
+real_ip_header X-Forwarded-For;
+set_real_ip_from 10.0.0.0/8;
+set_real_ip_from 127.0.0.1/32;
+${allow_cidrs}
+deny all;
 
 server {
   auth_basic off;

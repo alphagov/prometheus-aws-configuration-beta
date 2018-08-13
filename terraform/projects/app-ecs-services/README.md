@@ -9,6 +9,7 @@ Create services and task definitions for the ECS cluster
 | Name | Description | Type | Default | Required |
 |------|-------------|:----:|:-----:|:-----:|
 | aws_region | AWS region | string | `eu-west-1` | no |
+| cidr_admin_whitelist | CIDR ranges permitted to communicate with administrative endpoints | list | `<list>` | no |
 | dev_environment | Boolean flag for development environments | string | `false` | no |
 | prom_cpu | CPU requirement for prometheus | string | `512` | no |
 | prom_memoryReservation | memory reservation requirement for prometheus | string | `2048` | no |

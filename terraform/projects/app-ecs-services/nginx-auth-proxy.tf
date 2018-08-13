@@ -43,6 +43,7 @@ data "template_file" "nginx-auth-proxy-config-file" {
   template = "${file("templates/nginx-auth-proxy.conf.tpl")}"
 
   vars {
+    allow_cidrs             = "${join("",formatlist("allow %s;\n", var.cidr_admin_whitelist))}"
     alertmanager_1_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdns.0}"
     alertmanager_2_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdns.1}"
     alertmanager_3_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdns.2}"
