@@ -107,7 +107,7 @@ resource "aws_lb" "monitoring_internal_alb" {
   name               = "${var.stack_name}-internal-alb"
   internal           = true
   load_balancer_type = "application"
-  security_groups    = ["${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}"]
+  security_groups    = ["${data.terraform_remote_state.infra_security_groups.alertmanager_external_sg_id}"]
 
   subnets = [
     "${data.terraform_remote_state.infra_networking.private_subnets}",
