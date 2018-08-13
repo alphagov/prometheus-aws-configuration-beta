@@ -22,7 +22,6 @@ and cascade issues.
 
 | Name | Description |
 |------|-------------|
-| alertmanager_external_sg_id | alertmanager_external_sg ID |
 | monitoring_external_sg_id | monitoring_external_sg ID |
 | monitoring_internal_sg_id | monitoring_internal_sg ID |
 
