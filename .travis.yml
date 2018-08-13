@@ -1,13 +1,24 @@
 env:
-  - TERRAFORM_VERSION=0.11.7 TERRAFORM_FILE_NAME=terraform_${TERRAFORM_VERSION}_linux_amd64.zip TERRAFORM_DOWNLOAD_URL=https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/${TERRAFORM_FILE_NAME}
+  global:
+    - TERRAFORM_VERSION=0.11.7
+    - TERRAFORM_FILE_NAME=terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+    - TERRAFORM_DOWNLOAD_URL=https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/${TERRAFORM_FILE_NAME}
+    - PROMETHEUS_VERSION=2.3.2
+    - PROMETHEUS_FILE_NAME=prometheus-${PROMETHEUS_VERSION}.linux-amd64
+    - PROMETHEUS_TAR_FILE_NAME=${PROMETHEUS_FILE_NAME}.tar.gz
+    - PROMETHEUS_DOWNLOAD_URL=https://github.com/prometheus/prometheus/releases/download/v${PROMETHEUS_VERSION}/${PROMETHEUS_TAR_FILE_NAME}
 install:
   - wget ${TERRAFORM_DOWNLOAD_URL}
   - unzip -o ${TERRAFORM_FILE_NAME} -d /tmp
   - export PATH=/tmp:${PATH}
+  - wget ${PROMETHEUS_DOWNLOAD_URL}
+  - tar -xvzf ${PROMETHEUS_TAR_FILE_NAME} -C /tmp
+  - export PATH=/tmp/${PROMETHEUS_FILE_NAME}:${PATH}
   - go get github.com/segmentio/terraform-docs
 
 script:
   - find . -name '*.tf' | xargs tools/terraform-format.sh
   - tools/check-docs.sh
+  - tools/check-alerting-rules.sh
 notifications:
   email: false
