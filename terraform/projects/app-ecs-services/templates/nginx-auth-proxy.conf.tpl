@@ -1,4 +1,8 @@
+auth_basic "Prometheus";
+auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
+
 server {
+  auth_basic off;
   listen 80 default_server;
 
   location /health {
@@ -8,9 +12,6 @@ server {
 
 server {
   listen 80;
-  auth_basic "Prometheus";
-  auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
-
 
   server_name alerts-1.*;
 
@@ -32,9 +33,6 @@ server {
 
 server {
   listen 80;
-  auth_basic "Prometheus";
-  auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
-
 
   server_name alerts-2.*;
 
@@ -56,9 +54,6 @@ server {
 
 server {
   listen 80;
-  auth_basic "Prometheus";
-  auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
-
 
   server_name alerts-3.*;
 
@@ -80,9 +75,6 @@ server {
 
 server {
   listen 80;
-  auth_basic "Prometheus";
-  auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
-
 
   server_name prom-1.*;
 
@@ -104,9 +96,6 @@ server {
 
 server {
   listen 80;
-  auth_basic "Prometheus";
-  auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
-
 
   server_name prom-2.*;
 
@@ -128,9 +117,6 @@ server {
 
 server {
   listen 80;
-  auth_basic "Prometheus";
-  auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
-
 
   server_name prom-3.*;
 
