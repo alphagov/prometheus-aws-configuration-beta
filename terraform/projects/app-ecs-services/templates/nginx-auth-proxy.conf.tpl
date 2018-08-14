@@ -1,4 +1,14 @@
+satisfy any;
+auth_basic "Prometheus";
+auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
+real_ip_header X-Forwarded-For;
+set_real_ip_from 10.0.0.0/8;
+set_real_ip_from 127.0.0.1/32;
+${allow_cidrs}
+deny all;
+
 server {
+  auth_basic off;
   listen 80 default_server;
 
   location /health {
@@ -8,9 +18,6 @@ server {
 
 server {
   listen 80;
-  auth_basic "Prometheus";
-  auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
-
 
   server_name alerts-1.*;
 
@@ -32,9 +39,6 @@ server {
 
 server {
   listen 80;
-  auth_basic "Prometheus";
-  auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
-
 
   server_name alerts-2.*;
 
@@ -56,9 +60,6 @@ server {
 
 server {
   listen 80;
-  auth_basic "Prometheus";
-  auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
-
 
   server_name alerts-3.*;
 
@@ -80,9 +81,6 @@ server {
 
 server {
   listen 80;
-  auth_basic "Prometheus";
-  auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
-
 
   server_name prom-1.*;
 
@@ -104,9 +102,6 @@ server {
 
 server {
   listen 80;
-  auth_basic "Prometheus";
-  auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
-
 
   server_name prom-2.*;
 
@@ -128,9 +123,6 @@ server {
 
 server {
   listen 80;
-  auth_basic "Prometheus";
-  auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
-
 
   server_name prom-3.*;
 
