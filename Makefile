@@ -72,7 +72,3 @@ taint: ## Taint a resource, make taint project=<project name> resource=<resource
 .PHONY: jump
 jump: ## Jump onto the first instance on a dev environment
 	. ./setup.sh -j
-
-.PHONY: docs
-docs: ## Update all terraform docs
-	. ./tools/update-docs.sh

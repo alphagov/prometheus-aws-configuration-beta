@@ -175,14 +175,6 @@ If you want to make a change to our Prometheus infrastructure you should:
 - Once your PR is merged, follow the team checklist for deployment (available from other team members) and record your deployment time for staging and production.
 
 
-## Creating documentation
-
-The projects in this repo use the [terraform-docs](https://github.com/segmentio/terraform-docs)
-to generate the per project documentation.
-
-When adding adding or changing terraform projects you should run `make docs`
-and add the changes to your commit.
-
 ## AWS Vault tips
 
 Every time you execute AWS vault it may ask for the credentials to
