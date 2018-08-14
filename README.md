@@ -48,6 +48,7 @@ export TERRAFORM_BUCKET=<terraform state bucket name, should be unique or match 
 export PROFILE_NAME=<your profile name in `~/.aws/config` to access RE AWS>
 export ENV=<desired name of your test environment, or `staging` / `production`>
 export DEV_ENVIRONMENT=<'true' or 'false'>
+export TICKET_RECIPIENT_EMAIL=$(git config user.email) # or whatever email address you want to receive ticket notifications on
 ```
 
 Applying or destroying the entire stack on the staging and production environments has been blocked but is possible on other development environments.
