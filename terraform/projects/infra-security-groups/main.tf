@@ -27,21 +27,6 @@ variable "remote_state_bucket" {
   default     = "ecs-monitoring"
 }
 
-variable "cidr_admin_whitelist" {
-  description = "CIDR ranges permitted to communicate with administrative endpoints"
-  type        = "list"
-
-  default = [
-    "213.86.153.212/32",
-    "213.86.153.213/32",
-    "213.86.153.214/32",
-    "213.86.153.235/32",
-    "213.86.153.236/32",
-    "213.86.153.237/32",
-    "85.133.67.244/32",
-  ]
-}
-
 variable "stack_name" {
   type        = "string"
   description = "Unique name for this collection of resources"
@@ -116,15 +101,6 @@ resource "aws_security_group" "alertmanager_external_sg" {
     map("Stackname", "${var.stack_name}"),
     map("Name", "${var.stack_name}-monitoring-external-sg")
   )}"
-}
-
-resource "aws_security_group_rule" "alertmanager_external_sg_ingress_any_http" {
-  type              = "ingress"
-  to_port           = 80
-  from_port         = 80
-  protocol          = "tcp"
-  security_group_id = "${aws_security_group.alertmanager_external_sg.id}"
-  cidr_blocks       = ["${var.cidr_admin_whitelist}"]
 }
 
 resource "aws_security_group_rule" "alertmanager_internal_alb" {
