@@ -146,6 +146,8 @@ data "template_file" "instance_user_data" {
     cluster_name = "${local.cluster_name}"
     volume_ids   = "${join(" ", aws_ebs_volume.prometheus_ebs_volume.*.id)}"
     region       = "${var.aws_region}"
+    dns_zone_id  = "${data.terraform_remote_state.infra_networking.private_zone_id}"
+    private_subdomain = "${data.terraform_remote_state.infra_networking.private_subdomain}"
   }
 }
 

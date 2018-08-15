@@ -7,9 +7,28 @@
 *
 */
 
+## Variables
+variable "mesh_urls" {
+  type = "list"
+
+  default = ["mesh-1", "mesh-2", "mesh-3"]
+
+}
+
+variable "prometheis_total" {
+  type        = "string"
+  description = "Desired number of prometheus servers.  Maximum 3."
+  default     = "3"
+}
+
 ## Locals
 locals {
   alertmanager_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.alerts_public_record_fqdns}"
+  alertmanager_mesh = "${formatlist("--cluster.peer=%s.${local.private_subdomain}:9094", var.mesh_urls)}"
+  list_of_args = ["--config.file=/etc/alertmanager/alertmanager.yml"]
+  #We have to define alert manager args counts on at template definition level since we have no local instance
+  private_subdomain = "${data.terraform_remote_state.infra_networking.private_subdomain}"
+  flattened_args    = "${flatten(concat(list(local.list_of_args), list(local.alertmanager_mesh)))}"
 }
 
 ## IAM roles & policies
@@ -79,6 +98,8 @@ data "template_file" "alertmanager_container_defn" {
     log_group        = "${aws_cloudwatch_log_group.task_logs.name}"
     region           = "${var.aws_region}"
     config_bucket    = "${aws_s3_bucket.config_bucket.id}"
+    alertmanager_url = "--web.external-url=\"https://${local.alertmanager_public_fqdns[count.index]}\""
+    commands      = "${var.prometheis_total == "1" ? join("\",\"", local.flattened_args) : join("\",\"", flatten(list(local.list_of_args)))}"
   }
 }
 
@@ -97,6 +118,8 @@ resource "aws_ecs_task_definition" "alertmanager_server" {
     name      = "alertmanager"
     host_path = "/ecs/config-from-s3/alertmanager"
   }
+
+  depends_on = ["data.template_file.alertmanager_config_file"]
 }
 
 resource "aws_ecs_service" "alertmanager_server" {
@@ -117,6 +140,8 @@ resource "aws_ecs_service" "alertmanager_server" {
     type       = "memberOf"
     expression = "attribute:ecs.availability-zone == ${data.terraform_remote_state.app_ecs_instances.available_azs[count.index]}"
   }
+
+  depends_on = ["aws_ecs_task_definition.alertmanager_server"]
 }
 
 #### alertmanager
