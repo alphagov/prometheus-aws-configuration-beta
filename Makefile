@@ -72,3 +72,8 @@ taint: ## Taint a resource, make taint project=<project name> resource=<resource
 .PHONY: jump
 jump: ## Jump onto the first instance on a dev environment
 	. ./setup.sh -j
+
+
+.PHONY: create_console
+create_console: ## Create console session
+	. ./setup.sh -e ${project}

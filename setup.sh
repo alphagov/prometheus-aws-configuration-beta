@@ -208,6 +208,17 @@ jumpbox() {
         ssh -At -oStrictHostKeyChecking=no ec2-user@$JUMPBOX ssh -oStrictHostKeyChecking=no ec2-user@$INSTANCE_IP
 }
 
+create_console() {
+        echo $1
+        cd $TERRAFORMPROJ$1
+
+        aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH console -var-file=$TERRAFORMTFVARS
+
+        if [ $? != 0 ]; then
+           exit
+        fi
+}
+
 #################################
 #################################
 ENV_VARS_SET=1
@@ -353,6 +364,9 @@ else
         ;;
         -j) echo "Jump onto instance: ${ENV}"
                 jumpbox
+        ;;
+        -e) echo "Starting console session: ${ENV}"
+                create_console
         ;;
         *) echo "Invalid option"
         ;;
