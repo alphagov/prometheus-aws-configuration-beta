@@ -1,7 +1,7 @@
 groups:
 - name: Registers
   rules:
-  - alert: RequestsExcess5xx
+  - alert: Registers_RequestsExcess5xx
     expr: sum by(app) (rate(requests{job="openregister-metric-exporter", exported_space="prod", status_range="5xx"}[5m])) / sum by(app) (rate(requests{job="openregister-metric-exporter", exported_space="prod"}[5m])) >= 0.25
     for: 120s
     labels:

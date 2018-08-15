@@ -1,7 +1,7 @@
 groups:
-- name: PrometheusCore
+- name: RE_Observe
   rules:
-  - alert: AlertManager_Below_Threshold
+  - alert: RE_Observe_AlertManager_Below_Threshold
     expr: up{job="alertmanager"} == 0 and on(job) sum by(job) (up{job="alertmanager"}) <= 1
     for: 10s
     labels:
@@ -10,7 +10,7 @@ groups:
     annotations:
         summary: "Service is below the expected instance Threshold"
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}"
-  - alert: Prometheus_Below_Threshold
+  - alert: RE_Observe_Prometheus_Below_Threshold
     expr: up{job="prometheus"} == 0 and on(job) sum by(job) (up{job="prometheus"}) <= 1
     for: 10s
     labels:
@@ -19,7 +19,7 @@ groups:
     annotations:
         summary: "Service is below the expected instance Threshold"
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}"
-  - alert: NoFileSdTargets
+  - alert: RE_Observe_No_FileSd_Targets
     # this expression is a little weird - count() has no value instead of 0 if there are no
     # matching metrics.  But no value isn't less than 1 so we aren't able to trigger an alert
     # that a regular count() is zero.  So we force missing values to be equal to
@@ -40,7 +40,7 @@ groups:
 
 # this can be improved however maybe this is something we need to focus on in Q2 when working on the support plan
 
-  - alert: Prometheus_Over_Capacity
+  - alert: RE_Observe_Prometheus_Over_Capacity
     expr: sum by(instance)(rate(prometheus_engine_query_duration_seconds_sum{job="prometheus"}[5m])) > 8
     for: 10s
     labels:
@@ -50,7 +50,7 @@ groups:
         summary: "Service is over capacity."
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}"
 
-  - alert: Prometheus_High_Load
+  - alert: RE_Observe_Prometheus_High_Load
     expr: sum by(instance)(rate(prometheus_engine_query_duration_seconds_sum{job="prometheus"}[2h])) > 4
     labels:
         product: "prometheus"
