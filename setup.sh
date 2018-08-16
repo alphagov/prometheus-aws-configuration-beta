@@ -208,7 +208,7 @@ jumpbox() {
         ssh -At -oStrictHostKeyChecking=no ec2-user@$JUMPBOX ssh -oStrictHostKeyChecking=no ec2-user@$INSTANCE_IP
 }
 
-create_console() {
+create-console() {
         echo $1
         cd $TERRAFORMPROJ$1
 
