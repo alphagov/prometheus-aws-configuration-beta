@@ -46,7 +46,7 @@ data "aws_iam_policy_document" "ecs_instance_document" {
       "ecr:BatchGetImage",
       "logs:CreateLogStream",
       "logs:PutLogEvents",
-      "route53:ChangeResourceRecordSets"
+      "route53:ChangeResourceRecordSets",
     ]
   }
 
