@@ -98,8 +98,8 @@ data "template_file" "alertmanager_container_defn" {
     log_group        = "${aws_cloudwatch_log_group.task_logs.name}"
     region           = "${var.aws_region}"
     config_bucket    = "${aws_s3_bucket.config_bucket.id}"
-    alertmanager_url = "--web.external-url=\"https://${local.alertmanager_public_fqdns[count.index]}\""
-    commands      = "${var.prometheis_total == "1" ? join("\",\"", local.flattened_args) : join("\",\"", flatten(list(local.list_of_args)))}"
+    alertmanager_url = "--web.external-url=https://${local.alertmanager_public_fqdns[count.index]}"
+    commands      = "${var.prometheis_total == "1" ? join("\",\"", flatten(list(local.list_of_args))) : join("\",\"", local.flattened_args) }"
   }
 }
 
