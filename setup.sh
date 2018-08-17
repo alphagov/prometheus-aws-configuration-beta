@@ -366,7 +366,7 @@ else
                 jumpbox
         ;;
         -e) echo "Starting console session: ${ENV}"
-                create_console
+                create-console
         ;;
         *) echo "Invalid option"
         ;;

@@ -75,5 +75,5 @@ jump: ## Jump onto the first instance on a dev environment
 
 
 .PHONY: create-console
-create_console: ## Create terraform console session, make create-console project=<project name>
+create-console: ## Create terraform console session, make create-console project=<project name>
 	. ./setup.sh -e ${project}
