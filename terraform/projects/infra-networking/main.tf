@@ -84,6 +84,7 @@ module "vpc" {
   database_subnets = ["10.0.201.0/24", "10.0.202.0/24", "10.0.203.0/24"]
 
   enable_nat_gateway = true
+  single_nat_gateway = "${var.dev_environment == "true" ? true : false }"
 
   enable_dns_hostnames = true
   enable_dns_support   = true
