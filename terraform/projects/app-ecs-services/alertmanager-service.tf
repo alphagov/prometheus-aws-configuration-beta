@@ -12,7 +12,6 @@ variable "mesh_urls" {
   type = "list"
 
   default = ["mesh-1", "mesh-2", "mesh-3"]
-
 }
 
 variable "prometheis_total" {
@@ -24,8 +23,9 @@ variable "prometheis_total" {
 ## Locals
 locals {
   alertmanager_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.alerts_public_record_fqdns}"
-  alertmanager_mesh = "${formatlist("--cluster.peer=%s.${local.private_subdomain}:9094", var.mesh_urls)}"
-  list_of_args = ["--config.file=/etc/alertmanager/alertmanager.yml"]
+  alertmanager_mesh         = "${formatlist("--cluster.peer=%s.${local.private_subdomain}:9094", var.mesh_urls)}"
+  list_of_args              = ["--config.file=/etc/alertmanager/alertmanager.yml"]
+
   #We have to define alert manager args counts on at template definition level since we have no local instance
   private_subdomain = "${data.terraform_remote_state.infra_networking.private_subdomain}"
   flattened_args    = "${flatten(concat(list(local.list_of_args), list(local.alertmanager_mesh)))}"
@@ -99,7 +99,7 @@ data "template_file" "alertmanager_container_defn" {
     region           = "${var.aws_region}"
     config_bucket    = "${aws_s3_bucket.config_bucket.id}"
     alertmanager_url = "--web.external-url=https://${local.alertmanager_public_fqdns[count.index]}"
-    commands      = "${var.prometheis_total == "1" ? join("\",\"", flatten(list(local.list_of_args))) : join("\",\"", local.flattened_args) }"
+    commands         = "${var.prometheis_total == "1" ? join("\",\"", flatten(list(local.list_of_args))) : join("\",\"", local.flattened_args) }"
   }
 }
 
