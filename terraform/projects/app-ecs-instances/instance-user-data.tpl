@@ -6,6 +6,7 @@ sudo yum install -y aws-cli wget
 REGION="${region}"
 DEVICE="xvdf"
 
+IP_V4_ADDRESS=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
 echo "[$(date '+%H:%M:%S %d-%m-%Y')] finding current instance ID"
 INSTANCE_ID=$(wget -q -O - http://169.254.169.254/latest/meta-data/instance-id)
 
@@ -75,3 +76,46 @@ echo "ECS_CLUSTER=${cluster_name}" >> /etc/ecs/ecs.config
 yum install -y ecs-init
 start ecs
 service docker start
+
+case "$AZ" in
+        "eu-west-1a")
+            dns_name="mesh-1"
+            ;;
+
+        "eu-west-1b")
+            dns_name="mesh-2"
+            ;;
+
+        "eu-west-1c")
+            dns_name="mesh-3"
+            ;;
+
+         *)
+            echo "no Dns values found"
+            ;;
+
+esac
+
+
+cat <<EOF >/ecs/dns_update.json
+{
+    "Comment": "Update new instance IP address route 53",
+    "Changes": [
+        {
+            "Action": "UPSERT",
+            "ResourceRecordSet": {
+                "Name": "$dns_name.${private_subdomain}",
+                "Type": "A",
+                "TTL": 300,
+                "ResourceRecords": [
+                    {
+                        "Value": "$IP_V4_ADDRESS"
+                    }
+                ]
+            }
+        }
+    ]
+}
+EOF
+
+aws route53 change-resource-record-sets --hosted-zone-id ${dns_zone_id} --change-batch file:///ecs/dns_update.json
