@@ -72,3 +72,8 @@ taint: ## Taint a resource, make taint project=<project name> resource=<resource
 .PHONY: jump
 jump: ## Jump onto the first instance on a dev environment
 	. ./setup.sh -j
+
+
+.PHONY: create-console
+create-console: ## Create terraform console session, make create-console project=<project name>
+	. ./setup.sh -e ${project}
