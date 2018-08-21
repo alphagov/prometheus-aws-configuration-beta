@@ -10,7 +10,7 @@ groups:
     annotations:
         summary: "Service is below the expected instance Threshold"
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}."
-        runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#RE_Observe_AlertManager_Below_Threshold"
+        runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-alertmanager-below-threshold"
   - alert: RE_Observe_Prometheus_Below_Threshold
     expr: up{job="prometheus"} == 0 and on(job) sum by(job) (up{job="prometheus"}) <= 1
     for: 10s
@@ -20,7 +20,7 @@ groups:
     annotations:
         summary: "Service is below the expected instance Threshold"
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}."
-        runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#RE_Observe_Prometheus_Below_Threshold"
+        runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-prometheus-below-threshold"
   - alert: RE_Observe_No_FileSd_Targets
     # this expression is a little weird - count() has no value instead of 0 if there are no
     # matching metrics.  But no value isn't less than 1 so we aren't able to trigger an alert
@@ -39,7 +39,7 @@ groups:
     annotations:
         summary: "No file_sd targets detected"
         description: "No file_sd targets were detected.  Is there a problem accessing the targets bucket?"
-        runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#RE_Observe_No_FileSd_Targets"
+        runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-no-filesd-targets"
 
 # this can be improved however maybe this is something we need to focus on in Q2 when working on the support plan
 
@@ -52,7 +52,7 @@ groups:
     annotations:
         summary: "Service is over capacity."
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}."
-        runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#prometheus-over-capacity"
+        runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-prometheus-over-capacity"
 
   - alert: RE_Observe_Prometheus_High_Load
     expr: sum by(instance)(rate(prometheus_engine_query_duration_seconds_sum{job="prometheus"}[2h])) > 4
@@ -62,4 +62,4 @@ groups:
     annotations:
         summary: "Service is approaching capacity."
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}."
-        runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#RE_Observe_Prometheus_High_Load"
+        runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-prometheus-high-load"
