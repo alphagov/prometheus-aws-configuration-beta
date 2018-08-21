@@ -153,7 +153,6 @@ data "template_file" "instance_user_data" {
 
 module "ami" {
   source         = "../../modules/common/ami"
-  amazon_release = "${var.ecs_optimised_ami_version}"
 }
 
 module "ecs_instance" {

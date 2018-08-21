@@ -50,7 +50,6 @@ resource "aws_key_pair" "ssh_key" {
 
 module "ami" {
   source         = "../common/ami"
-  amazon_release = "${var.ecs_optimised_ami_version}"
 }
 
 resource "aws_security_group" "bastion_security_group" {
