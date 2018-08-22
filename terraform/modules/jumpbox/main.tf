@@ -49,7 +49,7 @@ resource "aws_key_pair" "ssh_key" {
 }
 
 module "ami" {
-  source         = "../common/ami"
+  source = "../common/ami"
 }
 
 resource "aws_security_group" "bastion_security_group" {
