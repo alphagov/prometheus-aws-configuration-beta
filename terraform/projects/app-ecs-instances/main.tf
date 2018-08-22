@@ -152,7 +152,7 @@ data "template_file" "instance_user_data" {
 }
 
 module "ami" {
-  source         = "../../modules/common/ami"
+  source = "../../modules/common/ami"
 }
 
 module "ecs_instance" {
