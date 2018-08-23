@@ -49,6 +49,7 @@ variable "region" {
 }
 
 variable "verify_enclave" {
+  type = "string"
   default = "true"
 }
 
