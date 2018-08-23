@@ -1,9 +1,5 @@
 ## Variables
 
-variable "amazon_release" {
-  description = "The amazon release used to generate the encrypted ami"
-}
-
 ## Data sources
 
 data "aws_ami" "source" {
@@ -11,7 +7,7 @@ data "aws_ami" "source" {
 
   filter {
     name   = "name"
-    values = ["amzn-ami-${var.amazon_release}-amazon-ecs-optimized"]
+    values = ["amzn-ami-*-amazon-ecs-optimized"]
   }
 
   filter {
