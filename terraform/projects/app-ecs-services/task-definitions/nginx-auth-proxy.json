@@ -1,7 +1,7 @@
 [
 {
   "name": "nginx-auth-proxy",
-  "image": "nginx:alpine",
+  "image": "nginx:stable-alpine",
   "cpu": 128,
   "memory": 128,
   "essential": true,
