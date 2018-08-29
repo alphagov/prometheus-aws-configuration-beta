@@ -63,3 +63,14 @@ groups:
         summary: "Service is approaching capacity."
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}."
         runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-prometheus-high-load"
+
+  - alert: RE_Observe_Target_Down
+    expr: up{} == 0
+    for: 20m
+    labels:
+        product: "prometheus"
+        severity: "ticket"
+    annotations:
+        summary: "{{ $labels.job }} target is down"
+        description: "One of the {{ $labels.job }} targets has been down for 20 minutes"
+        runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-target-down"
