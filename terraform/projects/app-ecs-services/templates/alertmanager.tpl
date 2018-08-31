@@ -16,6 +16,9 @@ route:
   - receiver: "dgu-pagerduty"
     match:
       product: "data-gov-uk"
+  - receiver: "registers-zendesk"
+    match:
+      product: "registers"
 
 receivers:
 - name: "re-observe-pagerduty"
@@ -27,3 +30,6 @@ receivers:
 - name: "dgu-pagerduty"
   pagerduty_configs:
     - service_key: "${dgu_pagerduty_service_key}"
+- name: "registers-zendesk"
+  email_configs:
+  - to: "${registers_zendesk}"
