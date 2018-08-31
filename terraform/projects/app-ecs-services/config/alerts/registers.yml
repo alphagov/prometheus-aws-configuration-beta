@@ -1,7 +1,7 @@
 groups:
 - name: Registers
   rules:
-  - alert: Registers_RequestsExcess5xx
+  - alert: Registers_AppRequestsExcess5xx
     expr: sum by(app) (rate(requests{org="openregister", exported_space="prod", status_range="5xx"}[5m])) / sum by(app) (rate(requests{org="openregister", exported_space="prod"}[5m])) >= 0.25
     for: 120s
     labels:
@@ -12,7 +12,7 @@ groups:
         dashboard_orj: https://grafana-paas.cloudapps.digital/d/vkxcsHvmz/orj?refresh=1m&orgId=1
         dashboard_registers: https://grafana-paas.cloudapps.digital/d/sljj3z6zk/registers?orgId=1
 
-  - alert: Registers_DiskSpaceExceeded
+  - alert: Registers_InstanceDiskSpaceExceeded
     expr: disk_utilization{org="openregister",exported_space="prod"} > 80
     for: 300s
     labels:
@@ -22,7 +22,7 @@ groups:
         description: "Not enough free disk space. This should not normally happen because PaaS apps should be stateless. If the usage is legitimate you can raise the disk quota."
         cloud_foundry_docs: https://docs.cloudfoundry.org/devguide/deploy-apps/manifest.html#disk-quota
 
-  - alert: Registers_CPUExceeded
+  - alert: Registers_InstanceCPUExceeded
     expr: avg_over_time(cpu{org="openregister",exported_space="prod"}[5m]) > 80
     for: 300s
     labels:
@@ -33,3 +33,10 @@ groups:
         dashboard_orj: https://grafana-paas.cloudapps.digital/d/vkxcsHvmz/orj?refresh=1m&orgId=1
         dashboard_registers: https://grafana-paas.cloudapps.digital/d/sljj3z6zk/registers?orgId=1
 
+  - alert: Registers_AppCrashesInLastHour
+    expr: sum(increase(crash{org="openregister"}[1h])) by (app) > 5
+    labels:
+        product: "registers"
+    annotations:
+        summary: "App {{ $labels.app }} has crashed more than 5 times in the last hour"
+        description: "Application {{ $labels.app }} has crashes more than 5 times in the last hour. Check `cf events {{ $labels.app }}`"
