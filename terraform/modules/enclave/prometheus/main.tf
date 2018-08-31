@@ -12,7 +12,7 @@ resource "aws_key_pair" "ssh_key" {
 }
 
 resource "aws_instance" "prometheus" {
-  count = "${length(var.subnet_ids)}"
+  count = "${length(keys(var.availability_zones))}"
 
   ami                  = "${var.ami_id}"
   instance_type        = "${var.instance_size}"
@@ -35,7 +35,7 @@ resource "aws_instance" "prometheus" {
 }
 
 resource "aws_volume_attachment" "attach-prometheus-disk" {
-  count = "${length(var.subnet_ids)}"
+  count = "${length(keys(var.availability_zones))}"
 
   device_name = "${var.device_mount_path}"
   volume_id   = "${element(aws_ebs_volume.promethues-disk.*.id, count.index)}"
@@ -47,7 +47,7 @@ resource "aws_volume_attachment" "attach-prometheus-disk" {
 }
 
 resource "aws_ebs_volume" "promethues-disk" {
-  count = "${length(var.subnet_ids)}"
+  count = "${length(keys(var.availability_zones))}"
 
   availability_zone = "${element(keys(var.availability_zones), count.index)}"
   size              = "20"

@@ -1,0 +1,7 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+gem "inspec", "2.2.70"
+gem "kitchen-terraform", "4.0"
+gem "test-kitchen", "1.23.2"

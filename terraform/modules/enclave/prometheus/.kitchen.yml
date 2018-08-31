@@ -1,0 +1,30 @@
+driver:
+  name: terraform
+  root_module_directory: test/fixtures
+
+provisioner:
+  name: terraform
+
+platforms:
+  - name: aws
+
+verifier:
+  name: terraform
+  systems:
+  - name: aws_cloud
+    backend: aws
+    controls:
+      - aws_cloud_resources
+
+  - name: os_checks
+    backend: ssh
+    sudo: true
+    hosts_output: prometheus_dns
+    key_files:
+      - <%= ENV['SSH_KEY'] || "~/.ssh/id_rsa" %>
+    controls:
+      - operating_system
+    user: <%= ENV['SSH_USER'] || "ubuntu" %>
+
+suites:
+  - name: prometheus

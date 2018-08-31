@@ -27,7 +27,7 @@ resource "aws_security_group" "ec2-private-api-interface" {
 }
 
 data "aws_network_interface" "ec2_endpoint_network_interfaces" {
-  count = "${length(aws_vpc_endpoint.ec2.network_interface_ids)}"
+  count = "${length(var.availability_zones)}"
 
   id = "${element(aws_vpc_endpoint.ec2.network_interface_ids, count.index)}"
 

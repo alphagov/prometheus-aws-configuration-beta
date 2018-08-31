@@ -44,6 +44,7 @@ module "prometheus" {
   availability_zones  = "${data.terraform_remote_state.network.availability_zones}"
   vpc_security_groups = ["${data.terraform_remote_state.network.security_groups}"]
   ec2_endpoint_ips    = ["${data.terraform_remote_state.network.endpoint_network_interface_ip}"]
+  verify_enclave      = "true"
 }
 
 output "public_ips" {
