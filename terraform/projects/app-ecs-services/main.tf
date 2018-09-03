@@ -50,12 +50,6 @@ variable "stack_name" {
   default     = "ecs-monitoring"
 }
 
-variable "ticket_recipient_email" {
-  type        = "string"
-  description = "Email address to send ticket alerts to"
-  default     = "prometheus-notifications@digital.cabinet-office.gov.uk"
-}
-
 # Resources
 # --------------------------------------------------------------
 
