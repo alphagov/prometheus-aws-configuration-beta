@@ -18,4 +18,4 @@ receivers:
 - name: "unmatched-default-root-route"
 - name: "ticket-alert"
   email_configs:
-  - to: "${ticket_recipient_email}"
+  - to: ""

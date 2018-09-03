@@ -48,7 +48,6 @@ targets_s3_bucket="$DEFAULT_DEV_TARGETS_S3_BUCKET"
 additional_tags = {
   "Environment" = "${ENV}"
 }
-ticket_recipient_email = "${TICKET_RECIPIENT_EMAIL}"
 EOF
 echo "stacks/${ENV}.tfvars created"
 fi
