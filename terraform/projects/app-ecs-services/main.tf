@@ -50,6 +50,12 @@ variable "stack_name" {
   default     = "ecs-monitoring"
 }
 
+variable "dev_ticket_recipient_email" {
+  type        = "string"
+  description = "Email address to send ticket alerts to"
+  default     = ""
+}
+
 # Resources
 # --------------------------------------------------------------
 
