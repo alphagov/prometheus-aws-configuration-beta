@@ -1,4 +1,4 @@
-#Prometheus verify enclave
+# Prometheus verify enclave
 
 The enclave environment is reference to the area of verify that we use to perform  our deployment. This environment has a number of different security requirements that difficult and a very custom environment to deploy too.
 
@@ -9,7 +9,7 @@ The following diagram describes the environment:
 
 We use the script titled `deploy_enclave.sh` at the root of the project in order to perform a deployment. The script takes specific arguments which will be described below. We also run test in order to verify the functionality environment and modules. We will describe both these methods and how achieve them.
 
-##Testing
+## Testing
 
 In order to test these modules you will need to have ruby install on your system. Ideally you will need to have `ruby version 2.3.*`  installed. If you have this you can navigate to the following folder `terraform/modules/enclave/prometheus`. In this folder you can run kitchen ci test and also this is where the Gemfile which will install all dependencies is located.
 
