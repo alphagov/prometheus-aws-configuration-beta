@@ -48,10 +48,6 @@ variable "region" {
   default = "eu-west-2"
 }
 
-variable "verify_enclave" {
-  default = "true"
-}
-
 variable "egress_proxy" {
   default = ""
 }
