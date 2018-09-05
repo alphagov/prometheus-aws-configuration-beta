@@ -121,7 +121,11 @@ To apply terraform for a list of projects:
 `. ./setup.sh -a list "<1st project>,<2nd project>,<3rd project>"`
 </details>
 
-### Dev EC2 instances lifecycle
+### Verify Enclave modules
+
+[Click here](terraform/modules/enclave)
+
+### Dev EC2 instances 
 
 By default the EC2 instances on dev stacks will be spun down at the end of the day, typically 6pm UTC on Monday to Fridays, so during BST EC2 instances will be terminated at 7pm. 
 

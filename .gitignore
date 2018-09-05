@@ -19,10 +19,6 @@ environment.sh
 # os files 
 .DS_Store
 
-
-.kitchen/**
-.kitchen/logs/kitchen.log
-terraform/modules/enclave/prometheus/.kitchen/
 *.plan
 */.kitchen/**
 *.lock
