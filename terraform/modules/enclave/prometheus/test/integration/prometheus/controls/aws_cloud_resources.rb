@@ -34,6 +34,7 @@ control "aws_cloud_resources" do
     it { should be_attached }
     it { should have_statement(Action: ['s3:Get*','s3:ListBucket'], Effect: 'Allow', Sid: 's3Bucket') }
     it { should have_statement(Action: 'ec2:Describe*', Effect: 'Allow', Resource: '*', Sid: 'ec2Policy') }
+    its('statement_count') { should cmp 2 }
   end
 
   describe aws_s3_bucket_object(bucket_name: s3_bucket_id, key: 'prometheus/prometheus.yml') do
