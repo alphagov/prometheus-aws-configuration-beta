@@ -7,6 +7,7 @@ control "operating_system" do
   describe file('/etc/cron.d/config_pull') do
     its('owner') { should eq 'root' }
     its('group') { should eq 'root' }
+    its('mode')  { should cmp '0755'}
   end
 
   describe file('/root/format_disk.sh') do

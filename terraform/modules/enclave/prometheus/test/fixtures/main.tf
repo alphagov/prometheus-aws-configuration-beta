@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 terraform {
-  required_version = ">= 0.11.7"
+  required_version = "= 0.11.7"
 }
 
 resource "aws_vpc" "main" {
@@ -43,7 +43,6 @@ module "Prometheus" {
   availability_zones  = "${module.network.availability_zones}"
   vpc_security_groups = ["${module.network.security_groups}", "${aws_security_group.permit_internet_access.id}"]
   ec2_endpoint_ips    = "${module.network.endpoint_network_interface_ip}"
-  verify_enclave      = "false"
 }
 
 resource "aws_security_group" "permit_internet_access" {
@@ -69,7 +68,17 @@ resource "aws_security_group" "permit_internet_access" {
     ]
   }
 
+  ingress {
+    protocol  = "tcp"
+    from_port = 9090
+    to_port   = 9090
+
+    cidr_blocks = [
+      "0.0.0.0/0",
+    ]
+  }
+
   tags {
-    Name = "SSH from GDS"
+    Name = "SSH & prometheus access from GDS in dev env"
   }
 }
