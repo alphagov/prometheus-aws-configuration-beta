@@ -8,9 +8,6 @@ TERRAFORMBACKVARS=$(pwd)/stacks/${ENV}.backend
 TERRAFORMTFVARS=$(pwd)/stacks/${ENV}.tfvars
 ROOTPROJ=$(pwd)
 TERRAFORMPROJ=$(pwd)/terraform/projects/
-##-----8<----------- please remove me after 2018-08-24 ⤵
-SHARED_DEV_SUBDOMAIN_RESOURCE=aws_route53_zone.shared_dev_subdomain
-##-----8<----------- please remove me after 2018-08-24 ⤴
 declare -a COMPONENTS=("infra-networking" "infra-security-groups" "infra-jump-instance" "app-ecs-instances" "app-ecs-albs" "app-ecs-services")
 declare -a COMPONENTSDESTROY=("app-ecs-services" "app-ecs-albs" "app-ecs-instances" "infra-jump-instance" "infra-security-groups" "infra-networking")
 
@@ -84,14 +81,6 @@ clean() {
         fi
 }
 
-##-----8<----------- please remove me after 2018-08-24 ⤵
-remove_shared_dev_route53 () {
-# Remove the shared development route 53 zone from the state file
-        echo "remove shared dev route53"
-        aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH state rm $SHARED_DEV_SUBDOMAIN_RESOURCE
-}
-##-----8<----------- please remove me after 2018-08-24 ⤴
-
 init () {
 # Init a terraform project
         # Only init the jump box for dev stacks
@@ -115,14 +104,6 @@ plan () {
 
         cd $TERRAFORMPROJ$1
 
-        ##-----8<----------- please remove me after 2018-08-24 ⤵
-        # For development stacks, for the `infra-networking` project,
-        # remove the shared_dev_subdomain route53 state file
-        # this can be deleted once everyone has removed this from their statefiles
-        if [ $DEV_ENVIRONMENT = 'true' -a "$1" = 'infra-networking' ] ; then
-                remove_shared_dev_route53
-        fi
-        ##-----8<----------- please remove me after 2018-08-24 ⤴
         aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH plan --var-file=$TERRAFORMTFVARS
 }
 
@@ -137,15 +118,6 @@ apply () {
 
         cd $TERRAFORMPROJ$1
 
-        ##-----8<----------- please remove me after 2018-08-24 ⤵
-        # For development stacks, for the `infra-networking` project,
-        # remove the shared_dev_subdomain route53 state file
-        # this can be deleted once everyone has removed this from their statefiles
-        if [ $DEV_ENVIRONMENT = 'true' -a "$1" = 'infra-networking' ] ; then
-                remove_shared_dev_route53
-        fi
-        ##-----8<----------- please remove me after 2018-08-24 ⤴
-
         aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH apply --var-file=$TERRAFORMTFVARS --auto-approve
 }
 
@@ -158,14 +130,6 @@ destroy () {
         echo $1
 
         cd $TERRAFORMPROJ$1
-
-        ##-----8<----------- please remove me after 2018-08-24 ⤵
-        # For development stacks, for the `infra-networking` project,
-        # remove the shared_dev_subdomain route53 state file
-        if [ $DEV_ENVIRONMENT = 'true' -a "$1" = 'infra-networking' ] ; then
-                remove_shared_dev_route53
-        fi
-        ##-----8<----------- please remove me after 2018-08-24 ⤴
 
         aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH destroy --var-file=$TERRAFORMTFVARS --auto-approve
 
