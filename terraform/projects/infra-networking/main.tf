@@ -169,7 +169,7 @@ output "private_zone_id" {
 
 output "private_subnets_ips" {
   value       = "${module.vpc.private_subnets_cidr_blocks}"
-  description = "List of public subnet IDs"
+  description = "List of private subnet IPs"
 }
 
 output "nat_gateway" {
