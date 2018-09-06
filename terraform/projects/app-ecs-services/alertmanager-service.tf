@@ -158,6 +158,10 @@ data "pass_password" "registers_zendesk" {
   path = "receivers/registers/zendesk"
 }
 
+data "pass_password" "observe_zendesk" {
+  path = "receivers/observe/zendesk"
+}
+
 data "template_file" "alertmanager_config_file" {
   template = "${file("templates/alertmanager.tpl")}"
 
@@ -171,7 +175,7 @@ data "template_file" "alertmanager_config_file" {
     smtp_smarthost         = "email-smtp.${var.aws_region}.amazonaws.com:587"
     smtp_username          = "${aws_iam_access_key.smtp.id}"
     smtp_password          = "${aws_iam_access_key.smtp.ses_smtp_password}"
-    ticket_recipient_email = "${var.ticket_recipient_email}"
+    ticket_recipient_email = "${data.pass_password.observe_zendesk.password}"
   }
 }
 
@@ -186,10 +190,10 @@ data "template_file" "alertmanager_dev_config_file" {
     smtp_from = "alerts@${data.terraform_remote_state.infra_networking.public_subdomain}"
 
     # Port as requested by https://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-connect.html
-    smtp_smarthost         = "email-smtp.${var.aws_region}.amazonaws.com:587"
-    smtp_username          = "${aws_iam_access_key.smtp.id}"
-    smtp_password          = "${aws_iam_access_key.smtp.ses_smtp_password}"
-    ticket_recipient_email = "${var.ticket_recipient_email}"
+    smtp_smarthost             = "email-smtp.${var.aws_region}.amazonaws.com:587"
+    smtp_username              = "${aws_iam_access_key.smtp.id}"
+    smtp_password              = "${aws_iam_access_key.smtp.ses_smtp_password}"
+    dev_ticket_recipient_email = "${var.dev_ticket_recipient_email}"
   }
 }
 
