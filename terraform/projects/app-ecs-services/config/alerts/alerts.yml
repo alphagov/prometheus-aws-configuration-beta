@@ -2,7 +2,7 @@ groups:
 - name: RE_Observe
   rules:
   - alert: RE_Observe_AlertManager_Below_Threshold
-    expr: up{job="alertmanager"} == 0 and on(job) sum by(job) (up{job="alertmanager"}) <= 1
+    expr: up{job="alertmanager"} == 0 and ignoring(instance) sum without(instance) (up{job="alertmanager"}) <= 1
     for: 10s
     labels:
         product: "prometheus"
@@ -12,7 +12,7 @@ groups:
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}."
         runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-alertmanager-below-threshold"
   - alert: RE_Observe_Prometheus_Below_Threshold
-    expr: up{job="prometheus"} == 0 and on(job) sum by(job) (up{job="prometheus"}) <= 1
+    expr: up{job="prometheus"} == 0 and ignoring(instance) sum without(instance) (up{job="prometheus"}) <= 1
     for: 10s
     labels:
         product: "prometheus"
@@ -44,7 +44,7 @@ groups:
 # this can be improved however maybe this is something we need to focus on in Q2 when working on the support plan
 
   - alert: RE_Observe_Prometheus_Over_Capacity
-    expr: sum by(instance)(rate(prometheus_engine_query_duration_seconds_sum{job="prometheus"}[5m])) > 8
+    expr: sum without(slice)(rate(prometheus_engine_query_duration_seconds_sum{job="prometheus"}[5m])) > 8
     for: 10s
     labels:
         product: "prometheus"
@@ -55,7 +55,7 @@ groups:
         runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-prometheus-over-capacity"
 
   - alert: RE_Observe_Prometheus_High_Load
-    expr: sum by(instance)(rate(prometheus_engine_query_duration_seconds_sum{job="prometheus"}[2h])) > 4
+    expr: sum without(slice)(rate(prometheus_engine_query_duration_seconds_sum{job="prometheus"}[2h])) > 4
     labels:
         product: "prometheus"
         severity: "ticket"
