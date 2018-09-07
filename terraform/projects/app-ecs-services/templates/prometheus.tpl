@@ -9,12 +9,10 @@ rule_files:
   - "/etc/prometheus/alerts/*"
 scrape_configs:
   - job_name: prometheus
-    scrape_interval: 5s
     static_configs:
       - targets: ["${prometheus_dns_names}"]
   - job_name: alertmanager
     scheme: http
-    scrape_interval: 5s
     static_configs:
       - targets: ["${alertmanager_dns_names}"]
   - job_name: paas-targets
