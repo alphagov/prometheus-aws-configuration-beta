@@ -181,3 +181,14 @@ output "private_subdomain" {
   value       = "${aws_route53_zone.private.name}"
   description = "This is the subdomain for private zone"
 }
+
+output "subnets_by_az" {
+  value = "${
+   zipmap(
+     data.aws_availability_zones.available.names,
+     module.vpc.private_subnets_cidr_blocks
+   )
+ }"
+
+  description = "Map of availability zones to private subnets"
+}
