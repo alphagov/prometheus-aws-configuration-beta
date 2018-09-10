@@ -1,3 +1,9 @@
+locals {
+  product       = "hub"
+  environment   = "perf"
+  config_bucket = "gdsobserve-verify-${local.environment}-prometheus-config-store"
+}
+
 terraform {
   required_version = "= 0.11.7"
 
@@ -37,13 +43,21 @@ module "prometheus" {
   enable_ssh   = true
   egress_proxy = "egress-proxy.service.dmz:8080"
 
-  product     = "hub"
-  environment = "perf"
+  product       = "${local.product}"
+  environment   = "${local.environment}"
+  config_bucket = "${local.config_bucket}"
 
   subnet_ids          = "${data.terraform_remote_state.network.subnet_ids}"
   availability_zones  = "${data.terraform_remote_state.network.availability_zones}"
   vpc_security_groups = ["${data.terraform_remote_state.network.security_groups}"]
   ec2_endpoint_ips    = ["${data.terraform_remote_state.network.endpoint_network_interface_ip}"]
+}
+
+module "verify-config" {
+  source = "../../../../modules/enclave/verify-config"
+
+  ec2_instance_profile_name = "${module.prometheus.ec2_instance_profile_name}"
+  prometheus_config_bucket  = "${local.config_bucket}"
 }
 
 output "public_ips" {
