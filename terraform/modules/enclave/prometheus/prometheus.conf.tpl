@@ -9,9 +9,6 @@ scrape_configs:
       profile: "${ec2_instance_profile}"
       port: 9100
     relabel_configs:
-    - source_labels: [__meta_ec2_private_ip]
-      regex: '10\.[0-1]\.[1-3]\..*'
-      action: keep
     - source_labels: [__meta_ec2_tag_Name]
       regex: '.*\.secops\..*'
       action: drop
