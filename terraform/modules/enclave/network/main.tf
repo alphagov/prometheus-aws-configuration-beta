@@ -137,6 +137,19 @@ resource "aws_security_group_rule" "node_exporter_from_other_prom" {
   security_group_id = "${aws_security_group.prometheus_instance.id}"
 }
 
+resource "aws_security_group_rule" "hub_policy" {
+  type      = "egress"
+  protocol  = "tcp"
+  from_port = 50111
+  to_port   = 50111
+
+  cidr_blocks = [
+    "10.1.0.0/22",
+  ]
+
+  security_group_id = "${aws_security_group.prometheus_instance.id}"
+}
+
 resource "aws_security_group_rule" "s3" {
   type      = "egress"
   protocol  = "tcp"
