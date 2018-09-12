@@ -1,14 +1,6 @@
 groups:
 - name: DataGovUk
   rules:
-  - alert: DataGovUk_NoInstancesForSomeTime
-    expr: count(sum(cpu{job="metric-exporter"}) without (cell_id)) by (app) == 0
-    for: 30m
-    labels:
-        product: "data-gov-uk"
-    annotations:
-        summary: "App {{ $labels.app }} has no instances"
-        description: "Application {{ $labels.app }} has had no instances for half an hour."
   - alert: DataGovUk_HighCpuUsage
     expr: avg(cpu{job="metric-exporter"}) by (app) >= 80
     for: 5m
