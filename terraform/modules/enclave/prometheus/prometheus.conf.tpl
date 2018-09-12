@@ -15,8 +15,6 @@ scrape_configs:
     - source_labels: [__meta_ec2_tag_Name]
       regex: '.*\.stubs\..*'
       action: drop
-    - source_labels: [__meta_ec2_private_ip]
-      target_label: private_ip
     - source_labels: [__meta_ec2_tag_Name]
       target_label: instance
 
@@ -29,7 +27,5 @@ scrape_configs:
     - source_labels: [__meta_ec2_tag_Name]
       regex: 'policy.*'
       action: keep
-    - source_labels: [__meta_ec2_private_ip]
-      target_label: private_ip
     - source_labels: [__meta_ec2_tag_Name]
       target_label: instance
