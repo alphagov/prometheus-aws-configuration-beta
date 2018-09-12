@@ -21,16 +21,16 @@ control "aws_cloud_resources" do
     its('root_device_name') { should eq '/dev/sda1'}
     its('architecture') { should eq 'x86_64'}
     its('virtualization_type') { should eq 'hvm'}
-    its('key_name') { should eq 'perf-test-prom-key'}
+    its('key_name') { should eq 'test-prom-key'}
   end
 
-  describe aws_iam_role('prometheus_profile') do
+  describe aws_iam_role('prometheus_profile_test') do
     it { should exist }
   end
 
-  describe aws_iam_policy('prometheus_instance_profile') do
+  describe aws_iam_policy('prometheus_instance_profile_test') do
     it { should exist }
-    its('attached_roles') { should include "prometheus_profile" }
+    its('attached_roles') { should include "prometheus_profile_test" }
     it { should be_attached }
     it { should have_statement(Action: ['s3:Get*','s3:ListBucket'], Effect: 'Allow', Sid: 's3Bucket') }
     it { should have_statement(Action: 'ec2:Describe*', Effect: 'Allow', Resource: '*', Sid: 'ec2Policy') }
