@@ -19,6 +19,7 @@ scrape_configs:
       target_label: instance
 
   - job_name: 'hub_policy'
+    metrics_path: /prometheus/metrics
     ec2_sd_configs:
     - region: "${aws_region}"
       profile: "${ec2_instance_profile}"
