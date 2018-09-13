@@ -25,3 +25,7 @@ output "s3_config_bucket" {
 output "ec2_instance_profile_name" {
   value = "${aws_iam_instance_profile.prometheus_instance_profile.name}"
 }
+
+output "ec2_instance_prometheus_sg" {
+  value = "${aws_security_group.allow_prometheus.id}"
+}

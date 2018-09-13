@@ -3,6 +3,7 @@ data "template_file" "prometheus_config_template" {
 
   vars {
     prometheus_dns_names = "${var.prometheus_dns_names}"
+    environment          = "${var.environment}"
   }
 }
 

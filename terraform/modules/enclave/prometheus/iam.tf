@@ -51,6 +51,8 @@ data "aws_iam_policy_document" "instance_role_policy" {
     resources = [
       "arn:aws:s3:::${aws_s3_bucket.prometheus_config.id}/*",
       "arn:aws:s3:::${aws_s3_bucket.prometheus_config.id}",
+      "arn:aws:s3:::${var.targets_bucket}/*",
+      "arn:aws:s3:::${var.targets_bucket}",
     ]
   }
 }
