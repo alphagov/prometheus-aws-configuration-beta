@@ -20,4 +20,4 @@ environment.sh
 .DS_Store
 
 *.plan
-*/.kitchen/**
+**/.kitchen/**

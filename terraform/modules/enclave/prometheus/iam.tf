@@ -1,12 +1,12 @@
 #Prepare to attach role to instance
 resource "aws_iam_instance_profile" "prometheus_instance_profile" {
-  name = "prometheus_config_reader_profile"
+  name = "prometheus_${var.environment}_config_reader_profile"
   role = "${aws_iam_role.prometheus_role.name}"
 }
 
 #Create role
 resource "aws_iam_role" "prometheus_role" {
-  name = "prometheus_profile"
+  name = "prometheus_profile_${var.environment}"
 
   assume_role_policy = "${data.aws_iam_policy_document.prometheus_assume_role_policy.json}"
 }
@@ -25,7 +25,7 @@ data "aws_iam_policy_document" "prometheus_assume_role_policy" {
 
 #Define the policy to attach the role too
 resource "aws_iam_policy" "prometheus_instance_profile" {
-  name        = "prometheus_instance_profile"
+  name        = "prometheus_instance_profile_${var.environment}"
   path        = "/"
   description = "This is the main profile, that has bucket permission and decribe permissions"
 

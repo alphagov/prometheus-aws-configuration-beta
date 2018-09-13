@@ -1,6 +1,6 @@
 driver:
   name: terraform
-  root_module_directory: test/fixtures
+  root_module_directory: test/prometheus-verify
 
 provisioner:
   name: terraform

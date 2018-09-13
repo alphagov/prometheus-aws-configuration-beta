@@ -31,3 +31,19 @@ The general structure of the deployment command is the following: `/deploy_encla
 Once you have done this you should get a successful deployment. You get an opportunity to review the plan and select yes or no based on this. The script takes number 1 for yes and 2 for no. 
 
 You can use ssh to login into the instance in dev environment however you will not have access the prometheus 9090 interface. You can use the ssh to recreate a tunnel to this port via the following command: `ssh ubuntu@<ip_from_output> -L 9090:localhost:9090`. Once this is done you can view prometheus on `localhost:9090`.
+
+## Deploying EC2 Prometheus to Verify Perf stack
+To deploy run this command:
+
+`/deploy_enclave.sh -e verify-perf-a -p <Verify perf profile name in ~/.aws/config> -a apply -s prometheus`
+
+## Deploying EC2 Prometheus for PaaS
+To deploy to staging run this command:
+
+`/deploy_enclave.sh -e paas-staging -p <staging profile name in ~/.aws/config> -a apply -s prometheus`
+
+To deploy to production run this command:
+
+`/deploy_enclave.sh -e paas-production -p <production profile name in ~/.aws/config> -a apply -s prometheus`
+
+The `public_dns` output will give you a list of available public dns to get access to the Prometheus dashboard.
