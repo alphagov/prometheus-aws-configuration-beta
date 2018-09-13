@@ -36,11 +36,7 @@ STATE=${STATE:-network}
 role="arn:aws:iam::170611269615:role/prometheus_deployer"
 role_session="test"
 
-buckets=$(aws-vault exec ${PROFILE} -- aws s3api list-buckets --query "Buckets[].Name")
-if echo ${buckets} | grep -q ${bucket_name}; then
-    #bucket exists
-    echo "${bucket_name} exists"
-else
+if ! aws-vault exec ${PROFILE} -- aws s3api head-bucket --bucket ${bucket_name} 2>/dev/null ; then
     echo "creating ${bucket_name}"
     aws-vault exec ${PROFILE} -- aws s3api create-bucket --bucket="${bucket_name}" --region "${AWS_REGION}" --create-bucket-configuration LocationConstraint="${AWS_REGION}"
 fi
