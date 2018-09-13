@@ -54,6 +54,8 @@ control "aws_cloud_resources" do
     it { should allow_in(port: '22', ipv4_range: allow_ip_subnets) }
     it { should allow_out(port: '53', ipv4_range: '10.0.1.251/32') }
     it { should allow_out(port: '53', ipv4_range: '10.0.1.253/32') }
+    it { should allow_out(port: '8080', ipv4_range: '10.0.1.87/32') }
+    it { should allow_out(port: '50111', ipv4_range: '10.1.0.0/22') }
   end
 
   describe aws_security_group(group_name: 'prometheus_to_ec2') do

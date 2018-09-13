@@ -73,11 +73,15 @@ resource "aws_security_group_rule" "allow_ssh_from_gds" {
 }
 
 resource "aws_security_group_rule" "allow_access_to_egress_proxies" {
-  type        = "egress"
-  protocol    = "tcp"
-  from_port   = 8080
-  to_port     = 8080
-  cidr_blocks = ["10.0.1.87/32"]
+  type      = "egress"
+  protocol  = "tcp"
+  from_port = 8080
+  to_port   = 8080
+
+  # Hardcoding these IPs is technical debt: they are IPs associated with
+  # egress-proxy.service.dmz, which is an ELB on a dynamic IP range.
+  # we should find a better way to do this
+  cidr_blocks = ["10.0.1.151/32", "10.0.1.142/32"]
 
   security_group_id = "${aws_security_group.prometheus_instance.id}"
 }
@@ -132,6 +136,19 @@ resource "aws_security_group_rule" "node_exporter_from_other_prom" {
 
   cidr_blocks = [
     "10.0.3.32/27",
+  ]
+
+  security_group_id = "${aws_security_group.prometheus_instance.id}"
+}
+
+resource "aws_security_group_rule" "hub_policy" {
+  type      = "egress"
+  protocol  = "tcp"
+  from_port = 50111
+  to_port   = 50111
+
+  cidr_blocks = [
+    "10.1.0.0/22",
   ]
 
   security_group_id = "${aws_security_group.prometheus_instance.id}"
