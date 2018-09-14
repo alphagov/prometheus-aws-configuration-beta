@@ -1,61 +1,36 @@
-variable "aws_region" {
-  type        = "string"
-  description = "AWS region"
-  default     = "eu-west-2"
-}
-
-variable "stack_name" {
-  type        = "string"
-  description = "Unique name for this collection of resources"
-  default     = "ec2-monitoring"
-}
-
-variable "prometheus_subdomain" {
-  type        = "string"
-  description = "Subdomain for prometheus"
-  default     = "monitoring"
-}
-
-# locals
-# --------------------------------------------------------------
+# Locals
 
 locals {
-  default_tags = {
-    Terraform = "true"
-    Project   = "infra-networking"
-  }
+  branch        = "test-paas"
+  environment   = "${local.branch}-${var.test_user}"
+  config_bucket = "${local.environment}"
 
-  private_subdomain_name = "${var.stack_name}.monitoring.private"
+  product                = "${local.environment}"
+  private_subdomain_name = "${var.test_user}.monitoring.private"
 
-  availability_zones = "${
-    zipmap(
-      data.aws_availability_zones.available.names,
-      module.vpc.public_subnets_cidr_blocks
-    )
-  }"
+  availability_zones = "${zipmap(var.az_zones_avalible,module.vpc.public_subnets_cidr_blocks)}"
 }
 
-## Providers
+# Providers
 
 terraform {
   required_version = "= 0.11.7"
 }
 
 provider "aws" {
-  version = "~> 1.14.1"
-  region  = "${var.aws_region}"
+  region = "eu-west-1"
 }
 
-## Data sources
+# Data sources
 
 data "aws_availability_zones" "available" {}
 
-## Resources
+# Resources
 
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
-  name = "ptom-test-vpc"
+  name = "${var.test_user}-test-vpc"
   cidr = "10.0.0.0/16"
 
   # subnets assumes 3 AZs although 3AZs are not implemented elsewhere
@@ -80,5 +55,50 @@ resource "aws_route53_zone" "private" {
   force_destroy = true
 }
 
-## Outputs
+resource "aws_security_group" "permit_internet_access" {
+  vpc_id = "${module.vpc.vpc_id}"
 
+  egress {
+    protocol  = "tcp"
+    from_port = 80
+    to_port   = 80
+
+    cidr_blocks = [
+      "0.0.0.0/0",
+    ]
+  }
+
+  egress {
+    protocol  = "tcp"
+    from_port = 443
+    to_port   = 443
+
+    cidr_blocks = [
+      "0.0.0.0/0",
+    ]
+  }
+
+  ingress {
+    protocol  = "tcp"
+    from_port = 22
+    to_port   = 22
+
+    cidr_blocks = [
+      "0.0.0.0/0",
+    ]
+  }
+
+  ingress {
+    protocol  = "tcp"
+    from_port = 9090
+    to_port   = 9090
+
+    cidr_blocks = [
+      "0.0.0.0/0",
+    ]
+  }
+
+  tags {
+    Name = "Internet access & prometheus access from GDS in dev env"
+  }
+}

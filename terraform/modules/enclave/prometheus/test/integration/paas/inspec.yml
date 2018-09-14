@@ -1,0 +1,6 @@
+name: Prometheus_Observe_GDS
+title: Test the prometheus EC2 module for the PaaS environment.
+version: 0.1.0
+# depends:
+#   - name: linux-baseline
+#     url: https://github.com/dev-sec/linux-baseline/archive/master.tar.gz
