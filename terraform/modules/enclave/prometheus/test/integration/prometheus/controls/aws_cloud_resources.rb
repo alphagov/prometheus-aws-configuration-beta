@@ -11,6 +11,7 @@ allow_ip_subnets = [
     "213.86.153.237/32",
     "85.133.67.244/32",
 ]
+policy_struct = aws_iam_policy('prometheus_instance_profile_test').policy
 
 
 control "aws_cloud_resources" do
@@ -35,6 +36,12 @@ control "aws_cloud_resources" do
     it { should have_statement(Action: ['s3:Get*','s3:ListBucket'], Effect: 'Allow', Sid: 's3Bucket') }
     it { should have_statement(Action: 'ec2:Describe*', Effect: 'Allow', Resource: '*', Sid: 'ec2Policy') }
     its('statement_count') { should cmp 2 }
+  end
+
+  describe aws_iam_policy('prometheus_instance_profile resources count') do
+    subject { policy_struct['Statement'][1]['Resource'].length }
+    # expect 2 resource counts for verify perf a stack
+    it { should == 2 }
   end
 
   describe aws_s3_bucket_object(bucket_name: s3_bucket_id, key: 'prometheus/prometheus.yml') do
