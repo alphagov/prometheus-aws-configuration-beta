@@ -17,7 +17,7 @@ groups:
         summary: "App {{ $labels.app }} has high disk usage"
         description: "Application {{ $labels.app }} has an instance which is using over 80% disk."
   - alert: DataGovUk_ElasticSearchIndexSizeIncrease
-    expr: sum by (job) (delta(elasticsearch_indices_docs{space="data-gov-uk"}[30m])) >= 100
+    expr: max by (job) (delta(elasticsearch_indices_docs{space="data-gov-uk"}[30m])) >= 100
     for: 1m
     labels:
         product: "data-gov-uk"
@@ -25,7 +25,7 @@ groups:
         summary: "Index size of Elasticsearch for {{ $labels.job }} has increased significantly"
         description: "The index size of Elasticsearch for {{ $labels.job }} has increased by more than 100 documents in the last 30 minutes"
   - alert: DataGovUk_ElasticSearchIndexSizeDecrease
-    expr: sum by (job) (delta(elasticsearch_indices_docs{space="data-gov-uk"}[30m])) <= -100
+    expr: max by (job) (delta(elasticsearch_indices_docs{space="data-gov-uk"}[30m])) <= -100
     for: 1m
     labels:
         product: "data-gov-uk"
