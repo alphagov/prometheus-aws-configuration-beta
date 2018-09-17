@@ -24,6 +24,10 @@ variable "vpc_peers" {
   default = {}
 }
 
+variable cidr_access_web_interface {
+  default = ["10.1.1.249/32"]
+}
+
 variable "cidr_admin_whitelist" {
   description = "CIDR ranges permitted to communicate with administrative endpoints"
   type        = "list"
