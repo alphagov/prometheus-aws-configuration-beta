@@ -8,7 +8,7 @@ groups:
         product: "data-gov-uk"
     annotations:
         summary: "App {{ $labels.app }} has high CPU usage"
-        description: "Application {{ $labels.app }} has been using over 80% CPU (averaged over all instances) for 5 minutes or more."
+        description: "Application {{ $labels.app }} has been using over 80% CPU (averaged over all instances) for 5 minutes or more"
   - alert: DataGovUk_HighDiskUsage
     expr: max(disk_utilization{job="metric-exporter"}) by (app) >= 80
     labels:
@@ -34,3 +34,12 @@ groups:
         summary: "Index size of Elasticsearch for {{ $labels.job }} has decreased significantly"
         description: "The index size of Elasticsearch for {{ $labels.job }} has decreased by more than 300 documents in the last 30 minutes"
         runbook: https://docs.publishing.service.gov.uk/manual/data-gov-uk-troubleshooting.html#different-number-of-datasets-in-ckan-to-find
+  - alert: DataGovUk_HighSidekiqEnqueuedJobs
+    expr: sidekiq_enqueued_jobs{org="gds-data-discovery",job="publish-data-production-queue-monitor"} > 800
+    for: 5m
+    labels:
+        product: "data-gov-uk"
+    annotations:
+        summary: "Sidekiq's enqueued jobs do not seem to be clearing for Publish Data on production"
+        description: "Sidekiq has had more than 800 enqueued jobs for Publish Data on production for at least 5 minutes"
+        runbook: https://docs.publishing.service.gov.uk/manual/data-gov-uk-monitoring.html#sidekiq-publish
