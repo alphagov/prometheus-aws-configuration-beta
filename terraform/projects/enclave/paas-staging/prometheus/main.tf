@@ -1,7 +1,9 @@
 locals {
-  product       = "paas"
-  environment   = "staging"
-  config_bucket = "gdsobserve-${local.product}-${local.environment}-config-store"
+  product                           = "paas"
+  environment                       = "staging"
+  config_bucket                     = "gdsobserve-${local.product}-${local.environment}-config-store"
+  active_alertmanager_private_fqdns = "${slice(data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdns, 0,
+ 3)}"
 }
 
 terraform {
@@ -40,6 +42,16 @@ data "terraform_remote_state" "sg" {
   }
 }
 
+data "terraform_remote_state" "app_ecs_albs" {
+  backend = "s3"
+
+  config {
+    bucket = "prometheus-${local.environment}"
+    key    = "app-ecs-albs.tfstate"
+    region = "eu-west-1"
+  }
+}
+
 module "prometheus" {
   source = "../../../../modules/enclave/prometheus"
 
@@ -53,7 +65,7 @@ module "prometheus" {
   product        = "${local.product}"
   environment    = "${local.environment}"
   config_bucket  = "${local.config_bucket}"
-  targets_bucket = "gds-prometheus-targets-staging"
+  targets_bucket = "gds-prometheus-targets-${local.environment}"
 
   subnet_ids          = "${data.terraform_remote_state.network.public_subnets}"
   availability_zones  = "${data.terraform_remote_state.network.subnets_by_az}"
@@ -66,7 +78,10 @@ module "paas-config" {
 
   environment              = "${local.environment}"
   prometheus_dns_names     = "${join("\",\"", formatlist("%s:9090", module.prometheus.prometheus_private_dns))}"
+  prometheus_dns_nodes     = "${join("\",\"", formatlist("%s:9100", module.prometheus.prometheus_private_dns))}"
   prometheus_config_bucket = "${local.config_bucket}"
+  alertmanager_dns_names   = "${join("\",\"", local.active_alertmanager_private_fqdns)}"
+  alerts_path              = "../../../../projects/app-ecs-services/config/alerts/"
 }
 
 output "public_ips" {
