@@ -50,9 +50,10 @@ module "prometheus" {
   target_vpc = "vpc-0bbf4123f5b385806"
   enable_ssh = true
 
-  product       = "${local.product}"
-  environment   = "${local.environment}"
-  config_bucket = "${local.config_bucket}"
+  product        = "${local.product}"
+  environment    = "${local.environment}"
+  config_bucket  = "${local.config_bucket}"
+  targets_bucket = "gds-prometheus-targets-staging"
 
   subnet_ids          = "${data.terraform_remote_state.network.public_subnets}"
   availability_zones  = "${data.terraform_remote_state.network.subnets_by_az}"
@@ -63,6 +64,7 @@ module "prometheus" {
 module "paas-config" {
   source = "../../../../modules/enclave/paas-config"
 
+  environment              = "${local.environment}"
   prometheus_dns_names     = "${join("\",\"", formatlist("%s:9090", module.prometheus.prometheus_private_dns))}"
   prometheus_config_bucket = "${local.config_bucket}"
 }
@@ -73,4 +75,8 @@ output "public_ips" {
 
 output "public_dns" {
   value = "[\n    ${join("\n    ", formatlist("%s:9090", module.prometheus.prometheus_public_dns))}\n]"
+}
+
+output "ec2_instance_prometheus_sg" {
+  value = "${module.prometheus.ec2_instance_prometheus_sg}"
 }

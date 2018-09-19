@@ -68,3 +68,7 @@ variable "allowed_cidrs" {
 }
 
 variable "config_bucket" {}
+
+variable "targets_bucket" {
+  default = ""
+}
