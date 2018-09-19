@@ -17,18 +17,20 @@ groups:
         summary: "App {{ $labels.app }} has high disk usage"
         description: "Application {{ $labels.app }} has an instance which is using over 80% disk."
   - alert: DataGovUk_ElasticSearchIndexSizeIncrease
-    expr: max by (job) (delta(elasticsearch_indices_docs{space="data-gov-uk"}[30m])) >= 100
+    expr: max by (job) (delta(elasticsearch_indices_docs{space="data-gov-uk"}[30m])) >= 300
     for: 1m
     labels:
         product: "data-gov-uk"
     annotations:
         summary: "Index size of Elasticsearch for {{ $labels.job }} has increased significantly"
-        description: "The index size of Elasticsearch for {{ $labels.job }} has increased by more than 100 documents in the last 30 minutes"
+        description: "The index size of Elasticsearch for {{ $labels.job }} has increased by more than 300 documents in the last 30 minutes"
+        runbook: https://docs.publishing.service.gov.uk/manual/data-gov-uk-troubleshooting.html#different-number-of-datasets-in-ckan-to-find
   - alert: DataGovUk_ElasticSearchIndexSizeDecrease
-    expr: max by (job) (delta(elasticsearch_indices_docs{space="data-gov-uk"}[30m])) <= -100
+    expr: max by (job) (delta(elasticsearch_indices_docs{space="data-gov-uk"}[30m])) <= -300
     for: 1m
     labels:
         product: "data-gov-uk"
     annotations:
         summary: "Index size of Elasticsearch for {{ $labels.job }} has decreased significantly"
-        description: "The index size of Elasticsearch for {{ $labels.job }} has decreased by more than 100 documents in the last 30 minutes"
+        description: "The index size of Elasticsearch for {{ $labels.job }} has decreased by more than 300 documents in the last 30 minutes"
+        runbook: https://docs.publishing.service.gov.uk/manual/data-gov-uk-troubleshooting.html#different-number-of-datasets-in-ckan-to-find
