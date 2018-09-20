@@ -28,10 +28,16 @@ groups:
     # zero using the `or count(up)*0` expression.
     # This idea taken from: https://www.robustperception.io/existential-issues-with-metrics/
     #
-    # Note also that this alert will only fire if there are *no* file_sd targets.
+    # Notes:
+    # - this alert will only fire if there are *no* file_sd targets.
     # This is useful if we only have one source of file_sd config, but might not be
     # if we have multiple ways of receiving file_sd configs and only one of them breaks.
-    expr: (count(prometheus_sd_file_mtime_seconds) or count(up)*0) < 1
+    # - a condition has been added to ensure that it does not trigger on prometheus build versions matching '2.1.0+ds'
+    # Reason for this is because that version does not have the metric 'prometheus_sd_file_mtime_seconds' available so will always trigger 
+    # and the package available for Ubunutu 18.04 Bionic Beaver machines on EC2 prometheus stacks is '2.1.0+ds'. 
+    # If this changes this alert will need to be updated to ensure that it doesn't fire unless it is supported in that version of prometheus.
+    # 
+    expr: (count(prometheus_sd_file_mtime_seconds) or count(up)*0) < 1 and count(prometheus_build_info{version="2.1.0+ds"}) == 0
     for: 10s
     labels:
         product: "prometheus"
