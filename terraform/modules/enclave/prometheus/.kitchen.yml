@@ -14,11 +14,11 @@ platforms:
 
 suites:
   - name: paas
+    lifecycle:
+      post_converge:
+      - local: echo 'Post converge- sleep 120 seconds'; sleep 120
     verifier:
       name: terraform
-      additional_install_command: |
-        echo 'wait 120'
-        # sleep 120
       systems:
       - name: aws_cloud
         backend: aws
@@ -38,6 +38,9 @@ suites:
       - west2
 
   - name: verify
+    lifecycle:
+      post_converge:
+      - local: echo 'Post converge- sleep 120 seconds'; sleep 120
     verifier:
       name: terraform
       systems:
