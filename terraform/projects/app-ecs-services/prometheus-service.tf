@@ -252,23 +252,23 @@ resource "aws_s3_bucket_object" "prometheus-config" {
 
 resource "aws_s3_bucket_object" "alerts-config" {
   bucket = "${aws_s3_bucket.config_bucket.id}"
-  key    = "prometheus/alerts/alerts.yml"
-  source = "config/alerts/alerts.yml"
-  etag   = "${md5(file("config/alerts/alerts.yml"))}"
+  key    = "prometheus/alerts/observe-alerts.yml"
+  source = "config/alerts/observe-alerts.yml"
+  etag   = "${md5(file("config/alerts/observe-alerts.yml"))}"
 }
 
 resource "aws_s3_bucket_object" "alerts-data-gov-uk-config" {
   bucket = "${aws_s3_bucket.config_bucket.id}"
-  key    = "prometheus/alerts/data-gov-uk.yml"
-  source = "config/alerts/data-gov-uk.yml"
-  etag   = "${md5(file("config/alerts/data-gov-uk.yml"))}"
+  key    = "prometheus/alerts/data-gov-uk-alerts.yml"
+  source = "config/alerts/data-gov-uk-alerts.yml"
+  etag   = "${md5(file("config/alerts/data-gov-uk-alerts.yml"))}"
 }
 
 resource "aws_s3_bucket_object" "alerts-registers-config" {
   bucket = "${aws_s3_bucket.config_bucket.id}"
-  key    = "prometheus/alerts/registers.yml"
-  source = "config/alerts/registers.yml"
-  etag   = "${md5(file("config/alerts/registers.yml"))}"
+  key    = "prometheus/alerts/registers-alerts.yml"
+  source = "config/alerts/registers-alerts.yml"
+  etag   = "${md5(file("config/alerts/registers-alerts.yml"))}"
 }
 
 #### paas proxy
