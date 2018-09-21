@@ -1,4 +1,5 @@
 environment = attribute "environment", {}
+# prometheus_dns = attribute "prometheus_dns", {}
 prometheus_instance_id = attribute "prometheus_id", {}
 s3_bucket_id = attribute "prom_s3_config_bucket", {}
 subnet_ids = attribute "subnet_ids", {}
@@ -14,8 +15,25 @@ allow_ip_subnets = [
 ]
 ENV['AWS_REGION'] = 'eu-west-1'
 
-# puts "Wait 120 seconds for prometheus to start up"
-# sleep(120)
+# check if prometheus is running before allowing tests to run
+# uri = URI.parse("http://#{prometheus_dns}:9090/metrics")
+# request = Net::HTTP::Get.new(uri)
+
+# attempts = 1
+
+# loop do
+#   response = Net::HTTP.start(uri.hostname, uri.port) do |http|
+#     http.request(request)
+#   end
+
+#   break if response.code == "200" || attempts > 10
+#   printf "%s attempt, status %d", attempts, response.code  
+
+#   sleep(10)
+# end
+
+# raise "Timeout waiting for prometheus to start" unless attempts <= 10
+
 
 control "aws_cloud_resources" do
   describe aws_ec2_instance(prometheus_instance_id) do
