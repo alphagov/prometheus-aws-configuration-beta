@@ -79,11 +79,7 @@ provider "template" {
 }
 
 provider "pass" {
-  store_dir = "~/.reng-pass"
-
-  # This pulls reng-pass from git to make sure we're using the most up to date credentials.
-  # If `reng-pass git pull` fails ten terraform will fail. Git fail for various
-  # reasons so if this becomes flakey we can set this to false and update reng-pass manually.
+  store_dir     = "~/.password-store/re-secrets/observe"
   refresh_store = true
 }
 
