@@ -21,3 +21,4 @@ environment.sh
 
 *.plan
 **/.kitchen/**
+__pycache__
