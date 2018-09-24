@@ -18,7 +18,7 @@ scrape_configs:
     file_sd_configs:
       - files: ['/etc/prometheus/targets/*.json']
         refresh_interval: 30s
-  - job_name: alertmanagers
+  - job_name: alertmanager
     static_configs:
       - targets: ["${alertmanager_dns_names}"]
   - job_name: prometheus_node
