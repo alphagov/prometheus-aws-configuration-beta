@@ -66,6 +66,7 @@ data "template_file" "user_data_script" {
     aws_ec2_ip     = "${var.ec2_endpoint_ips[0]}"
     region         = "${var.region}"
     targets_bucket = "${var.targets_bucket}"
+    alerts_bucket  = "${aws_s3_bucket.prometheus_config.id}"
   }
 }
 
@@ -93,6 +94,15 @@ resource "aws_security_group_rule" "allow_prometheus_private" {
   type              = "ingress"
   from_port         = 9090
   to_port           = 9090
+  protocol          = "tcp"
+  cidr_blocks       = ["10.0.0.0/16"]
+}
+
+resource "aws_security_group_rule" "allow_prometheus_node_exporter" {
+  security_group_id = "${aws_security_group.allow_prometheus.id}"
+  type              = "ingress"
+  from_port         = 9100
+  to_port           = 9100
   protocol          = "tcp"
   cidr_blocks       = ["10.0.0.0/16"]
 }
