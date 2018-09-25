@@ -76,7 +76,8 @@ module "paas-config" {
   source = "../../../../modules/enclave/paas-config"
 
   environment              = "${local.environment}"
-  prometheus_dns_names     = "${join("\",\"", formatlist("%s:9090", module.prometheus.prometheus_private_dns))}"
+  prometheus_dns_names     = "${join("\",\"", concat(slice(data.terraform_remote_state.app_ecs_albs.prom_private_record_fqdns, 0, 2), formatlist("%s:9090", list(aws_route53_record.prom_ec2_a_record.2.fqdn))))}"
+
   prometheus_dns_nodes     = "${join("\",\"", formatlist("%s:9100", module.prometheus.prometheus_private_dns))}"
   prometheus_config_bucket = "${module.prometheus.s3_config_bucket}"
   alertmanager_dns_names   = "${join("\",\"", local.active_alertmanager_private_fqdns)}"
@@ -92,10 +93,25 @@ resource "aws_security_group_rule" "allow_ec2_prometheus_access_paas_proxy" {
   source_security_group_id = "${module.prometheus.ec2_instance_prometheus_sg}"
 }
 
+resource "aws_route53_record" "prom_ec2_a_record" {
+  count = 3
+
+  zone_id = "${data.terraform_remote_state.network.private_zone_id}"
+  name    = "prom-ec2-${count.index + 1}"
+  type    = "A"
+  ttl     = 300
+
+  records = ["${element(module.prometheus.private_ip_addresses, count.index)}"]
+}
+
 output "public_ips" {
   value = "${module.prometheus.public_ip_address}"
 }
 
 output "public_dns" {
   value = "[\n    ${join("\n    ", formatlist("%s:9090", module.prometheus.prometheus_public_dns))}\n]"
+}
+
+output "private_ips" {
+  value = "${module.prometheus.private_ip_addresses}"
 }

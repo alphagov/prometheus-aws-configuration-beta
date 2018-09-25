@@ -167,6 +167,11 @@ output "private_zone_id" {
   description = "Route 53 Zone ID for the internal zone"
 }
 
+output "private_zone_name" {
+  value       = "${aws_route53_zone.private.name}"
+  description = "Route 53 Zone name for the internal zone"
+}
+
 output "private_subnets_ips" {
   value       = "${module.vpc.private_subnets_cidr_blocks}"
   description = "List of private subnet IPs"

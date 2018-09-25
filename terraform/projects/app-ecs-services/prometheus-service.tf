@@ -106,7 +106,7 @@ data "template_file" "prometheus_config_file" {
 
   vars {
     alertmanager_dns_names = "${join("\",\"", local.active_alertmanager_private_fqdns)}"
-    prometheus_dns_names   = "${join("\",\"", local.active_prometheus_private_fqdns)}"
+    prometheus_dns_names   = "${join("\",\"", concat(slice(local.active_prometheus_private_fqdns, 0, 2), list("prom-ec2-3.${data.terraform_remote_state.infra_networking.private_subdomain}:9090")))}"
     paas_proxy_dns_name    = "${data.terraform_remote_state.app_ecs_albs.paas_proxy_private_record_fqdn}"
   }
 }
