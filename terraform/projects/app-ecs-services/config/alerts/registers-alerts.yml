@@ -2,7 +2,7 @@ groups:
 - name: Registers
   rules:
   - alert: Registers_AppRequestsExcess5xx
-    expr: sum by(app) (rate(requests{org="openregister", exported_space="prod", status_range="5xx"}[5m])) / sum by(app) (rate(requests{org="openregister", exported_space="prod"}[5m])) >= 0.25
+    expr: sum by(app) (rate(requests{org="openregister", space="prod", status_range="5xx"}[5m])) / sum by(app) (rate(requests{org="openregister", space="prod"}[5m])) >= 0.25
     for: 120s
     labels:
         product: "registers"
@@ -13,7 +13,7 @@ groups:
         dashboard_registers: https://grafana-paas.cloudapps.digital/d/sljj3z6zk/registers?orgId=1
 
   - alert: Registers_InstanceDiskSpaceExceeded
-    expr: disk_utilization{org="openregister",exported_space="prod"} > 80
+    expr: disk_utilization{org="openregister",space="prod"} > 80
     for: 300s
     labels:
         product: "registers"
@@ -23,7 +23,7 @@ groups:
         cloud_foundry_docs: https://docs.cloudfoundry.org/devguide/deploy-apps/manifest.html#disk-quota
 
   - alert: Registers_InstanceCPUExceeded
-    expr: avg_over_time(cpu{org="openregister",exported_space="prod"}[5m]) > 80
+    expr: avg_over_time(cpu{org="openregister",space="prod"}[5m]) > 80
     for: 300s
     labels:
         product: "registers"
