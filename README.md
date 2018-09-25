@@ -38,6 +38,9 @@ go get github.com/camptocamp/terraform-provider-pass
 GOBIN=~/.terraform.d/plugins/darwin_amd64 go install github.com/camptocamp/terraform-provider-pass
 ```
 
+You will also need to clone the re-secrets repo into `~/.password-store/re-secrets`:
+
+    git clone git@github.com:alphagov/re-secrets.git ~/.password-store/re-secrets
 
 ### Developing with the `Makefile` or `setup.sh` shell script
 
