@@ -41,8 +41,6 @@ locals {
     Terraform = "true"
     Project   = "infra-security-groups"
   }
-
-  enclave_paas_prometheus_remote_state_bucket_name = "govukobserve-tfstate-prom-enclave-paas-${var.stack_name}"
 }
 
 # Resources
@@ -71,16 +69,6 @@ data "terraform_remote_state" "infra_networking" {
   config {
     bucket = "${var.remote_state_bucket}"
     key    = "infra-networking.tfstate"
-    region = "${var.aws_region}"
-  }
-}
-
-data "terraform_remote_state" "enclave-paas-prometheus" {
-  backend = "s3"
-
-  config {
-    bucket = "${local.enclave_paas_prometheus_remote_state_bucket_name}"
-    key    = "prometheus.tfstate"
     region = "${var.aws_region}"
   }
 }
@@ -158,15 +146,6 @@ resource "aws_security_group_rule" "allow_prometheus_access_paas_proxy" {
   protocol                 = "tcp"
   security_group_id        = "${aws_security_group.alertmanager_external_sg.id}"
   source_security_group_id = "${aws_security_group.monitoring_internal_sg.id}"
-}
-
-resource "aws_security_group_rule" "allow_ec2_prometheus_access_paas_proxy" {
-  type                     = "ingress"
-  to_port                  = 8080
-  from_port                = 8080
-  protocol                 = "tcp"
-  security_group_id        = "${aws_security_group.alertmanager_external_sg.id}"
-  source_security_group_id = "${data.terraform_remote_state.enclave-paas-prometheus.ec2_instance_prometheus_sg}"
 }
 
 resource "aws_security_group_rule" "alertmanager_external_sg_egress_any_any" {
