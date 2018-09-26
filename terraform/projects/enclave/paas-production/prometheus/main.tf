@@ -76,21 +76,18 @@ module "prometheus" {
 module "paas-config" {
   source = "../../../../modules/enclave/paas-config"
 
-  environment              = "${local.environment}"
-  prometheus_dns_names     = "${join("\",\"", formatlist("%s:9090", module.prometheus.prometheus_private_dns))}"
+  prometheus_dns_names     = "${data.terraform_remote_state.app_ecs_albs.prom_private_record_fqdns}"
   prometheus_dns_nodes     = "${join("\",\"", formatlist("%s:9100", module.prometheus.prometheus_private_dns))}"
   prometheus_config_bucket = "${module.prometheus.s3_config_bucket}"
   alertmanager_dns_names   = "${join("\",\"", local.active_alertmanager_private_fqdns)}"
   alerts_path              = "../../../../projects/app-ecs-services/config/alerts/"
-}
 
-resource "aws_security_group_rule" "allow_ec2_prometheus_access_paas_proxy" {
-  type                     = "ingress"
-  to_port                  = 8080
-  from_port                = 8080
-  protocol                 = "tcp"
-  security_group_id        = "${data.terraform_remote_state.sg.alertmanager_external_sg_id}"
-  source_security_group_id = "${module.prometheus.ec2_instance_prometheus_sg}"
+  prom_private_ips  = "${module.prometheus.private_ip_addresses}"
+  private_zone_id   = "${data.terraform_remote_state.network.private_zone_id}"
+  private_subdomain = "${data.terraform_remote_state.network.private_subdomain}"
+
+  paas_proxy_sg_id = "${data.terraform_remote_state.sg.alertmanager_external_sg_id}"
+  prometheus_sg_id = "${module.prometheus.ec2_instance_prometheus_sg}"
 }
 
 output "public_ips" {
