@@ -35,7 +35,7 @@
         "containerPath": "/configs"
       }
     ],
-    "command": ["s3", "sync", "s3://${config_bucket}/prometheus", "/configs"],
+    "command": ["s3", "sync", "--delete", "s3://${config_bucket}/prometheus", "/configs"],
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {
@@ -57,7 +57,7 @@
         "containerPath": "/configs"
       }
     ],
-    "command": ["s3", "sync", "s3://${config_bucket}/alertmanager", "/configs/alertmanager"],
+    "command": ["s3", "sync", "--delete", "s3://${config_bucket}/alertmanager", "/configs/alertmanager"],
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {
