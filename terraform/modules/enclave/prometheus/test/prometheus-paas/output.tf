@@ -1,5 +1,4 @@
 output "prometheus_dns" {
-  # value = "${module.prometheus.prometheus_public_dns}"
   value = "${element(module.prometheus.prometheus_public_dns, 0)}"
 }
 

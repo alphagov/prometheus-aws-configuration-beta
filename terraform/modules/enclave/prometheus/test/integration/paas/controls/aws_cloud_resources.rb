@@ -1,3 +1,7 @@
+require_relative '../../wait_for_prom'
+prometheus_dns = attribute "prometheus_dns", {}
+WaitForProm.wait(prometheus_dns)
+
 environment = attribute "environment", {}
 # prometheus_dns = attribute "prometheus_dns", {}
 prometheus_instance_id = attribute "prometheus_id", {}
