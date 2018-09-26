@@ -85,15 +85,9 @@ module "paas-config" {
   private_subdomain        = "${data.terraform_remote_state.network.private_subdomain}"
   alertmanager_dns_names   = "${join("\",\"", local.active_alertmanager_private_fqdns)}"
   alerts_path              = "../../../../projects/app-ecs-services/config/alerts/"
-}
 
-resource "aws_security_group_rule" "allow_ec2_prometheus_access_paas_proxy" {
-  type                     = "ingress"
-  to_port                  = 8080
-  from_port                = 8080
-  protocol                 = "tcp"
-  security_group_id        = "${data.terraform_remote_state.sg.alertmanager_external_sg_id}"
-  source_security_group_id = "${module.prometheus.ec2_instance_prometheus_sg}"
+  paas_proxy_sg_id = "${data.terraform_remote_state.sg.alertmanager_external_sg_id}"
+  prometheus_sg_id = "${module.prometheus.ec2_instance_prometheus_sg}"
 }
 
 output "public_ips" {

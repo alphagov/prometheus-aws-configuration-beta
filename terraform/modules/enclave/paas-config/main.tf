@@ -1,3 +1,12 @@
+resource "aws_security_group_rule" "allow_ec2_prometheus_access_paas_proxy" {
+  type                     = "ingress"
+  to_port                  = 8080
+  from_port                = 8080
+  protocol                 = "tcp"
+  security_group_id        = "${var.paas_proxy_sg_id}"
+  source_security_group_id = "${var.prometheus_sg_id}"
+}
+
 data "template_file" "prometheus_config_template" {
   template = "${file("${path.module}/prometheus.conf.tpl")}"
 
