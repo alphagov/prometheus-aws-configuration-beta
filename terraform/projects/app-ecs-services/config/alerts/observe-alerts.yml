@@ -37,7 +37,7 @@ groups:
     # and the package available for Ubunutu 18.04 Bionic Beaver machines on EC2 prometheus stacks is '2.1.0+ds'. 
     # If this changes this alert will need to be updated to ensure that it doesn't fire unless it is supported in that version of prometheus.
     # 
-    expr: (count(prometheus_sd_file_mtime_seconds) or count(up)*0) < 1 and count(prometheus_build_info{version="2.1.0+ds"}) == 0
+    expr: (count(prometheus_sd_file_mtime_seconds) or count(up)*0) < 1 and count(prometheus_build_info{version=~"2\\.4.*"})
     for: 10s
     labels:
         product: "prometheus"
