@@ -60,6 +60,14 @@ module "verify-config" {
   prometheus_config_bucket  = "${local.config_bucket}"
 }
 
+module "private_dns" {
+  source = "../../../../modules/enclave/verify-dns"
+
+  prometheus_private_ips = "${module.prometheus.private_ip_address}"
+  hosted_zone_name       = "service.dmz"
+  target_vpc             = "vpc-0067a6d5138a90c5e"
+}
+
 output "public_ips" {
   value = "${module.prometheus.public_ip_address}"
 }

@@ -6,6 +6,10 @@ output "public_ip_address" {
   value = "${aws_instance.prometheus.*.public_ip}"
 }
 
+output "private_ip_address" {
+  value = "${aws_instance.prometheus.*.private_ip}"
+}
+
 output "prometheus_instance_id" {
   value = "${aws_instance.prometheus.*.id}"
 }
