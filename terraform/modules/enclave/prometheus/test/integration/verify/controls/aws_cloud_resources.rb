@@ -12,7 +12,6 @@ allow_ip_subnets = [
     "213.86.153.237/32",
     "85.133.67.244/32",
 ]
-policy_struct = aws_iam_policy("prometheus_instance_profile_#{environment}").policy
 ENV['AWS_REGION'] = 'eu-west-2'
 
 control "aws_cloud_resources" do
@@ -36,12 +35,11 @@ control "aws_cloud_resources" do
     it { should be_attached }
     it { should have_statement(Action: ['s3:Get*','s3:ListBucket'], Effect: 'Allow', Sid: 's3Bucket') }
     it { should have_statement(Action: 'ec2:Describe*', Effect: 'Allow', Resource: '*', Sid: 'ec2Policy') }
+    it { should have_statement(Resource: "arn:aws:s3:::#{environment}/*") }
+    it { should have_statement(Resource: "arn:aws:s3:::#{environment}") }    
+    it { should_not have_statement(Resource: 'arn:aws:s3:::gds-prometheus-targets-dev') }
+    it { should_not have_statement(Resource: 'arn:aws:s3:::gds-prometheus-targets-dev/*') }
     its('statement_count') { should cmp 2 }
-  end
-
-  describe aws_iam_policy("prometheus_instance_profile_#{environment} resources count") do
-    subject { policy_struct['Statement'][1]['Resource'].length }
-    it { should eq 2 }
   end
 
   describe aws_s3_bucket_object(bucket_name: s3_bucket_id, key: 'prometheus/prometheus.yml') do
