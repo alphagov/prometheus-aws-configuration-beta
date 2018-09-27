@@ -67,6 +67,8 @@ module "prometheus" {
   config_bucket  = "${local.config_bucket}"
   targets_bucket = "gds-prometheus-targets"
 
+  prometheus_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.prom_public_record_fqdns}"
+
   subnet_ids          = "${data.terraform_remote_state.network.public_subnets}"
   availability_zones  = "${data.terraform_remote_state.network.subnets_by_az}"
   vpc_security_groups = ["${data.terraform_remote_state.sg.monitoring_external_sg_id}"]

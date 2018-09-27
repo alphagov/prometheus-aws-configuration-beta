@@ -16,7 +16,7 @@ resource "aws_instance" "prometheus" {
 
   ami                  = "${var.ami_id}"
   instance_type        = "${var.instance_size}"
-  user_data            = "${data.template_file.user_data_script.rendered}"
+  user_data            = "${element(data.template_file.user_data_script.*.rendered, count.index)}"
   iam_instance_profile = "${aws_iam_instance_profile.prometheus_instance_profile.id}"
   subnet_id            = "${element(var.subnet_ids, count.index)}"
 
@@ -58,15 +58,18 @@ resource "aws_ebs_volume" "prometheus-disk" {
 }
 
 data "template_file" "user_data_script" {
+  count = "${length(keys(var.availability_zones))}"
+
   template = "${file("${path.module}/cloud.conf")}"
 
   vars {
-    config_bucket  = "${aws_s3_bucket.prometheus_config.id}"
-    egress_proxy   = "${var.egress_proxy}"
-    aws_ec2_ip     = "${var.ec2_endpoint_ips[0]}"
-    region         = "${var.region}"
-    targets_bucket = "${var.targets_bucket}"
-    alerts_bucket  = "${aws_s3_bucket.prometheus_config.id}"
+    config_bucket     = "${aws_s3_bucket.prometheus_config.id}"
+    egress_proxy      = "${var.egress_proxy}"
+    aws_ec2_ip        = "${var.ec2_endpoint_ips[0]}"
+    region            = "${var.region}"
+    targets_bucket    = "${var.targets_bucket}"
+    alerts_bucket     = "${aws_s3_bucket.prometheus_config.id}"
+    prom_external_url = "https://${var.prometheus_public_fqdns[count.index]}"
   }
 }
 
