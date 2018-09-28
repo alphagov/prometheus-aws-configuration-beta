@@ -1,0 +1,16 @@
+groups:
+- name: VerifyAlerts
+  rules:
+  - alert: Verify_Disk_Filling_Up
+    # we explicitly exclude tmpfs filesystems because they don't correspond to a disk
+    # filling up
+    expr: predict_linear(node_filesystem_avail_bytes{fstype!="tmpfs"}[1h], 86400) < 0
+    for: 10s
+    labels:
+        product: "prometheus"
+        severity: "ticket"
+    annotations:
+        summary: "Root filesystem on {{ $labels.instance }} predicted to fill up within 24 hours"
+        description: "Based on the trend over the past hour, it looks like the root filesystem on {{ $labels.instance }} will fill up within the next 24 hours."
+        # FIXME we could do with an appropriate runbook here
+        # runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-alertmanager-below-threshold"
