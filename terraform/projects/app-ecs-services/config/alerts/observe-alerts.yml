@@ -72,11 +72,11 @@ groups:
 
   - alert: RE_Observe_Target_Down
     expr: up{} == 0
-    for: 20m
+    for: 24h
     labels:
         product: "prometheus"
         severity: "ticket"
     annotations:
         summary: "{{ $labels.job }} target is down"
-        description: "One of the {{ $labels.job }} targets has been down for 20 minutes"
+        description: "One of the {{ $labels.job }} targets has been down for 24 hours"
         runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-target-down"
