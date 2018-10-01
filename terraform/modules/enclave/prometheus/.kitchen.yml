@@ -1,30 +1,62 @@
 driver:
   name: terraform
-  root_module_directory: test/prometheus-verify
 
 provisioner:
   name: terraform
 
 platforms:
-  - name: aws
-
-verifier:
-  name: terraform
-  systems:
-  - name: aws_cloud
-    backend: aws
-    controls:
-      - aws_cloud_resources
-
-  - name: os_checks
-    backend: ssh
-    sudo: true
-    hosts_output: prometheus_dns
-    key_files:
-      - <%= ENV['SSH_KEY'] || "~/.ssh/id_rsa" %>
-    controls:
-      - operating_system
-    user: <%= ENV['SSH_USER'] || "ubuntu" %>
+  - name: west2
+    driver:
+      root_module_directory: test/prometheus-verify
+  - name: west1
+    driver:
+      root_module_directory: test/prometheus-paas
 
 suites:
-  - name: prometheus
+  - name: paas
+    lifecycle:
+      post_converge:
+      - local: echo 'Post converge- sleep 120 seconds'; sleep 120
+    verifier:
+      name: terraform
+      systems:
+      - name: aws_cloud
+        backend: aws
+        controls:
+          - aws_cloud_resources
+
+      - name: os_checks
+        backend: ssh
+        sudo: true
+        hosts_output: prometheus_dns
+        key_files:
+          - <%= ENV['SSH_KEY'] || "~/.ssh/id_rsa" %>
+        controls:
+          - operating_system
+        user: <%= ENV['SSH_USER'] || "ubuntu" %>
+    excludes:
+      - west2
+
+  - name: verify
+    lifecycle:
+      post_converge:
+      - local: echo 'Post converge- sleep 120 seconds'; sleep 120
+    verifier:
+      name: terraform
+      systems:
+      - name: aws_cloud
+        backend: aws
+        controls:
+          - aws_cloud_resources
+
+      - name: os_checks
+        backend: ssh
+        sudo: true
+        hosts_output: prometheus_dns
+        key_files:
+          - <%= ENV['SSH_KEY'] || "~/.ssh/id_rsa" %>
+        controls:
+          - operating_system
+        user: <%= ENV['SSH_USER'] || "ubuntu" %>
+    excludes:
+      - west1

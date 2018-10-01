@@ -57,8 +57,7 @@ control "operating_system" do
     its('content') { should eq nil}
   end
 
-  # do not expect the paas targets directory to exist for verify perf a stack
   describe directory('/etc/prometheus/targets') do
-    it { should_not exist }
+    it { should exist }
   end
 end

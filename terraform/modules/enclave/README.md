@@ -18,12 +18,18 @@ We use the script titled `deploy_enclave.sh` at the root of the project in order
 Follow these steps to run infrastructure tests:
 
 1. Navigate to `terraform/modules/enclave/prometheus`
-2. `bundle install` - install all dependencies to your environment
-3. ensure you have an `aws-vault` profile in the london region: ie with `region = eu-west-2` in the definition
-4. `aws-vault exec <created profile> -- kitchen <action>` this is the general command that you can use in order to run the environment. 
-5. `create` `converge` `verify` these are the three commands that can used in order to spin up a stack and test. The converge can be executed multiple times to test changes.
-6. Once you are done developing, testing and using the stack you can then use the action `destroy` in order to bring down the whole stack.
- 
+2. `bundle install` - install all dependencies to your environment.
+3. source the test environment file `source environment-test.sh` in order to be able to run tests without clashing with other developers running tests.
+4. `aws-vault exec <your gds-tech-ops profile> -- kitchen <action> <optional target>` this is the general command that you can use in order to run the environment. 
+  - actions
+    - `test` - use this action to run through the tests unless you are developing the tests themselves.
+    - `create`, `converge`, `verify` these are the three actions that can used in order to spin up a stack and test. The converge can be executed multiple times to test changes.
+      - Once you are done developing, testing and using the stack you should then use the action `destroy` in order to bring down the whole stack.
+
+  - target (optional)
+    - possible targets are `paas` and `verify`.
+    - if not specified then all targets will be run.
+
 ## Deploying
 
 When performing a deployment you need to ensure you have the correct permissions to do so as extra permission are required.

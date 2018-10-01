@@ -21,3 +21,7 @@ output "subnet_ids" {
 output "routing_table" {
   value = "${module.network.routing_table}"
 }
+
+output "environment" {
+  value = "${local.environment}"
+}

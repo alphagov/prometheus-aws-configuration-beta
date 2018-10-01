@@ -113,8 +113,9 @@ resource "aws_security_group" "allow_prometheus" {
 }
 
 resource "aws_s3_bucket" "prometheus_config" {
-  bucket = "${var.config_bucket}"
-  acl    = "private"
+  bucket        = "${var.config_bucket}"
+  acl           = "private"
+  force_destroy = true
 
   versioning {
     enabled = true
