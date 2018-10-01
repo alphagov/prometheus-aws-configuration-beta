@@ -4,7 +4,7 @@ data "aws_route53_zone" "private_hosted_zone" {
 }
 
 resource "aws_route53_record" "prometheus" {
-  count = "{var.prometheus_private_ip_count}"
+  count = 2
 
   zone_id = "${data.aws_route53_zone.private_hosted_zone.zone_id}"
   name    = "${var.hostname_prefix}-${count.index + 1}.${data.aws_route53_zone.private_hosted_zone.name}"

@@ -6,11 +6,6 @@ variable "target_vpc" {
   description = "The VPC which contains the hosted zone which will be updated"
 }
 
-variable "prometheus_private_ip_count" {
-  description = "Terrafrom cannot calculate the count of private ips when starting from nothing"
-  default     = "2"
-}
-
 variable "prometheus_private_ips" {
   description = "The list of instance ips which will have records created for them"
   type        = "list"
