@@ -1,7 +1,3 @@
-output "cloudinit-script" {
-  value = "${data.template_file.user_data_script.rendered}"
-}
-
 output "public_ip_address" {
   value = "${aws_instance.prometheus.*.public_ip}"
 }

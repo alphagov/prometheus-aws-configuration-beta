@@ -47,6 +47,8 @@ module "prometheus" {
   environment   = "${local.environment}"
   config_bucket = "${local.config_bucket}"
 
+  prometheus_public_fqdns = ["prometheus-hub-perf-a-dmz.ida.digital.cabinet-office.gov.uk", "prometheus-hub-perf-a-dmz.ida.digital.cabinet-office.gov.uk"]
+
   subnet_ids          = "${data.terraform_remote_state.network.subnet_ids}"
   availability_zones  = "${data.terraform_remote_state.network.availability_zones}"
   vpc_security_groups = ["${data.terraform_remote_state.network.security_groups}"]

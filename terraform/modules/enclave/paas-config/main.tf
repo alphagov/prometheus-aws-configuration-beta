@@ -1,12 +1,32 @@
+resource "aws_security_group_rule" "allow_ec2_prometheus_access_paas_proxy" {
+  type                     = "ingress"
+  to_port                  = 8080
+  from_port                = 8080
+  protocol                 = "tcp"
+  security_group_id        = "${var.paas_proxy_sg_id}"
+  source_security_group_id = "${var.prometheus_sg_id}"
+}
+
 data "template_file" "prometheus_config_template" {
   template = "${file("${path.module}/prometheus.conf.tpl")}"
 
   vars {
-    prometheus_dns_names   = "${var.prometheus_dns_names}"
+    prometheus_dns_names   = "${join("\",\"", concat(slice(var.prometheus_dns_names, 0, 2), list("prom-ec2-3.${var.private_subdomain}:9090")))}"
     environment            = "${var.environment}"
     alertmanager_dns_names = "${var.alertmanager_dns_names}"
     prometheus_dns_nodes   = "${var.prometheus_dns_nodes}"
   }
+}
+
+resource "aws_route53_record" "prom_ec2_a_record" {
+  count = 3
+
+  zone_id = "${var.private_zone_id}"
+  name    = "prom-ec2-${count.index + 1}"
+  type    = "A"
+  ttl     = 300
+
+  records = ["${element(var.prom_private_ips, count.index)}"]
 }
 
 resource "aws_s3_bucket_object" "prometheus_config" {

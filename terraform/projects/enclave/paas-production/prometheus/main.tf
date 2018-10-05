@@ -67,6 +67,8 @@ module "prometheus" {
   config_bucket  = "${local.config_bucket}"
   targets_bucket = "gds-prometheus-targets"
 
+  prometheus_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.prom_public_record_fqdns}"
+
   subnet_ids          = "${data.terraform_remote_state.network.public_subnets}"
   availability_zones  = "${data.terraform_remote_state.network.subnets_by_az}"
   vpc_security_groups = ["${data.terraform_remote_state.sg.monitoring_external_sg_id}"]
@@ -76,12 +78,18 @@ module "prometheus" {
 module "paas-config" {
   source = "../../../../modules/enclave/paas-config"
 
-  environment              = "${local.environment}"
-  prometheus_dns_names     = "${join("\",\"", formatlist("%s:9090", module.prometheus.prometheus_private_dns))}"
+  prometheus_dns_names     = "${data.terraform_remote_state.app_ecs_albs.prom_private_record_fqdns}"
   prometheus_dns_nodes     = "${join("\",\"", formatlist("%s:9100", module.prometheus.prometheus_private_dns))}"
-  prometheus_config_bucket = "${local.config_bucket}"
+  prometheus_config_bucket = "${module.prometheus.s3_config_bucket}"
   alertmanager_dns_names   = "${join("\",\"", local.active_alertmanager_private_fqdns)}"
   alerts_path              = "../../../../projects/app-ecs-services/config/alerts/"
+
+  prom_private_ips  = "${module.prometheus.private_ip_addresses}"
+  private_zone_id   = "${data.terraform_remote_state.network.private_zone_id}"
+  private_subdomain = "${data.terraform_remote_state.network.private_subdomain}"
+
+  paas_proxy_sg_id = "${data.terraform_remote_state.sg.alertmanager_external_sg_id}"
+  prometheus_sg_id = "${module.prometheus.ec2_instance_prometheus_sg}"
 }
 
 output "public_ips" {
@@ -90,8 +98,4 @@ output "public_ips" {
 
 output "public_dns" {
   value = "[\n    ${join("\n    ", formatlist("%s:9090", module.prometheus.prometheus_public_dns))}\n]"
-}
-
-output "ec2_instance_prometheus_sg" {
-  value = "${module.prometheus.ec2_instance_prometheus_sg}"
 }
