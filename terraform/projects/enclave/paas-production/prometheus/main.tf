@@ -78,6 +78,7 @@ module "prometheus" {
 module "paas-config" {
   source = "../../../../modules/enclave/paas-config"
 
+  environment              = "${local.environment}"
   prometheus_dns_names     = "${data.terraform_remote_state.app_ecs_albs.prom_private_record_fqdns}"
   prometheus_dns_nodes     = "${join("\",\"", formatlist("%s:9100", module.prometheus.prometheus_private_dns))}"
   prometheus_config_bucket = "${module.prometheus.s3_config_bucket}"
