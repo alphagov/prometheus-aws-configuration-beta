@@ -22,3 +22,6 @@ environment.sh
 *.plan
 **/.kitchen/**
 __pycache__
+
+/tools/prometheus-configs/data
+/tools/prometheus-configs/ida-password
