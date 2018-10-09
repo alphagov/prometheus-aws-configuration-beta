@@ -6,7 +6,7 @@ if [ -z "${1}" ] ; then
     TEAM="*"
 fi
 
-ALERTS_PATH="terraform/projects/app-ecs-services/config/alerts-tests"
+ALERTS_PATH="./terraform/projects/app-ecs-services/config/alerts-tests"
 ALERTS_DIR=($(find $ALERTS_PATH -name test-$TEAM-alerts.yml -not -name 'test-template.yml'))
 
 # run promtool test against each alerts test file found
