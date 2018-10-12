@@ -19,6 +19,21 @@ route:
   - receiver: "registers-zendesk"
     match:
       product: "registers"
+  - receiver: "dgu-pagerduty"
+    match:
+      org: "gds-data-discovery"
+  - receiver: "registers-zendesk"
+    match:
+      org: "openregister"
+  - match:
+      org: "gds-tech-ops"
+    routes:
+      - match:
+          severity: "ticket"
+        receiver: "re-observe-ticket-alert"
+      - match:
+          severity: "page"
+        receiver: "re-observe-pagerduty"
 
 receivers:
 - name: "re-observe-pagerduty"
