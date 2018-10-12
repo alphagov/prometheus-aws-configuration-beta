@@ -66,6 +66,7 @@ module "prometheus" {
   environment    = "${local.environment}"
   config_bucket  = "${local.config_bucket}"
   targets_bucket = "gds-prometheus-targets"
+  instance_size  = "m4.large"
 
   prometheus_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.prom_public_record_fqdns}"
 
