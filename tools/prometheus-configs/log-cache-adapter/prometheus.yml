@@ -1,0 +1,21 @@
+#
+# This config exists as a demonstration of scraping the paas log-cache-adapter
+#
+# The main wrinkle is the need to regularly update the bearer_token_file with a fresh
+# token.  You do this by running the companion ./run-prom.sh script, which will take
+# care of everything.
+
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+  external_labels:
+    env: local-dev
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+  - job_name: log_cache_adapter
+    scheme: https
+    bearer_token_file: ./token
+    static_configs:
+      - targets: ["metrics.cloud.service.gov.uk"]
