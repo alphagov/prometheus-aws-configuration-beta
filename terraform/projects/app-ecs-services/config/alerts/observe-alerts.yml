@@ -1,6 +1,16 @@
 groups:
 - name: RE_Observe
   rules:
+  - alert: RE_Observe_Grafana_Down
+    expr: up{job="grafana-paas"} == 0 
+    for: 5m
+    labels:
+        product: "prometheus"
+        severity: "page"
+    annotations:
+        summary: "Prometheus is not able to scrape Grafana"
+        description: "Prometheus has not successfully scraped {{ $labels.job }} in the last 5 minutes. https://grafana-paas.cloudapps.digital/ may be down."
+        runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-grafana-down"
   - alert: RE_Observe_AlertManager_Below_Threshold
     expr: up{job="alertmanager"} == 0 and ignoring(instance) sum without(instance) (up{job="alertmanager"}) <= 1
     for: 10s
