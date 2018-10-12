@@ -23,4 +23,4 @@ scrape_configs:
       - targets: ["${alertmanager_dns_names}"]
   - job_name: prometheus_node
     static_configs:
-      - targets: ["${prometheus_dns_nodes}"]
+      - targets: ["${prometheus_node_addresses}"]
