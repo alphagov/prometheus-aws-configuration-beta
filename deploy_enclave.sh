@@ -36,9 +36,12 @@ STATE=${STATE:-network}
 role="arn:aws:iam::170611269615:role/prometheus_deployer"
 role_session="test"
 
-if ! aws-vault exec ${PROFILE} -- aws s3api head-bucket --bucket ${bucket_name} 2>/dev/null ; then
-    echo "creating ${bucket_name}"
-    aws-vault exec ${PROFILE} -- aws s3api create-bucket --bucket="${bucket_name}" --region "${AWS_REGION}" --create-bucket-configuration LocationConstraint="${AWS_REGION}"
+# only check buckets for dev environments not paas-staging, paas-production or verify-perf-a
+if [[ ! "$ENCLAVE" =~ ^(paas-staging|paas-production|verify-perf-a)$ ]]; then
+    if ! aws-vault exec ${PROFILE} -- aws s3api head-bucket --bucket ${bucket_name} 2>/dev/null ; then
+        echo "creating ${bucket_name}"
+        aws-vault exec ${PROFILE} -- aws s3api create-bucket --bucket="${bucket_name}" --region "${AWS_REGION}" --create-bucket-configuration LocationConstraint="${AWS_REGION}"
+    fi
 fi
 
 planfile="tf-$(date +"%Y_%m_%d_%H:%I%S").plan"
