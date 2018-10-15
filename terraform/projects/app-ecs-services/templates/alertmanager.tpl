@@ -19,6 +19,10 @@ route:
   - receiver: "registers-zendesk"
     match:
       product: "registers"
+  - receiver: "re-observe-pagerduty"
+    match:
+      product: "prometheus"
+      severity: "page"
 
 receivers:
 - name: "re-observe-pagerduty"
