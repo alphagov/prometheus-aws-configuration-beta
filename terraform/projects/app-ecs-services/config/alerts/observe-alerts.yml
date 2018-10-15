@@ -31,6 +31,14 @@ groups:
         summary: "Service is below the expected instance Threshold"
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}."
         runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-prometheus-below-threshold"
+  - alert: RE_Observe_PrometheusDiskPredictedToFill
+    expr: predict_linear(node_filesystem_avail{ mountpoint="/mnt", job="prometheus_node" }[12h], 3 * 86400) <= 0
+    labels:
+        product: "prometheus"
+        severity: "ticket"
+    annotations:
+        summary: "Instance {{ $labels.instance }} disk {{ $labels.mountpoint }} is predicted to fill in 72h"
+        runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-prometheus-disk-predicted-to-fill"
   - alert: RE_Observe_No_FileSd_Targets
     # this expression is a little weird - count() has no value instead of 0 if there are no
     # matching metrics.  But no value isn't less than 1 so we aren't able to trigger an alert
