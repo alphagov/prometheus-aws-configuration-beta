@@ -4,10 +4,10 @@ locals {
   product     = "test-paas"
   environment = "${local.product}-${var.test_user}"
 
-  private_subdomain_name = "${var.test_user}.monitoring.private"
-
-  availability_zones                = "${zipmap(var.az_zones_avalible,module.vpc.public_subnets_cidr_blocks)}"
   active_alertmanager_private_fqdns = ["alert-1.private.test.com", "alert-2.private.test.com", "alert-3.private.test.com"]
+  availability_zones                = "${zipmap(data.aws_availability_zones.available.names, local.private_subnets_cidr_blocks)}"
+  private_subdomain_name            = "${var.test_user}.monitoring.private"
+  private_subnets_cidr_blocks       = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
 }
 
 # Providers
@@ -34,7 +34,7 @@ module "vpc" {
 
   # subnets assumes 3 AZs although 3AZs are not implemented elsewhere
   azs              = "${data.aws_availability_zones.available.names}"
-  private_subnets  = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+  private_subnets  = "${local.private_subnets_cidr_blocks}"
   public_subnets   = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
   database_subnets = ["10.0.201.0/24", "10.0.202.0/24", "10.0.203.0/24"]
 

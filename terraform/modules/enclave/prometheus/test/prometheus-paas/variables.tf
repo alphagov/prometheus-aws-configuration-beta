@@ -1,6 +1,9 @@
-variable "az_zones_avalible" {
-  type    = "list"
-  default = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
+variable "prometheus_public_fqdns" {
+  default = [
+    "prom-1.test.gov.uk",
+    "prom-2.test.gov.uk",
+    "prom-3.test.gov.uk",
+  ]
 }
 
 variable "test_user" {}
