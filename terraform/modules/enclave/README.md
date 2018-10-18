@@ -20,7 +20,7 @@ Follow these steps to run infrastructure tests:
 1. Navigate to `terraform/modules/enclave/prometheus`
 2. `bundle install` - install all dependencies to your environment.
 3. source the test environment file `source environment-test.sh` in order to be able to run tests without clashing with other developers running tests.
-4. `aws-vault exec <your gds-tech-ops profile> -- kitchen <action> <optional target>` this is the general command that you can use in order to run the environment. 
+4. `aws-vault exec <your gds-tech-ops profile> -- bundle exec kitchen <action> <optional target>` this is the general command that you can use in order to run the environment. 
   - actions
     - `test` - use this action to run through the tests unless you are developing the tests themselves.
     - `create`, `converge`, `verify` these are the three actions that can used in order to spin up a stack and test. The converge can be executed multiple times to test changes.
