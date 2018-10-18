@@ -8,7 +8,7 @@ locals {
 # Providers
 
 terraform {
-  required_version = "= 0.11.7"
+  required_version = "= 0.11.10"
 }
 
 provider "aws" {
