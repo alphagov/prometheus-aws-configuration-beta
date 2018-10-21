@@ -7,12 +7,15 @@ import os, sys
 
 def exprs_for_dashboard(dashboard):
     d = g.get('/dashboards/uid/%s' % dashboard['uid'])
-    panels = d['dashboard']['panels']
-    for panel in panels:
-        targets = panel.get('targets',[])
-        for target in targets:
-            if 'expr' in target:
-                yield (target['expr'], dashboard['title'], panel['title'])
+    if 'panels' in d['dashboard']:
+        panels = d['dashboard']['panels']
+        for panel in panels:
+            targets = panel.get('targets',[])
+            for target in targets:
+                if 'expr' in target:
+                    yield (target['expr'], dashboard['title'], panel['title'])
+    else:
+        print('***** no panels {}'.format(dashboard['title']))
 
 
 if __name__ == "__main__":
@@ -27,4 +30,3 @@ if __name__ == "__main__":
     except KeyError as e:
         print('Please set the %s environment variable' % e.args[0], file=sys.stderr)
         exit(1)
-
