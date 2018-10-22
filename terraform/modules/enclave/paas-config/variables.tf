@@ -10,7 +10,3 @@ variable "prometheus_sg_id" {}
 variable "prom_private_ips" {
   type = "list"
 }
-
-variable "prometheus_dns_names" {
-  type = "list"
-}
