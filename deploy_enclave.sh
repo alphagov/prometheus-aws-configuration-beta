@@ -54,7 +54,7 @@ pushd "terraform/projects/enclave/${ENCLAVE}/${STATE}"
     fi
     if [ "${TERRAFORM_ACTION}" == "apply" ] 
     then
-        aws-vault exec ${PROFILE} -- terraform plan --out "${planfile}"
+        aws-vault exec ${PROFILE} -- terraform plan -target $TARGET --out "${planfile}"
         echo "Do you wish to apply plan?"
         select yn in "yes" "no"; do
             case $yn in
