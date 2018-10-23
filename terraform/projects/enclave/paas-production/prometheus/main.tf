@@ -80,7 +80,6 @@ module "paas-config" {
   source = "../../../../modules/enclave/paas-config"
 
   environment              = "${local.environment}"
-  prometheus_dns_names     = "${data.terraform_remote_state.app_ecs_albs.prom_private_record_fqdns}"
   prometheus_config_bucket = "${module.prometheus.s3_config_bucket}"
   alertmanager_dns_names   = "${join("\",\"", local.active_alertmanager_private_fqdns)}"
   alerts_path              = "../../../../projects/app-ecs-services/config/alerts/"

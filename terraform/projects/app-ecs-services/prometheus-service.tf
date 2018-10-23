@@ -109,7 +109,7 @@ data "template_file" "prometheus_config_file" {
 
     # in dev stacks if we have less than 3 AZs then just have ECS prometheis as we will be migrating the stack to EC2
     # set the prometheis_total to 3 in order to set up ec2 as prom-3
-    prometheus_dns_names = "${
+    prometheus_addresses = "${
       local.num_azs < 3 ? "${join("\",\"", local.active_prometheus_private_fqdns)}" :
       join("\",\"", concat(slice(local.active_prometheus_private_fqdns, 0, local.num_azs - 1),
         list("prom-ec2-3.${data.terraform_remote_state.infra_networking.private_subdomain}:9090")))

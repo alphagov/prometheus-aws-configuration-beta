@@ -11,7 +11,7 @@ rule_files:
 scrape_configs:
   - job_name: prometheus
     static_configs:
-      - targets: ["${prometheus_dns_names}"]
+      - targets: ["${prometheus_addresses}"]
   - job_name: paas-targets
     scheme: http
     proxy_url: 'http://paas-proxy.${environment}.monitoring.private:8080'

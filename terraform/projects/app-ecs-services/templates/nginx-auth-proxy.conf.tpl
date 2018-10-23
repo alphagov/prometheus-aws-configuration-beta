@@ -88,10 +88,10 @@ server {
     return 301 https://$host$request_uri;
   }
 
-  set $alert "${prometheus_1_dns_name}";
+  set $prom "${prometheus_1_address}";
 
   location / {
-    proxy_pass  http://$alert;
+    proxy_pass  http://$prom;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -109,10 +109,10 @@ server {
     return 301 https://$host$request_uri;
   }
 
-  set $alert "${prometheus_2_dns_name}";
+  set $prom "${prometheus_2_address}";
 
   location / {
-    proxy_pass  http://$alert;
+    proxy_pass  http://$prom;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -130,10 +130,10 @@ server {
     return 301 https://$host$request_uri;
   }
 
-  set $alert "${prometheus_3_dns_name}";
+  set $prom "${prometheus_3_address}";
 
   location / {
-    proxy_pass  http://$alert;
+    proxy_pass  http://$prom;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
