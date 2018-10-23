@@ -4,7 +4,7 @@ Terraform configuration to manage a Prometheus server running on AWS.
 
 ## Deployment ##
 
-We track deployments in this spreadsheet: https://docs.google.com/spreadsheets/d/1zKpNDcul6X1iYtXNmKrQ_xo0P92_VlYhLtlPyNSw1jc/edit#gid=413288099
+We track deployments in this spreadsheet: https://docs.google.com/spreadsheets/d/1J09k3WweluiywrB1y7ntrIxTjVL1Uv6bCUGjluV3P8o/edit#gid=413288099
 Please follow the deployment checklist and keep the deployment log up to date
 
 ## Setup ##
@@ -128,13 +128,13 @@ To apply terraform for a list of projects:
 
 [Click here](terraform/modules/enclave)
 
-### Dev EC2 instances 
+### Dev EC2 instances
 
-By default the EC2 instances on dev stacks will be spun down at the end of the day, typically 6pm UTC on Monday to Fridays, so during BST EC2 instances will be terminated at 7pm. 
+By default the EC2 instances on dev stacks will be spun down at the end of the day, typically 6pm UTC on Monday to Fridays, so during BST EC2 instances will be terminated at 7pm.
 
 The schedule will automatically spin down EC2 instances at each hour outside the core working hours of 9am - 6pm UTC, Monday to Fridays. This is to ensure that the instances will be spun down even after they have been restarted.
 
-If the EC2 dev instance has been terminated, at the start of a day or if you are working after core hours, you can easily spin up your instances using this Makefile command: `make apply-single project=app-ecs-instances` or shell script: `. ./setup.sh -a app-ecs-instances`. 
+If the EC2 dev instance has been terminated, at the start of a day or if you are working after core hours, you can easily spin up your instances using this Makefile command: `make apply-single project=app-ecs-instances` or shell script: `. ./setup.sh -a app-ecs-instances`.
 
 You can set your own cron schedules by adding `asg_dev_scaledown_schedules` to the `tfvars` file for your stack and specifying a list of cron schedules, for example:
 
