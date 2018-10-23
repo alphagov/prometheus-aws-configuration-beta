@@ -50,7 +50,7 @@ resource "aws_ebs_volume" "prometheus-disk" {
   count = "${length(keys(var.availability_zones))}"
 
   availability_zone = "${element(keys(var.availability_zones), count.index)}"
-  size              = "20"
+  size              = "21"
 
   tags {
     Name = "prometheus-disk"
