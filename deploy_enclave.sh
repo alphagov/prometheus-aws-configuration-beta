@@ -32,6 +32,7 @@ bucket_name="govukobserve-tfstate-prom-enclave-${ENCLAVE}"
 
 TERRAFORM_ACTION=${TERRAFORM_ACTION:-plan}
 STATE=${STATE:-network}
+TARGET=${TARGET:-""}
 
 role="arn:aws:iam::170611269615:role/prometheus_deployer"
 role_session="test"
@@ -52,9 +53,14 @@ pushd "terraform/projects/enclave/${ENCLAVE}/${STATE}"
     then
         aws-vault exec ${PROFILE} -- terraform apply --target module.network.aws_vpc_endpoint.ec2
     fi
-    if [ "${TERRAFORM_ACTION}" == "apply" ] 
+    if [ "${TERRAFORM_ACTION}" == "apply" ]
     then
-        aws-vault exec ${PROFILE} -- terraform plan -target $TARGET --out "${planfile}"
+        if [ -z "$TARGET" ]
+        then
+            aws-vault exec ${PROFILE} -- terraform plan --out "${planfile}"
+        else
+            aws-vault exec ${PROFILE} -- terraform plan -target $TARGET --out "${planfile}"
+        fi  
         echo "Do you wish to apply plan?"
         select yn in "yes" "no"; do
             case $yn in
