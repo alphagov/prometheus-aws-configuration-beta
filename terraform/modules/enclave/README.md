@@ -36,10 +36,12 @@ When performing a deployment you need to ensure you have the correct permissions
 
 To deploy, run the following script (from the root of this repository):
 
-    ./deploy_enclave.sh -e <enviroment> -p <aws vault profile> -a <terraform method> -s <state>
+    ./deploy_enclave.sh -e <enviroment> -p <aws vault profile> -a <terraform method> -s <state> -t <target>
 
 `<environment>` can only be one of: `verify-perf-a`, `paas-staging`,
 or `paas-production`.  `<state>` is `network` or `prometheus`.
+
+`<target>` is optional an example target module would be `module.prometheus.aws_instance.prometheus[0]`. This would deploy to the first prometheus instance.
 
 To ssh to the instance, with an ssh tunnel to view the web interface (using the `public_dns` values from the terraform apply):
 
