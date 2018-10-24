@@ -14,6 +14,8 @@ module "prometheus" {
   environment   = "${local.environment}"
   config_bucket = "${local.environment}"
 
+  prometheus_public_fqdns = ["prometheus-hub-perf-a-dmz.ida.digital.cabinet-office.gov.uk", "prometheus-hub-perf-a-dmz.ida.digital.cabinet-office.gov.uk"]
+
   subnet_ids          = "${module.network.subnet_ids}"
   availability_zones  = "${module.network.availability_zones}"
   vpc_security_groups = ["${module.network.security_groups}", "${aws_security_group.permit_internet_access.id}"]
