@@ -139,18 +139,6 @@ resource "aws_ecs_cluster" "prometheus_cluster" {
   name = "${local.cluster_name}"
 }
 
-data "template_file" "instance_user_data" {
-  template = "${file("instance-user-data.tpl")}"
-
-  vars {
-    cluster_name      = "${local.cluster_name}"
-    volume_ids        = "${join(" ", aws_ebs_volume.prometheus_ebs_volume.*.id)}"
-    region            = "${var.aws_region}"
-    dns_zone_id       = "${data.terraform_remote_state.infra_networking.private_zone_id}"
-    private_subdomain = "${data.terraform_remote_state.infra_networking.private_subdomain}"
-  }
-}
-
 module "ami" {
   source = "../../modules/common/ami"
 }
@@ -181,8 +169,6 @@ module "ecs_instance" {
     },
   ]
 
-  user_data = "${data.template_file.instance_user_data.rendered}"
-
   # Auto scaling group
   asg_name                  = "${var.stack_name}-ecs-instance"
   vpc_zone_identifier       = ["${data.aws_subnet.subnets_for_prometheus.*.id}"]
@@ -208,31 +194,6 @@ resource "aws_autoscaling_schedule" "asg_dev_scaledown_schedules" {
   desired_capacity       = 0
   recurrence             = "${element(var.asg_dev_scaledown_schedules, count.index)}"
   autoscaling_group_name = "${module.ecs_instance.this_autoscaling_group_name}"
-}
-
-resource "aws_ebs_volume" "prometheus_ebs_volume" {
-  count = "${length(data.aws_subnet.subnets_for_prometheus.*.availability_zone)}"
-
-  availability_zone = "${element(data.aws_subnet.subnets_for_prometheus.*.availability_zone, count.index)}"
-  size              = 500
-  type              = "gp2"
-
-  lifecycle {
-    # This allows our EBS volumes to be destroyed, which is allowed behaviour
-    # for dev stacks but behaviour we want to avoid for staging or production.
-    # Therefore, we manually created a new policy in the staging and production
-    # account - `Prevent_delete_EC2_volume`, which has been attached to the
-    # AWS roles used by terraform to help prevent accidental EBS volume deletion
-    # https://github.com/hashicorp/terraform/issues/3116
-    prevent_destroy = false
-  }
-
-  tags = "${merge(
-    local.default_tags,
-    var.additional_tags,
-    map("Stackname", "${var.stack_name}"),
-    map("Name", "${var.stack_name}-prometheus-ebs-volume")
-  )}"
 }
 
 ## Outputs
