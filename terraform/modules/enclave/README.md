@@ -32,19 +32,23 @@ Follow these steps to run infrastructure tests:
 
 ## Deploying
 
-When performing a deployment you need to ensure you have the correct permissions to do so as extra permission are required.
-
 To deploy, run the following script (from the root of this repository):
 
-    ./deploy_enclave.sh -e <enviroment> -p <aws vault profile> -a <terraform method> -s <state> -t <target>
+    ./deploy_enclave.sh -e <environment> -p <aws vault profile> -a <terraform method> -s <state> -t <target>
 
 `<environment>` can only be one of: `verify-perf-a`, `paas-staging`,
-or `paas-production`.  `<state>` is `network` or `prometheus`.
+or `paas-production` (unless it's your EC2 dev stack).  `<state>` is
+`network` or `prometheus`.
 
-`<target>` is optional an example target module would be `module.prometheus.aws_instance.prometheus[0]`. This would deploy to the first prometheus instance.
+> For deploying to the Verify enclave, you will need to have the
+> ability to assume the `prometheus-deployer` role into the
+> `verify-perf-a` environment. Members of the Verify team will need to
+> grant this.
+
+`<target>` is optional an example target module would be `module.prometheus.aws_instance.prometheus[0]`. This would deploy to the first Prometheus instance.
 
 To ssh to the instance, with an ssh tunnel to view the web interface (using the `public_dns` values from the terraform apply):
 
     ssh ubuntu@<ip_from_output> -L 9090:localhost:9090
 
-Once this is done you can view prometheus on http://localhost:9090.
+Once this is done you can view Prometheus on http://localhost:9090.
