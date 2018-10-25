@@ -8,31 +8,9 @@ data "template_file" "paas_proxy_container_defn" {
   }
 }
 
-resource "aws_iam_role" "paas_proxy_task_iam_role" {
-  name = "${var.stack_name}-paas-proxy-task"
-  path = "/"
-
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "ecs-tasks.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-EOF
-}
-
 resource "aws_ecs_task_definition" "paas_proxy" {
   family                = "${var.stack_name}-paas-proxy"
   container_definitions = "${data.template_file.paas_proxy_container_defn.rendered}"
-  task_role_arn         = "${aws_iam_role.paas_proxy_task_iam_role.arn}"
 
   volume {
     name      = "paas-proxy"
