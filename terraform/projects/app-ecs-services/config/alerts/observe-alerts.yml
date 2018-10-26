@@ -10,6 +10,7 @@ groups:
     annotations:
         summary: "Prometheus is not able to scrape Grafana"
         description: "Prometheus has not successfully scraped {{ $labels.job }} in the last 5 minutes. https://grafana-paas.cloudapps.digital/ may be down."
+        kibana: "https://kibana.logit.io/s/8fd50110-7b0c-490a-bedf-7544daebbec4/app/kibana#/discover?_g=()&_a=(columns:!(_source),index:'*-*',interval:h,query:(query_string:(query:'grafana-paas.cloudapps.digital%20AND%20NOT%20access.response_code:200')),sort:!('@timestamp',desc))"
         runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-grafana-down"
   - alert: RE_Observe_AlertManager_Below_Threshold
     expr: up{job="alertmanager"} == 0 and ignoring(instance) sum without(instance) (up{job="alertmanager"}) <= 1
