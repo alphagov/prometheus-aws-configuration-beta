@@ -4,6 +4,7 @@ terraform {
 
 locals {
   enable_public_ip = "${var.enable_ssh == 1 ? true : false}"
+  filebeat_count   = "${var.logstash_host != "" ? 1 : 0}"
 }
 
 resource "aws_key_pair" "ssh_key" {
@@ -70,6 +71,7 @@ data "template_file" "user_data_script" {
     targets_bucket    = "${var.targets_bucket}"
     alerts_bucket     = "${aws_s3_bucket.prometheus_config.id}"
     prom_external_url = "https://${var.prometheus_public_fqdns[count.index]}"
+    logstash_host     = "${var.logstash_host}"
   }
 }
 
@@ -123,4 +125,21 @@ resource "aws_s3_bucket" "prometheus_config" {
   versioning {
     enabled = true
   }
+}
+
+data "template_file" "filebeat_conf" {
+  count    = "${local.filebeat_count}"
+  template = "${file("${path.module}/filebeat.yml.tpl")}"
+
+  vars {
+    logstash_host = "${var.logstash_host}"
+    environment   = "${var.environment}"
+  }
+}
+
+resource "aws_s3_bucket_object" "filebeat" {
+  count   = "${local.filebeat_count}"
+  bucket  = "${var.config_bucket}"
+  key     = "filebeat/filebeat.yml"
+  content = "${data.template_file.filebeat_conf.rendered}"
 }
