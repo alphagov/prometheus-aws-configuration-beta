@@ -39,34 +39,12 @@ groups:
     annotations:
         summary: "Instance {{ $labels.instance }} disk {{ $labels.mountpoint }} is predicted to fill in 72h"
         runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-prometheus-disk-predicted-to-fill"
-  - alert: RE_Observe_No_FileSd_Targets_ECS
-    # this expression is a little weird - count() has no value instead of 0 if there are no
-    # matching metrics.  But no value isn't less than 1 so we aren't able to trigger an alert
-    # that a regular count() is zero.  So we force missing values to be equal to
-    # zero using the `or count(up)*0` expression.
-    # This idea taken from: https://www.robustperception.io/existential-issues-with-metrics/
-    #
+  - alert: RE_Observe_No_FileSd_Targets
     # Notes:
     # - this alert will only fire if there are *no* file_sd targets.
     # This is useful if we only have one source of file_sd config, but might not be
     # if we have multiple ways of receiving file_sd configs and only one of them breaks.
-    # - a condition has been added to ensure that it does not trigger on prometheus build versions matching '2.1.0+ds'
-    # Reason for this is because that version does not have the metric 'prometheus_sd_file_mtime_seconds' available so will always trigger
-    # and the package available for Ubunutu 18.04 Bionic Beaver machines on EC2 prometheus stacks is '2.1.0+ds'.
-    # If this changes this alert will need to be updated to ensure that it doesn't fire unless it is supported in that version of prometheus.
-    #
-    expr: (count(prometheus_sd_file_mtime_seconds) or count(up)*0) < 1 and count(prometheus_build_info{version=~"2\\.4.*"})
-    for: 10s
-    labels:
-        product: "prometheus"
-        severity: "page"
-    annotations:
-        summary: "No file_sd targets detected"
-        description: "No file_sd targets were detected.  Is there a problem accessing the targets bucket?"
-        runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-no-filesd-targets"
-
-  - alert: RE_Observe_No_FileSd_Targets_EC2
-    expr: (count(prometheus_sd_file_timestamp) or count(up)*0) < 1 and count(prometheus_build_info{version=~"2\\.1.*"})
+    expr: absent(prometheus_sd_file_timestamp)
     for: 10s
     labels:
         product: "prometheus"
