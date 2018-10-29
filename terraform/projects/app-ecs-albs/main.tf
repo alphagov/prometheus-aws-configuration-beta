@@ -147,20 +147,6 @@ resource "aws_acm_certificate_validation" "monitoring_cert" {
   validation_record_fqdns = ["${aws_route53_record.monitoring_cert_validation.*.fqdn}"]
 }
 
-resource "aws_route53_record" "prom_alias" {
-  count = "${local.prom_records_count}"
-
-  zone_id = "${data.terraform_remote_state.infra_networking.public_zone_id}"
-  name    = "prom-${count.index + 1}"
-  type    = "A"
-
-  alias {
-    name                   = "${aws_lb.nginx_auth_external_alb.dns_name}"
-    zone_id                = "${aws_lb.nginx_auth_external_alb.zone_id}"
-    evaluate_target_health = false
-  }
-}
-
 resource "aws_route53_record" "alerts_alias" {
   count = "${local.alerts_records_count}"
 
