@@ -26,7 +26,7 @@ variable "prometheis_total" {
 variable "ecs_instance_type" {
   type        = "string"
   description = "ECS container instance type"
-  default     = "m4.large"
+  default     = "t2.medium"
 }
 
 variable "ecs_instance_root_size" {
