@@ -1,29 +1,5 @@
 [
   {
-    "name": "s3-updater-targets",
-    "image": "mesosphere/aws-cli",
-    "cpu": 40,
-    "memory": 256,
-    "essential": true,
-    "mountPoints": [
-      {
-        "sourceVolume": "config-from-s3",
-        "containerPath": "/configs"
-      }
-    ],
-    "command": [
-      "s3", "sync", "--delete", "s3://${targets_bucket}/active", "/configs/targets"
-    ],
-    "logConfiguration": {
-      "logDriver": "awslogs",
-      "options": {
-        "awslogs-group": "${log_group}",
-        "awslogs-region": "${region}",
-        "awslogs-stream-prefix": "s3-targets-"
-      }
-    }
-  },
-  {
     "name": "s3-updater-config",
     "image": "mesosphere/aws-cli",
     "cpu": 128,
