@@ -33,7 +33,7 @@ variable "jumpbox_cidrs" {
 ## Providers
 
 terraform {
-  required_version = "= 0.11.7"
+  required_version = "= 0.11.10"
 
   backend "s3" {
     key = "infra-jump-instance.tfstate"
