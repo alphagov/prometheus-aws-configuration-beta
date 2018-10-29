@@ -14,9 +14,20 @@ data "template_file" "prometheus_config_template" {
     environment = "${var.environment}"
 
     alertmanager_dns_names    = "${var.alertmanager_dns_names}"
-    prometheus_addresses      = "${join("\",\"", formatlist("%s:9090", aws_route53_record.prom_ec2_a_record.*.fqdn))}"
-    prometheus_node_addresses = "${join("\",\"", formatlist("%s:9100", aws_route53_record.prom_ec2_a_record.*.fqdn))}"
+    prometheus_addresses      = "${join("\",\"", formatlist("%s:9090", aws_route53_record.prom_a_record.*.fqdn))}"
+    prometheus_node_addresses = "${join("\",\"", formatlist("%s:9100", aws_route53_record.prom_a_record.*.fqdn))}"
   }
+}
+
+resource "aws_route53_record" "prom_a_record" {
+  count = 3
+
+  zone_id = "${var.private_zone_id}"
+  name    = "prom-${count.index + 1}"
+  type    = "A"
+  ttl     = 300
+
+  records = ["${element(var.prom_private_ips, count.index)}"]
 }
 
 resource "aws_route53_record" "prom_ec2_a_record" {
