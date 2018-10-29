@@ -47,9 +47,9 @@ data "template_file" "nginx-auth-proxy-config-file" {
     alertmanager_1_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdns.0}"
     alertmanager_2_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdns.1}"
     alertmanager_3_dns_name = "${data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdns.2}"
-    prometheus_1_address    = "prom-1.${data.terraform_remote_state.infra_networking.private_subdomain}:9090"
-    prometheus_2_address    = "prom-2.${data.terraform_remote_state.infra_networking.private_subdomain}:9090"
-    prometheus_3_address    = "prom-3.${data.terraform_remote_state.infra_networking.private_subdomain}:9090"
+    prometheus_1_address    = "prom-ec2-1.${data.terraform_remote_state.infra_networking.private_subdomain}:9090"
+    prometheus_2_address    = "prom-ec2-2.${data.terraform_remote_state.infra_networking.private_subdomain}:9090"
+    prometheus_3_address    = "prom-ec2-3.${data.terraform_remote_state.infra_networking.private_subdomain}:9090"
   }
 }
 
