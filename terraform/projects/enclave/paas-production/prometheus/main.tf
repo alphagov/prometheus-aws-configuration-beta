@@ -52,6 +52,15 @@ data "terraform_remote_state" "app_ecs_albs" {
   }
 }
 
+provider "pass" {
+  store_dir     = "~/.password-store/re-secrets/observe"
+  refresh_store = true
+}
+
+data "pass_password" "logstash_endpoint" {
+  path = "logit/prometheus-paas-logstash-endpoint-prod"
+}
+
 module "prometheus" {
   source = "../../../../modules/enclave/prometheus"
 
@@ -67,6 +76,7 @@ module "prometheus" {
   config_bucket  = "${local.config_bucket}"
   targets_bucket = "gds-prometheus-targets"
   instance_size  = "m4.large"
+  logstash_host  = "${data.pass_password.logstash_endpoint.password}"
 
   prometheus_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.prom_public_record_fqdns}"
 
