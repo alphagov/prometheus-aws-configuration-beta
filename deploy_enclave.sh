@@ -60,14 +60,17 @@ pushd "terraform/projects/enclave/${ENCLAVE}/${STATE}"
             aws-vault exec ${PROFILE} -- terraform plan --out "${planfile}"
         else
             aws-vault exec ${PROFILE} -- terraform plan -target $TARGET --out "${planfile}"
-        fi  
+        fi
         echo "Do you wish to apply plan?"
         select yn in "yes" "no"; do
             case $yn in
                 yes)
                     aws-vault exec ${PROFILE} -- terraform apply "${planfile}"
+                    rm ${planfile}
                     break;;
-                no) exit;;
+                no)
+                    rm ${planfile}
+                    exit;;
             esac
         done
     else
