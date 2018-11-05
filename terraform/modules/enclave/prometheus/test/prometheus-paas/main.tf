@@ -49,9 +49,12 @@ module "vpc" {
 }
 
 resource "aws_route53_zone" "private" {
-  vpc_id        = "${module.vpc.vpc_id}"
   name          = "${local.private_subdomain_name}"
   force_destroy = true
+
+  vpc {
+    vpc_id = "${module.vpc.vpc_id}"
+  }
 }
 
 resource "aws_security_group" "permit_internet_access" {
