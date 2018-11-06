@@ -76,3 +76,7 @@ variable "targets_bucket" {
 variable "prometheus_public_fqdns" {
   type = "list"
 }
+
+variable "logstash_host" {
+  default = ""
+}
