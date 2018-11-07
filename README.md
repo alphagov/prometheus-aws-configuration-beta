@@ -42,6 +42,14 @@ You will also need to clone the re-secrets repo into `~/.password-store/re-secre
 
     git clone git@github.com:alphagov/re-secrets.git ~/.password-store/re-secrets
 
+## EC2 Enclave Prometheus Development
+
+Prometheis are not deployed on Amazon ECS and are instead deployed using the enclave modules onto EC2 instances. For details of how to develop and deploy them see the [terraform/modules/enclave README](terraform/modules/enclave).
+
+## ECS Development
+
+Alertmanager and NGINX are deployed on Amazon ECS.
+
 ### Developing with the `Makefile` or `setup.sh` shell script
 
 Before using the Makefile or shell script you will need to make a copy of the `environment_sample.sh` to `environment.sh`.
@@ -124,11 +132,7 @@ To apply terraform for a list of projects:
 `. ./setup.sh -a list "<1st project>,<2nd project>,<3rd project>"`
 </details>
 
-### Verify Enclave modules
-
-[Click here](terraform/modules/enclave)
-
-### Dev EC2 instances
+### Dev ECS container instances
 
 By default the EC2 instances on dev stacks will be spun down at the end of the day, typically 6pm UTC on Monday to Fridays, so during BST EC2 instances will be terminated at 7pm.
 
@@ -145,7 +149,7 @@ asg_dev_scaledown_schedules = ["30 19 * * MON,WED,THU,FRI", "30 18 * * TUE"]
 
 For other examples on how to set up your own cron schedule have a look at this web page: https://crontab.guru/examples.html
 
-### How to connect to your dev EC2 instance
+### How to connect to your dev ECS container instance
 
 If you are experiencing problems after creating the stack, you may want to connect to the EC2 instance:
 
@@ -162,7 +166,7 @@ make jump
 . ./setup.sh -j
 ```
 
-### Viewing the Prometheus dashboard
+## Viewing the Prometheus dashboard
 
 Once you have deployed your development stack you should be able to reach the prometheus dashboard using this url pattern:
 
@@ -194,15 +198,5 @@ behaviour.  By default it should lock whenever your laptop goes to
 sleep or after 5 minutes of inactivity.  You can change this in
 Keychain Access.
 
-## ECS
-
-### Newest ECS AMI
-
-To see the latest ECS Optimized Amazon Linux AMI information in your
-default region, run this AWS CLI command:
-
-    aws ssm get-parameters --names /aws/service/ecs/optimized-ami/amazon-linux/recommended
-
-This would be used when moving to an updated ECS AMI.
 ## License
 [MIT License](LICENCE)
