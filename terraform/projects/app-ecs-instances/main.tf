@@ -153,7 +153,7 @@ module "ecs_instance" {
   # Launch configuration
   lc_name = "${var.stack_name}-ecs-instances"
 
-  image_id      = "${module.ami.ami_id}"
+  image_id      = "${module.ami.ecs_optimized_ami_id}"
   instance_type = "${var.ecs_instance_type}"
 
   security_groups = ["${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}",

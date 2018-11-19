@@ -2,7 +2,7 @@
 
 ## Data sources
 
-data "aws_ami" "source" {
+data "aws_ami" "ecs_optimized" {
   most_recent = true
 
   filter {
@@ -20,6 +20,6 @@ data "aws_ami" "source" {
 
 ## Outputs
 
-output "ami_id" {
-  value = "${data.aws_ami.source.id}"
+output "ecs_optimized_ami_id" {
+  value = "${data.aws_ami.ecs_optimized.id}"
 }
