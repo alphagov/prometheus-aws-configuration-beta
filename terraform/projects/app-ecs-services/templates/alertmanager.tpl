@@ -10,6 +10,7 @@ route:
   receiver: "re-observe-pagerduty"
   routes:
   - receiver: "re-observe-ticket-alert"
+    repeat_interval: 7d
     match:
       product: "prometheus"
       severity: "ticket"
@@ -17,6 +18,7 @@ route:
     match:
       product: "data-gov-uk"
   - receiver: "registers-zendesk"
+    repeat_interval: 7d
     match:
       product: "registers"
   - receiver: "re-observe-pagerduty"
