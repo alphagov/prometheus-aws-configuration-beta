@@ -61,3 +61,8 @@ resource "aws_iam_role_policy_attachment" "ecs_instance_document_policy_attachme
   role       = "${aws_iam_role.instance_iam_role.name}"
   policy_arn = "${aws_iam_policy.ecs_instance_policy.arn}"
 }
+
+resource "aws_iam_role_policy_attachment" "session_manager_access" {
+  role       = "${aws_iam_role.instance_iam_role.name}"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+}
