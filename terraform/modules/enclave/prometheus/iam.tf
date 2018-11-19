@@ -69,3 +69,8 @@ resource "aws_iam_role_policy_attachment" "iam_policy" {
   role       = "${aws_iam_role.prometheus_role.name}"
   policy_arn = "${aws_iam_policy.prometheus_instance_profile.arn}"
 }
+
+resource "aws_iam_role_policy_attachment" "session_manager_access" {
+  role       = "${aws_iam_role.prometheus_role.name}"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+}

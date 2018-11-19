@@ -79,7 +79,7 @@ resource "aws_security_group_rule" "allow_all_egress" {
 }
 
 resource "aws_instance" "instance" {
-  ami           = "${module.ami.ami_id}"
+  ami           = "${module.ami.ecs_optimized_ami_id}"
   subnet_id     = "${var.subnet_id}"
   instance_type = "t2.small"
 

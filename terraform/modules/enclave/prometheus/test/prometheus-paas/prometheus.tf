@@ -1,8 +1,11 @@
+module "ami" {
+  source = "../../../../common/ami"
+}
+
 module "prometheus" {
   source = "../../../prometheus"
 
-  # Canonicals Ubunutu 18.04 Bionic Beaver in eu-west-1
-  ami_id     = "ami-0ee06eb8d6eebcde0"
+  ami_id     = "${module.ami.ubuntu_bionic_ami_id}"
   target_vpc = "${module.vpc.vpc_id}"
   enable_ssh = true
 
