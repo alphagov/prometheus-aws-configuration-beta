@@ -52,11 +52,14 @@ data "terraform_remote_state" "app_ecs_albs" {
   }
 }
 
+module "ami" {
+  source = "../../../../modules/common/ami"
+}
+
 module "prometheus" {
   source = "../../../../modules/enclave/prometheus"
 
-  # Canonicals Ubunutu 18.04 Bionic Beaver in eu-west-1
-  ami_id = "ami-0ee06eb8d6eebcde0"
+  ami_id = "${module.ami.ubuntu_bionic_ami_id}"
 
   # Staging
   target_vpc = "vpc-0bbf4123f5b385806"

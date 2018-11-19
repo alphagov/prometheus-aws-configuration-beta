@@ -52,3 +52,13 @@ To ssh to the instance, with an ssh tunnel to view the web interface (using the 
     ssh ubuntu@<ip_from_output> -L 9090:localhost:9090
 
 Once this is done you can view Prometheus on http://localhost:9090.
+
+To try it out for yourself, either start a session in the SSM session
+manager web console, or [install the session manager CLI
+plugin][session-manager-install], then run:
+
+    aws-vault exec gds-tech-ops -- aws ssm start-session --target $INSTANCE_ID
+
+where `$INSTANCE_ID` is an id of an AWS EC2 prometheus instance.
+
+[session-manager-install]: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html

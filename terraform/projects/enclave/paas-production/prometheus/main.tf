@@ -61,11 +61,14 @@ data "pass_password" "logstash_endpoint" {
   path = "logit/prometheus-paas-logstash-endpoint-prod"
 }
 
+module "ami" {
+  source = "../../../../modules/common/ami"
+}
+
 module "prometheus" {
   source = "../../../../modules/enclave/prometheus"
 
-  # Canonicals Ubunutu 18.04 Bionic Beaver in eu-west-1
-  ami_id = "ami-0ee06eb8d6eebcde0"
+  ami_id = "${module.ami.amazon_ubuntu_bionic_ami_id}"
 
   # Production
   target_vpc = "vpc-0cdd9631927b526ce"
