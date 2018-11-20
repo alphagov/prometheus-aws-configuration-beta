@@ -139,6 +139,14 @@ resource "aws_ecs_cluster" "prometheus_cluster" {
   name = "${local.cluster_name}"
 }
 
+data "template_file" "instance_user_data" {
+  template = "${file("instance-user-data.tpl")}"
+
+  vars {
+    cluster_name = "${local.cluster_name}"
+  }
+}
+
 module "ami" {
   source = "../../modules/common/ami"
 }
@@ -168,6 +176,8 @@ module "ecs_instance" {
       volume_type = "gp2"
     },
   ]
+
+  user_data = "${data.template_file.instance_user_data.rendered}"
 
   # Auto scaling group
   asg_name                  = "${var.stack_name}-ecs-instance"
