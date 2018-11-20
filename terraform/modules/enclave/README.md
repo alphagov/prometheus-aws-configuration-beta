@@ -55,7 +55,8 @@ Once this is done you can view Prometheus on http://localhost:9090.
 
 To try it out for yourself, either start a session in the SSM session
 manager web console, or [install the session manager CLI
-plugin][session-manager-install], then run:
+plugin][session-manager-install], then run (using the `instance_ids`
+output from the terraform apply):
 
     aws-vault exec gds-tech-ops -- aws ssm start-session --target $INSTANCE_ID
 
