@@ -68,7 +68,7 @@ module "ami" {
 module "prometheus" {
   source = "../../../../modules/enclave/prometheus"
 
-  ami_id = "${module.ami.amazon_ubuntu_bionic_ami_id}"
+  ami_id = "${module.ami.ubuntu_bionic_ami_id}"
 
   # Production
   target_vpc = "vpc-0cdd9631927b526ce"
