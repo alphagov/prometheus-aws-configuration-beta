@@ -8,8 +8,8 @@ TERRAFORMBACKVARS=$(pwd)/stacks/${ENV}.backend
 TERRAFORMTFVARS=$(pwd)/stacks/${ENV}.tfvars
 ROOTPROJ=$(pwd)
 TERRAFORMPROJ=$(pwd)/terraform/projects/
-declare -a COMPONENTS=("infra-networking" "infra-security-groups" "infra-jump-instance" "app-ecs-instances" "app-ecs-albs" "app-ecs-services")
-declare -a COMPONENTSDESTROY=("app-ecs-services" "app-ecs-albs" "app-ecs-instances" "infra-jump-instance" "infra-security-groups" "infra-networking")
+declare -a COMPONENTS=("infra-networking" "infra-security-groups" "app-ecs-instances" "app-ecs-albs" "app-ecs-services")
+declare -a COMPONENTSDESTROY=("app-ecs-services" "app-ecs-albs" "app-ecs-instances" "infra-security-groups" "infra-networking")
 
 
 ############ Actions #################
@@ -33,7 +33,6 @@ if [ -e "${ROOTPROJ}/stacks/${ENV}.tfvars" ] ; then
 else
 cat <<EOF >stacks/${ENV}.tfvars
 dev_environment = "true"
-ecs_instance_ssh_keyname = "${ENV}-jumpbox-key"
 ecs_instance_type = "t2.small"
 prom_cpu = "128"
 prom_memoryReservation = "512"
@@ -83,11 +82,6 @@ clean() {
 
 init () {
 # Init a terraform project
-        # Only init the jump box for dev stacks
-        if [ $DEV_ENVIRONMENT != 'true' -a "$1" = 'infra-jump-instance' ] ; then
-                return
-        fi
-
         echo $1
 
         cd $TERRAFORMPROJ$1
@@ -97,11 +91,6 @@ init () {
 plan () {
 # Plan a terraform project
         echo $1
-        # Only plan the jump box for dev stacks
-        if [ $DEV_ENVIRONMENT != 'true' -a "$1" = 'infra-jump-instance' ] ; then
-                return
-        fi
-
         cd $TERRAFORMPROJ$1
 
         aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH plan --var-file=$TERRAFORMTFVARS
@@ -109,11 +98,6 @@ plan () {
 
 apply () {
 # Apply a terraform project
-        # Only create the jump box for dev stacks
-        if [ $DEV_ENVIRONMENT != 'true' -a "$1" = 'infra-jump-instance' ] ; then
-                return
-        fi
-
         echo $1
 
         cd $TERRAFORMPROJ$1
@@ -123,10 +107,6 @@ apply () {
 
 destroy () {
 # Destroy a terraform project
-        # Only destroy the jump box for dev stacks
-        if [ $DEV_ENVIRONMENT != 'true' -a "$1" = 'infra-jump-instance' ] ; then
-                return
-        fi
         echo $1
 
         cd $TERRAFORMPROJ$1
@@ -143,33 +123,6 @@ taint() {
 
         cd $TERRAFORMPROJ$1
         aws-vault exec ${PROFILE_NAME} -- $TERRAFORMPATH taint $2
-}
-
-jumpbox() {
-        if [ $DEV_ENVIRONMENT != 'true' ] ; then
-                echo "Jumpbox is only available for dev environments"
-                return
-        fi
-
-        EC2_DATA=$(aws-vault exec $PROFILE_NAME -- aws ec2 describe-instances --filters "Name=tag:Environment,Values=$ENV" "Name=instance-state-name,Values=running")
-
-        EC2_DATA_STR=$(echo "$EC2_DATA" | jq -c .) 
-        
-        if [ $EC2_DATA_STR = '{"Reservations":[]}' ] ; then
-                echo "No EC2 instances running"
-                return
-        fi
-
-        INSTANCE_IP=$(echo $EC2_DATA | jq -cr '[.Reservations[] | select(.Instances[]).Instances | first.PrivateIpAddress] | first')
-
-        JUMPBOX=jump.$ENV.dev.gds-reliability.engineering
-
-        # jumpbox fingerprint removed so that the jumpbox IP can change without affecting the connection to the instance
-        echo Remove $JUMPBOX fingerprint from ~/.ssh/known_hosts
-        ssh-keygen -R $JUMPBOX
-
-        echo "Connecting to instance: $INSTANCE_IP via jumpbox: ec2-user@$JUMPBOX"
-        ssh -At -oStrictHostKeyChecking=no ec2-user@$JUMPBOX ssh -oStrictHostKeyChecking=no ec2-user@$INSTANCE_IP
 }
 
 create-console() {
@@ -325,9 +278,6 @@ else
         ;;
         -t) echo "Taint a terraform resource: ${ENV}"
                 taint $2 $3
-        ;;
-        -j) echo "Jump onto instance: ${ENV}"
-                jumpbox
         ;;
         -e) echo "Starting console session: ${ENV}"
                 create-console

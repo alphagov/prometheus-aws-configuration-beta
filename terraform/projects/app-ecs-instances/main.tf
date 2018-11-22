@@ -35,12 +35,6 @@ variable "ecs_instance_root_size" {
   default     = "50"
 }
 
-variable "ecs_instance_ssh_keyname" {
-  type        = "string"
-  description = "SSH keyname for ECS container instances"
-  default     = "ecs-monitoring-ssh-test"
-}
-
 variable "ecs_optimised_ami_version" {
   default = "2018.03.a"
 }
@@ -155,8 +149,6 @@ module "ecs_instance" {
   source = "terraform-aws-modules/autoscaling/aws"
 
   name = "${var.stack_name}-ecs-instances"
-
-  key_name = "${var.ecs_instance_ssh_keyname}"
 
   # Launch configuration
   lc_name = "${var.stack_name}-ecs-instances"
