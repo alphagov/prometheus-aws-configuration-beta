@@ -151,19 +151,15 @@ For other examples on how to set up your own cron schedule have a look at this w
 
 ### How to connect to your dev ECS container instance
 
-If you are experiencing problems after creating the stack, you may want to connect to the EC2 instance:
+If you are experiencing problems after creating the stack, you may want to connect to the EC2 instance using AWS Session Manager:
 
-Before using the jump box:
-  - Enable ssh forwarding of your private key: `ssh-add ~/.ssh/id_rsa`
+Before starting a session:
+  - [install the session-manager-plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
+  - find the instance id of the instance you want to connect to
 
-Run one of the following commands to connect to the instance:
-
+To connect to an instance `$INSTANCE_ID`, run the command:
 ```shell
-# using the Makefile
-make jump
-
-# or using the shell script
-. ./setup.sh -j
+aws-vault exec gds-tech-ops -- aws ssm start-session --target $INSTANCE_ID
 ```
 
 ## Viewing the Prometheus dashboard
