@@ -1,7 +1,7 @@
 /**
-* ## Project: infra-networking
+* ## module: infra-networking
 *
-* Terraform project to deploy the networking required for a VPC and
+* Terraform module to deploy the networking required for a VPC and
 * related services. You will often have multiple VPCs in an account
 *
 */
@@ -18,23 +18,10 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
-variable "dev_environment" {
-  type        = "string"
-  description = "Boolean flag for development environments"
-  default     = "true"
-}
+variable "dev_environment" {}
+variable "stack_name" {}
 
-variable "stack_name" {
-  type        = "string"
-  description = "Unique name for this collection of resources"
-  default     = "ecs-monitoring"
-}
-
-variable "prometheus_subdomain" {
-  type        = "string"
-  description = "Subdomain for prometheus"
-  default     = "monitoring"
-}
+variable "prometheus_subdomain" {}
 
 # locals
 # --------------------------------------------------------------
@@ -48,21 +35,6 @@ locals {
   shared_dev_subdomain_name = "dev.gds-reliability.engineering"
   subdomain_name            = "${var.dev_environment == "true" ? "${var.prometheus_subdomain}.${local.shared_dev_subdomain_name}" : "${var.prometheus_subdomain}.gds-reliability.engineering"}"
   private_subdomain_name    = "${var.stack_name}.monitoring.private"
-}
-
-## Providers
-
-terraform {
-  required_version = "= 0.11.10"
-
-  backend "s3" {
-    key = "infra-networking.tfstate"
-  }
-}
-
-provider "aws" {
-  version = "~> 1.14.1"
-  region  = "${var.aws_region}"
 }
 
 ## Data sources
