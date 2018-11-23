@@ -3,7 +3,7 @@ terraform {
 
   backend "s3" {
     bucket = "prometheus-production"
-    key    = "infra-networking-production.tfstate"
+    key    = "infra-networking-modular.tfstate"
     region = "eu-west-1"
   }
 }
