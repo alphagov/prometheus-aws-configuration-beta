@@ -4,6 +4,7 @@ terraform {
   backend "s3" {
     bucket = "re-observe-dev"
     key    = "infra-networking-dev.tfstate"
+    region = "eu-west-1"
   }
 }
 

@@ -4,6 +4,7 @@ terraform {
   backend "s3" {
     bucket = "prometheus-staging"
     key    = "infra-networking-staging.tfstate"
+    region = "eu-west-1"
   }
 }
 
