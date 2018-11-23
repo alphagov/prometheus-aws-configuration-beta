@@ -15,8 +15,9 @@ variable "additional_tags" {
 variable "aws_region" {
   type        = "string"
   description = "AWS region"
-  default      = "eu-west-1"
+  default     = "eu-west-1"
 }
+
 variable "dev_environment" {}
 variable "stack_name" {}
 
