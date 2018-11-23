@@ -19,6 +19,12 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
+variable "prometheus_subdomain" {
+  type        = "string"
+  description = "Subdomain for prometheus"
+  default     = "monitoring-dev"
+}
+
 variable "stack_name" {
   type        = "string"
   description = "Unique name for this collection of resources"
@@ -29,7 +35,8 @@ module "infra-networking" {
   source = "../../modules/infra-networking"
 
   dev_environment = true
-  stack_name      = "module-refactor"
+  stack_name      = "monitoring"
+  prometheus_subdomain = "${var.prometheus_subdomain}"
 }
 
 output "vpc_id" {
