@@ -34,7 +34,6 @@ variable "stack_name" {
 module "infra-networking" {
   source = "../../modules/infra-networking"
 
-  aws_region           = "eu-west-1"
   dev_environment      = false
   stack_name           = "${var.stack_name}"
   prometheus_subdomain = "${var.prometheus_subdomain}"

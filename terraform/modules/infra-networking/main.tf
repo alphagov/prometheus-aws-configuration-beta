@@ -12,7 +12,11 @@ variable "additional_tags" {
   default     = {}
 }
 
-variable "aws_region" {}
+variable "aws_region" {
+  type        = "string"
+  description = "AWS region"
+  default      = "eu-west-1"
+}
 variable "dev_environment" {}
 variable "stack_name" {}
 
