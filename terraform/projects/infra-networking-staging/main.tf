@@ -34,9 +34,43 @@ variable "prometheus_subdomain" {
 module "infra-networking" {
   source = "../../modules/infra-networking"
 
-  aws_region      = "eu-west-1"
-  dev_environment = false
-  stack_name      = "staging"
+  aws_region           = "eu-west-1"
+  dev_environment      = false
+  stack_name           = "staging"
   prometheus_subdomain = "${var.prometheus_subdomain}"
+}
 
+output "vpc_id" {
+  value       = "${module.infra-networking.vpc_id}"
+  description = "VPC ID where the stack resources are created"
+}
+
+output "private_subnets" {
+  value       = "${module.infra-networking.private_subnets}"
+  description = "List of private subnet IDs"
+}
+
+output "public_subnets" {
+  value       = "${module.infra-networking.public_subnets}"
+  description = "List of public subnet IDs"
+}
+
+output "public_zone_id" {
+  value       = "${module.infra-networking.public_zone_id}"
+  description = "Route 53 Zone ID for publicly visible zone"
+}
+
+output "public_subdomain" {
+  value       = "${module.infra-networking.public_subdomain}"
+  description = "This is the subdomain for root zone"
+}
+
+output "private_zone_id" {
+  value       = "${module.infra-networking.private_zone_id}"
+  description = "Route 53 Zone ID for the internal zone"
+}
+
+output "private_subdomain" {
+  value       = "${module.infra-networking.private_subdomain}"
+  description = "This is the subdomain for private zone"
 }
