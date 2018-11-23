@@ -27,7 +27,7 @@ data "terraform_remote_state" "network" {
 
   config {
     bucket = "prometheus-${local.environment}"
-    key    = "infra-networking.tfstate"
+    key    = "infra-networking-modular.tfstate"
     region = "eu-west-1"
   }
 }

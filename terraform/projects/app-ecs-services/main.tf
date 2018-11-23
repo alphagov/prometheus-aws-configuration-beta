@@ -90,7 +90,7 @@ data "terraform_remote_state" "infra_networking" {
 
   config {
     bucket = "${var.remote_state_bucket}"
-    key    = "infra-networking.tfstate"
+    key    = "infra-networking-modular.tfstate"
     region = "${var.aws_region}"
   }
 }
