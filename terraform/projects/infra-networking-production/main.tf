@@ -13,6 +13,12 @@ provider "aws" {
   region  = "${var.aws_region}"
 }
 
+variable "prometheus_subdomain" {
+  type        = "string"
+  description = "Subdomain for prometheus"
+  default     = "monitoring"
+}
+
 variable "aws_region" {
   type        = "string"
   description = "The AWS region to use."
@@ -22,7 +28,7 @@ variable "aws_region" {
 variable "stack_name" {
   type        = "string"
   description = "Unique name for this collection of resources"
-  default     = "ecs-monitoring"
+  default     = "production"
 }
 
 module "infra-networking" {
@@ -30,7 +36,8 @@ module "infra-networking" {
 
   aws_region      = "eu-west-1"
   dev_environment = false
-  stack_name      = "ecs-monitoring-modular"
+  stack_name      = "${var.stack_name}"
+  prometheus_subdomain = "${var.prometheus_subdomain}"
 }
 
 output "vpc_id" {
