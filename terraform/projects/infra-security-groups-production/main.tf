@@ -37,10 +37,27 @@ variable "project" {
 }
 
 module "infra-security-groups" {
-    source = "../../modules/infra-security-groups/"
+  source = "../../modules/infra-security-groups/"
 
-    aws_region          = "${var.aws_region}"
-    stack_name          = "production"
-    remote_state_bucket = "prometheus-production"
-    project             = "${var.project}"
+  aws_region          = "${var.aws_region}"
+  stack_name          = "production"
+  remote_state_bucket = "prometheus-production"
+  project             = "${var.project}"
+}
+
+## Outputs
+
+ output "monitoring_external_sg_id" {
+  value       = "${module.infra-security-groups.monitoring_external_sg_id}"
+  description = "monitoring_external_sg ID"
+}
+
+output "alertmanager_external_sg_id" {
+  value       = "${module.infra-security-groups.alertmanager_external_sg_id}"
+  description = "alertmanager_external_sg ID"
+}
+
+output "monitoring_internal_sg_id" {
+  value       = "${module.infra-security-groups.monitoring_internal_sg_id}"
+  description = "monitoring_internal_sg ID"
 }
