@@ -13,9 +13,9 @@ data "template_file" "prometheus_config_template" {
   vars {
     environment = "${var.environment}"
 
-    alertmanager_dns_names    = "${var.alertmanager_dns_names}"
-    prometheus_addresses      = "${join("\",\"", formatlist("%s:9090", aws_route53_record.prom_ec2_a_record.*.fqdn))}"
-    prometheus_node_addresses = "${join("\",\"", formatlist("%s:9100", aws_route53_record.prom_ec2_a_record.*.fqdn))}"
+    alertmanager_dns_names    = "${join(",", formatlist("\"%s\"", var.alertmanager_dns_names))}"
+    prometheus_addresses      = "${join(",", formatlist("\"%s:9090\"", aws_route53_record.prom_ec2_a_record.*.fqdn))}"
+    prometheus_node_addresses = "${join(",", formatlist("\"%s:9100\"", aws_route53_record.prom_ec2_a_record.*.fqdn))}"
   }
 }
 

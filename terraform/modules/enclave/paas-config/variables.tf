@@ -1,4 +1,8 @@
-variable "alertmanager_dns_names" {}
+variable "alertmanager_dns_names" {
+  type    = "list"
+  default = []
+}
+
 variable "prometheus_config_bucket" {}
 variable "environment" {}
 variable "alerts_path" {}
