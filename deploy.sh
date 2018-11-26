@@ -22,11 +22,7 @@ while getopts "p:e:a:s:t:" arg; do
   esac
 done
 
-if [ "${ENCLAVE}" == "verify-perf-a" ]; then
-    AWS_REGION="eu-west-2"
-else
-    AWS_REGION="eu-west-1"
-fi
+AWS_REGION="eu-west-1"
 
 bucket_name="govukobserve-tfstate-prom-enclave-${ENCLAVE}"
 
@@ -37,8 +33,8 @@ TARGET=${TARGET:-""}
 role="arn:aws:iam::170611269615:role/prometheus_deployer"
 role_session="test"
 
-# only check buckets for dev environments not paas-staging, paas-production or verify-perf-a
-if [[ ! "$ENCLAVE" =~ ^(paas-staging|paas-production|verify-perf-a)$ ]]; then
+# only check buckets for dev environments not paas-staging, paas-production
+if [[ ! "$ENCLAVE" =~ ^(paas-staging|paas-production)$ ]]; then
     if ! aws-vault exec ${PROFILE} -- aws s3api head-bucket --bucket ${bucket_name} 2>/dev/null ; then
         echo "creating ${bucket_name}"
         aws-vault exec ${PROFILE} -- aws s3api create-bucket --bucket="${bucket_name}" --region "${AWS_REGION}" --create-bucket-configuration LocationConstraint="${AWS_REGION}"
