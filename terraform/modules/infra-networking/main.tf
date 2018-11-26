@@ -18,10 +18,23 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
-variable "dev_environment" {}
-variable "stack_name" {}
+variable "dev_environment" {
+  type        = "string"
+  description = "Boolean flag for development environments"
+  default     = "true"
+}
 
-variable "prometheus_subdomain" {}
+variable "stack_name" {
+  type        = "string"
+  description = "Unique name for this collection of resources"
+  default     = "ecs-monitoring"
+}
+
+variable "prometheus_subdomain" {
+  type        = "string"
+  description = "Subdomain for prometheus"
+  default     = "monitoring"
+}
 
 # locals
 # --------------------------------------------------------------
