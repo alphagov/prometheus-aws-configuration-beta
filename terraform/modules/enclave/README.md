@@ -9,9 +9,9 @@ There are two modules:
 
 The following diagram describes the environment:
 
-![Verify](https://s3.eu-west-2.amazonaws.com/observe-images-markdown/github/verify-enclave.png "Verify Enclave environment")  
+![Verify](https://s3.eu-west-2.amazonaws.com/observe-images-markdown/github/verify-enclave.png "Verify Enclave environment")
 
-We use the script titled `deploy_enclave.sh` at the root of the project in order to perform a deployment.  We also run tests in order to verify the functionality of the environment and modules.
+We use the script titled `deploy.sh` at the root of the project in order to perform a deployment.  We also run tests in order to verify the functionality of the environment and modules.
 
 ## Testing
 
@@ -20,7 +20,7 @@ Follow these steps to run infrastructure tests:
 1. Navigate to `terraform/modules/enclave/prometheus`
 2. `bundle install` - install all dependencies to your environment.
 3. source the test environment file `source environment-test.sh` in order to be able to run tests without clashing with other developers running tests.
-4. `aws-vault exec <your gds-tech-ops profile> -- kitchen <action> <optional target>` this is the general command that you can use in order to run the environment. 
+4. `aws-vault exec <your gds-tech-ops profile> -- kitchen <action> <optional target>` this is the general command that you can use in order to run the environment.
   - actions
     - `test` - use this action to run through the tests unless you are developing the tests themselves.
     - `create`, `converge`, `verify` these are the three actions that can used in order to spin up a stack and test. The converge can be executed multiple times to test changes.
@@ -34,7 +34,7 @@ Follow these steps to run infrastructure tests:
 
 To deploy, run the following script (from the root of this repository):
 
-    ./deploy_enclave.sh -e <environment> -p <aws vault profile> -a <terraform method> -s <state> -t <target>
+    ./deploy.sh -e <environment> -p <aws vault profile> -a <terraform method> -s <state> -t <target>
 
 `<environment>` can only be one of: `verify-perf-a`, `paas-staging`,
 or `paas-production` (unless it's your EC2 dev stack).  `<state>` is
