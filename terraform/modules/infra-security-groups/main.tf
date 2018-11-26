@@ -34,12 +34,15 @@ variable "project" {
   description = "Which project, in which environment, we're running"
 }
 
+variable "project" {}
+
 # locals
 # --------------------------------------------------------------
 
 locals {
   default_tags = {
     Terraform = "true"
+    Project   = "${var.project}"
   }
 }
 
