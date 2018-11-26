@@ -36,13 +36,15 @@ variable "prometheus_subdomain" {
   default     = "monitoring"
 }
 
+variable "project" {}
+
 # locals
 # --------------------------------------------------------------
 
 locals {
   default_tags = {
     Terraform = "true"
-    Project   = "infra-networking"
+    Project   = "${var.project}"
   }
 
   shared_dev_subdomain_name = "dev.gds-reliability.engineering"

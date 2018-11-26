@@ -28,14 +28,22 @@ variable "prometheus_subdomain" {
 variable "stack_name" {
   type        = "string"
   description = "Unique name for this collection of resources"
-  default     = "ecs-monitoring"
+  default     = "dev"
+}
+
+variable "project" {
+  type        = "string"
+  description = "Which project, in which environment, we're running"
+  default     = "infra-networking-dev"
 }
 
 module "infra-networking" {
   source = "../../modules/infra-networking"
 
-  dev_environment      = true
-  stack_name           = "monitoring"
+  dev_environment = true
+
+  project              = "${var.project}"
+  stack_name           = "${var.stack_name}"
   prometheus_subdomain = "${var.prometheus_subdomain}"
 }
 

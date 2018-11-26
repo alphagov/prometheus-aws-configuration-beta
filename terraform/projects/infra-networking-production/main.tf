@@ -19,6 +19,12 @@ variable "prometheus_subdomain" {
   default     = "monitoring"
 }
 
+variable "project" {
+  type        = "string"
+  description = "Which project, in which environment, we're running"
+  default     = "infra-networking-production"
+}
+
 variable "aws_region" {
   type        = "string"
   description = "The AWS region to use."
@@ -37,6 +43,7 @@ module "infra-networking" {
   dev_environment      = false
   stack_name           = "${var.stack_name}"
   prometheus_subdomain = "${var.prometheus_subdomain}"
+  project              = "${var.project}"
 }
 
 output "vpc_id" {
