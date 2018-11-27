@@ -125,7 +125,7 @@ resource "aws_lb" "monitoring_internal_alb" {
 # https://docs.aws.amazon.com/acm/latest/userguide/managed-renewal.html
 # If this fails, AWS will email associated with the AWS account
 resource "aws_acm_certificate" "monitoring_cert" {
-  domain_name               = "${data.terraform_remote_state.infra_networking.public_subdomain}"
+  domain_name               = "${replace(data.terraform_remote_state.infra_networking.public_subdomain,"/\\.$/","")}"
   validation_method         = "DNS"
   subject_alternative_names = ["${aws_route53_record.prom_alias.*.fqdn}", "${aws_route53_record.alerts_alias.*.fqdn}"]
 }
