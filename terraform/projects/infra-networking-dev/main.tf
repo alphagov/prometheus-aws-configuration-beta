@@ -81,3 +81,8 @@ output "private_subdomain" {
   value       = "${module.infra-networking.private_subdomain}"
   description = "This is the subdomain for private zone"
 }
+
+output "subnets_by_az" {
+  value       = "${module.infra-networking.subnets_by_az}"
+  description = "Map of availability zones to private subnets"
+}

@@ -22,7 +22,7 @@ provider "aws" {
   allowed_account_ids = ["047969882937"]
 }
 
-data "terraform_remote_state" "network" {
+data "terraform_remote_state" "infra_networking" {
   backend = "s3"
 
   config {
@@ -68,8 +68,8 @@ module "prometheus" {
 
   prometheus_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.prom_public_record_fqdns}"
 
-  subnet_ids          = "${data.terraform_remote_state.network.public_subnets}"
-  availability_zones  = "${data.terraform_remote_state.network.subnets_by_az}"
+  subnet_ids          = "${data.terraform_remote_state.infra_networking.public_subnets}"
+  availability_zones  = "${data.terraform_remote_state.infra_networking.subnets_by_az}"
   vpc_security_groups = ["${data.terraform_remote_state.sg.monitoring_external_sg_id}"]
   region              = "eu-west-1"
 }
@@ -80,8 +80,8 @@ module "paas-config" {
   environment              = "${local.environment}"
   prometheus_config_bucket = "${module.prometheus.s3_config_bucket}"
   prom_private_ips         = "${module.prometheus.private_ip_addresses}"
-  private_zone_id          = "${data.terraform_remote_state.network.private_zone_id}"
-  private_subdomain        = "${data.terraform_remote_state.network.private_subdomain}"
+  private_zone_id          = "${data.terraform_remote_state.infra_networking.private_zone_id}"
+  private_subdomain        = "${data.terraform_remote_state.infra_networking.private_subdomain}"
   alertmanager_dns_names   = "${join("\",\"", local.active_alertmanager_private_fqdns)}"
   alerts_path              = "../../../../projects/app-ecs-services/config/alerts/"
 
