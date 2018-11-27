@@ -32,7 +32,7 @@ data "terraform_remote_state" "infra_networking" {
   }
 }
 
-data "terraform_remote_state" "sg" {
+data "terraform_remote_state" "infra_security_groups" {
   backend = "s3"
 
   config {
@@ -85,7 +85,7 @@ module "prometheus" {
 
   subnet_ids          = "${data.terraform_remote_state.infra_networking.public_subnets}"
   availability_zones  = "${data.terraform_remote_state.infra_networking.subnets_by_az}"
-  vpc_security_groups = ["${data.terraform_remote_state.sg.monitoring_external_sg_id}"]
+  vpc_security_groups = ["${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}"]
   region              = "eu-west-1"
 }
 
@@ -101,7 +101,7 @@ module "paas-config" {
   private_zone_id   = "${data.terraform_remote_state.infra_networking.private_zone_id}"
   private_subdomain = "${data.terraform_remote_state.infra_networking.private_subdomain}"
 
-  paas_proxy_sg_id = "${data.terraform_remote_state.sg.alertmanager_external_sg_id}"
+  paas_proxy_sg_id = "${data.terraform_remote_state.infra_security_groups.alertmanager_external_sg_id}"
   prometheus_sg_id = "${module.prometheus.ec2_instance_prometheus_sg}"
 }
 
