@@ -8,8 +8,8 @@ TERRAFORMBACKVARS=$(pwd)/stacks/${ENV}.backend
 TERRAFORMTFVARS=$(pwd)/stacks/${ENV}.tfvars
 ROOTPROJ=$(pwd)
 TERRAFORMPROJ=$(pwd)/terraform/projects/
-declare -a COMPONENTS=("infra-networking" "infra-security-groups" "app-ecs-instances" "app-ecs-albs" "app-ecs-services")
-declare -a COMPONENTSDESTROY=("app-ecs-services" "app-ecs-albs" "app-ecs-instances" "infra-security-groups" "infra-networking")
+declare -a COMPONENTS=("infra-security-groups" "app-ecs-instances" "app-ecs-albs" "app-ecs-services")
+declare -a COMPONENTSDESTROY=("app-ecs-services" "app-ecs-albs" "app-ecs-instances" "infra-security-groups")
 
 
 ############ Actions #################
