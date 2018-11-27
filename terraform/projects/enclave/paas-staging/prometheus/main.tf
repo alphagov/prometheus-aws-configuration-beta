@@ -63,7 +63,7 @@ module "prometheus" {
 
   # Staging
   target_vpc = "vpc-0bbf4123f5b385806"
-  enable_ssh = true
+  enable_ssh = false
 
   product        = "${local.product}"
   environment    = "${local.environment}"
