@@ -4,6 +4,7 @@ terraform {
   backend "s3" {
     bucket = "re-observe-dev"
     key    = "infra-security-groups-modular.tfstate"
+    region = "eu-west-1"
   }
 }
 
@@ -21,22 +22,28 @@ variable "aws_region" {
 variable "remote_state_bucket" {
   type        = "string"
   description = "S3 bucket we store our terraform state in"
-  default     = "ecs-monitoring"
+  default     = "re-observe-dev"
 }
 
 variable "stack_name" {
   type        = "string"
   description = "Unique name for this collection of resources"
-  default     = "ecs-monitoring"
+  default     = "dev"
+}
+
+variable "project" {
+  type        = "string"
+  description = "Project name for tag"
+  default     = "infra-security-groups-dev"
 }
 
 module "infra-security-groups" {
   source = "../../modules/infra-security-groups/"
 
   aws_region          = "${var.aws_region}"
-  dev_environment     = true
   stack_name          = "module-refactor"
   remote_state_bucket = "observe-dev"
+  project             = "${var.project}"
 }
 
 ## Outputs
