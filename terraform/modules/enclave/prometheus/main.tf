@@ -96,12 +96,13 @@ resource "aws_security_group_rule" "allow_prometheus" {
 }
 
 resource "aws_security_group_rule" "allow_prometheus_private" {
-  security_group_id = "${aws_security_group.allow_prometheus.id}"
-  type              = "ingress"
-  from_port         = 9090
-  to_port           = 9090
-  protocol          = "tcp"
-  cidr_blocks       = ["10.0.0.0/16"]
+  count                    = "${var.source_security_group == "" ? 0 : 1}"
+  security_group_id        = "${aws_security_group.allow_prometheus.id}"
+  type                     = "ingress"
+  from_port                = 9090
+  to_port                  = 9090
+  protocol                 = "tcp"
+  source_security_group_id = "${var.source_security_group}"
 }
 
 resource "aws_security_group_rule" "allow_prometheus_node_exporter" {
