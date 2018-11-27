@@ -113,8 +113,9 @@ resource "aws_security_group_rule" "allow_prometheus_node_exporter" {
 }
 
 resource "aws_security_group" "allow_prometheus" {
-  name   = "${var.product}-${var.environment}-sg"
-  vpc_id = "${var.target_vpc}"
+  name        = "${var.product}-${var.environment}-sg"
+  vpc_id      = "${var.target_vpc}"
+  description = "Allows access to prometheus and node_exporter ports"
 }
 
 resource "aws_s3_bucket" "prometheus_config" {
