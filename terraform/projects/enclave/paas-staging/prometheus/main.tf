@@ -37,7 +37,7 @@ data "terraform_remote_state" "sg" {
 
   config {
     bucket = "prometheus-${local.environment}"
-    key    = "infra-security-groups.tfstate"
+    key    = "infra-security-groups-modular.tfstate"
     region = "eu-west-1"
   }
 }

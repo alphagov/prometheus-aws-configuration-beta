@@ -116,7 +116,7 @@ data "terraform_remote_state" "infra_security_groups" {
 
   config {
     bucket = "${var.remote_state_bucket}"
-    key    = "infra-security-groups.tfstate"
+    key    = "infra-security-groups-modular.tfstate"
     region = "${var.aws_region}"
   }
 }
