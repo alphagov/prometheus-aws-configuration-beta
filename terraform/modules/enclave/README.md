@@ -1,15 +1,10 @@
-# Prometheus verify enclave
+# Prometheus EC2 module
 
-The enclave environment is the area of verify that we use to perform our deployment.
+There are two modules
 
-There are two modules:
-
- - `network`, which creates the network to deploy prometheus to
  - `prometheus`, which deploys prometheus to the target network.
-
-The following diagram describes the environment:
-
-![Verify](https://s3.eu-west-2.amazonaws.com/observe-images-markdown/github/verify-enclave.png "Verify Enclave environment")
+ - `paas-config`, which contains configuration specific to our
+   prometheus-for-paas deployment
 
 We use the script titled `deploy.sh` at the root of the project in order to perform a deployment.  We also run tests in order to verify the functionality of the environment and modules.
 
@@ -27,7 +22,7 @@ Follow these steps to run infrastructure tests:
       - Once you are done developing, testing and using the stack you should then use the action `destroy` in order to bring down the whole stack.
 
   - target (optional)
-    - possible targets are `paas` and `verify`.
+    - the only possible target is `paas`.
     - if not specified then all targets will be run.
 
 ## Deploying
@@ -36,14 +31,9 @@ To deploy, run the following script (from the root of this repository):
 
     ./deploy.sh -e <environment> -p <aws vault profile> -a <terraform method> -s <state> -t <target>
 
-`<environment>` can only be one of: `verify-perf-a`, `paas-staging`,
-or `paas-production` (unless it's your EC2 dev stack).  `<state>` is
-`network` or `prometheus`.
-
-> For deploying to the Verify enclave, you will need to have the
-> ability to assume the `prometheus-deployer` role into the
-> `verify-perf-a` environment. Members of the Verify team will need to
-> grant this.
+`<environment>` can only be one of: `paas-staging` or
+`paas-production` (unless it's your EC2 dev stack).  `<state>` must be
+`prometheus`.
 
 `<target>` is optional an example target module would be `module.prometheus.aws_instance.prometheus[0]`. This would deploy to the first Prometheus instance.
 

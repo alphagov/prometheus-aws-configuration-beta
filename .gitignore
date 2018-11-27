@@ -24,5 +24,4 @@ environment.sh
 __pycache__
 
 /tools/prometheus-configs/**/data
-/tools/prometheus-configs/verify-perf-a-alerts/ida-password
 /tools/prometheus-configs/log-cache-adapter/token
