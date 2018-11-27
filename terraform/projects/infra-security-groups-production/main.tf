@@ -47,7 +47,7 @@ module "infra-security-groups" {
 
 ## Outputs
 
- output "monitoring_external_sg_id" {
+output "monitoring_external_sg_id" {
   value       = "${module.infra-security-groups.monitoring_external_sg_id}"
   description = "monitoring_external_sg ID"
 }

@@ -31,12 +31,12 @@ variable "stack_name" {
 }
 
 module "infra-security-groups" {
-    source = "../../modules/infra-security-groups/"
+  source = "../../modules/infra-security-groups/"
 
-    aws_region          = "${var.aws_region}"
-    dev_environment     = true
-    stack_name          = "module-refactor"
-    remote_state_bucket = "observe-dev"
+  aws_region          = "${var.aws_region}"
+  dev_environment     = true
+  stack_name          = "module-refactor"
+  remote_state_bucket = "observe-dev"
 }
 
 ## Outputs

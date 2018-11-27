@@ -37,14 +37,13 @@ variable "project" {
 }
 
 module "infra-security-groups" {
-    source = "../../modules/infra-security-groups/"
+  source = "../../modules/infra-security-groups/"
 
-    aws_region          = "${var.aws_region}"
-    stack_name          = "${var.stack_name}"
-    remote_state_bucket = "${var.remote_state_bucket}"
-    project             = "${var.project}"
+  aws_region          = "${var.aws_region}"
+  stack_name          = "${var.stack_name}"
+  remote_state_bucket = "${var.remote_state_bucket}"
+  project             = "${var.project}"
 }
-
 
 ## Outputs
 
