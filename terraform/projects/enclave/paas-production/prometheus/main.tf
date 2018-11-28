@@ -94,7 +94,7 @@ module "paas-config" {
 
   environment              = "${local.environment}"
   prometheus_config_bucket = "${module.prometheus.s3_config_bucket}"
-  alertmanager_dns_names   = "${join("\",\"", local.active_alertmanager_private_fqdns)}"
+  alertmanager_dns_names   = "${local.active_alertmanager_private_fqdns}"
   alerts_path              = "../../../../projects/app-ecs-services/config/alerts/"
 
   prom_private_ips  = "${module.prometheus.private_ip_addresses}"

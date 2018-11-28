@@ -1,4 +1,15 @@
-variable "alertmanager_dns_names" {}
+variable "alertmanager_dns_names" {
+  type        = "list"
+  default     = []
+  description = "alertmanagers to send alerts to on local network (via http)"
+}
+
+variable "external_alertmanager_names" {
+  type        = "list"
+  default     = []
+  description = "external alertmanagers to send alerts to (via https)"
+}
+
 variable "prometheus_config_bucket" {}
 variable "environment" {}
 variable "alerts_path" {}
