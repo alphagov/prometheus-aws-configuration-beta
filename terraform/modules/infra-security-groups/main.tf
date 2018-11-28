@@ -1,11 +1,10 @@
 /**
-* ## Project: infra-security-groups
+* ## module: infra-security-groups
 *
-* Central project to manage all security groups.
+* Central module to manage all security groups.
 *
-* This is done in a single project to reduce conflicts
+* This is done in a single module to reduce conflicts
 * and cascade issues.
-*
 *
 */
 
@@ -17,20 +16,22 @@ variable "additional_tags" {
 
 variable "aws_region" {
   type        = "string"
-  description = "AWS region"
-  default     = "eu-west-1"
+  description = "The AWS region to use."
 }
 
 variable "remote_state_bucket" {
   type        = "string"
   description = "S3 bucket we store our terraform state in"
-  default     = "ecs-monitoring"
 }
 
 variable "stack_name" {
   type        = "string"
   description = "Unique name for this collection of resources"
-  default     = "ecs-monitoring"
+}
+
+variable "project" {
+  type        = "string"
+  description = "Which project, in which environment, we're running"
 }
 
 # locals
@@ -39,27 +40,12 @@ variable "stack_name" {
 locals {
   default_tags = {
     Terraform = "true"
-    Project   = "infra-security-groups"
+    Project   = "${var.project}"
   }
 }
 
 # Resources
 # --------------------------------------------------------------
-
-## Providers
-
-terraform {
-  required_version = "= 0.11.10"
-
-  backend "s3" {
-    key = "infra-security-groups.tfstate"
-  }
-}
-
-provider "aws" {
-  version = "~> 1.14.1"
-  region  = "${var.aws_region}"
-}
 
 ## Data sources
 
