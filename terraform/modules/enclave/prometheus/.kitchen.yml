@@ -26,8 +26,6 @@ suites:
         backend: ssh
         sudo: true
         hosts_output: prometheus_dns
-        key_files:
-          - <%= ENV['SSH_KEY'] || "~/.ssh/id_rsa" %>
         controls:
           - operating_system
         user: <%= ENV['SSH_USER'] || "ubuntu" %>

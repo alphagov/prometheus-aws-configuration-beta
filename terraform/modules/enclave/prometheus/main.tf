@@ -8,6 +8,7 @@ locals {
 }
 
 resource "aws_key_pair" "ssh_key" {
+  count      = "${var.enable_ssh}"
   key_name   = "${var.environment}-prom-key"
   public_key = "${file("~/.ssh/id_rsa.pub")}"
 }
@@ -23,7 +24,7 @@ resource "aws_instance" "prometheus" {
 
   associate_public_ip_address = "${local.enable_public_ip}"
 
-  key_name = "${aws_key_pair.ssh_key.key_name}"
+  key_name = "${var.enable_ssh ? aws_key_pair.ssh_key.key_name : ""}"
 
   vpc_security_group_ids = ["${var.vpc_security_groups}", "${aws_security_group.allow_prometheus.id}"]
 

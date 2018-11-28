@@ -72,7 +72,7 @@ module "prometheus" {
 
   # Production
   target_vpc = "vpc-0cdd9631927b526ce"
-  enable_ssh = true
+  enable_ssh = false
 
   product        = "${local.product}"
   environment    = "${local.environment}"
