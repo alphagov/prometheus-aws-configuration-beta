@@ -37,7 +37,7 @@ data "terraform_remote_state" "infra_security_groups" {
 
   config {
     bucket = "${local.environment}"
-    key    = "infra-security-groups.tfstate"
+    key    = "infra-security-groups-modular.tfstate"
     region = "eu-west-1"
   }
 }
