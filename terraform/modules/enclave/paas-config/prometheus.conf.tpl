@@ -6,6 +6,9 @@ alerting:
   - scheme: http
     static_configs:
       - targets: [${alertmanager_dns_names}]
+  - scheme: https
+    static_configs:
+      - targets: [${external_alertmanagers}]
 rule_files:
   - "/etc/prometheus/alerts/*"
 scrape_configs:
