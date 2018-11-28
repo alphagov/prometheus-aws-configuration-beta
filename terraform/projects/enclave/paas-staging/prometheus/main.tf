@@ -73,7 +73,7 @@ module "prometheus" {
 
   prometheus_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.prom_public_record_fqdns}"
 
-  subnet_ids          = "${data.terraform_remote_state.infra_networking.public_subnets}"
+  subnet_ids          = "${data.terraform_remote_state.infra_networking.private_subnets}"
   availability_zones  = "${data.terraform_remote_state.infra_networking.subnets_by_az}"
   vpc_security_groups = ["${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}"]
   region              = "eu-west-1"
@@ -93,10 +93,6 @@ module "paas-config" {
 
   paas_proxy_sg_id = "${data.terraform_remote_state.infra_security_groups.alertmanager_external_sg_id}"
   prometheus_sg_id = "${module.prometheus.ec2_instance_prometheus_sg}"
-}
-
-output "public_ips" {
-  value = "${module.prometheus.public_ip_address}"
 }
 
 output "public_dns" {
