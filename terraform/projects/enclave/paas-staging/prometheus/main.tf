@@ -95,10 +95,6 @@ module "paas-config" {
   prometheus_sg_id = "${module.prometheus.ec2_instance_prometheus_sg}"
 }
 
-output "public_ips" {
-  value = "${module.prometheus.public_ip_address}"
-}
-
 output "public_dns" {
   value = "[\n    ${join("\n    ", formatlist("%s:9090", module.prometheus.prometheus_public_dns))}\n]"
 }
