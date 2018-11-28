@@ -34,8 +34,6 @@ variable "project" {
   description = "Which project, in which environment, we're running"
 }
 
-variable "project" {}
-
 # locals
 # --------------------------------------------------------------
 
