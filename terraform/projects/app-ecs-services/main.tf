@@ -110,7 +110,7 @@ data "terraform_remote_state" "app_ecs_albs" {
 
   config {
     bucket = "${var.remote_state_bucket}"
-    key    = "app-ecs-albs.tfstate"
+    key    = "app-ecs-albs-modular.tfstate"
     region = "${var.aws_region}"
   }
 }

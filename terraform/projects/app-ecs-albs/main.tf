@@ -52,7 +52,7 @@ terraform {
   required_version = "= 0.11.10"
 
   backend "s3" {
-    key = "app-ecs-albs.tfstate"
+    key = "app-ecs-albs-modular.tfstate"
   }
 }
 

@@ -47,7 +47,7 @@ data "terraform_remote_state" "app_ecs_albs" {
 
   config {
     bucket = "${local.environment}"
-    key    = "app-ecs-albs.tfstate"
+    key    = "app-ecs-albs-modular.tfstate"
     region = "eu-west-1"
   }
 }
