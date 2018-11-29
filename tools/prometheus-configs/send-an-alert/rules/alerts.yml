@@ -1,0 +1,11 @@
+---
+groups:
+- name: MyGroup
+  rules:
+  - alert: AlwaysAlert
+    expr: 1
+    labels:
+      severity: page
+      product: prometheus
+    annotations:
+      summary: "This is a test alert that always fires."
