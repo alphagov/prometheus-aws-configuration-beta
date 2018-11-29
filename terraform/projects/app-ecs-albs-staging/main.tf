@@ -46,3 +46,33 @@ module "app-ecs-albs" {
   remote_state_bucket = "${var.remote_state_bucket}"
   project             = "${var.project}"
 }
+
+output "monitoring_external_tg" {
+  value       = "${module.app-ecs-albs.monitoring_external_tg}"
+  description = "Monitoring external target group"
+}
+
+output "monitoring_internal_tg" {
+  value       = "${module.app-ecs-albs.monitoring_internal_tg}"
+  description = "External Alertmanager ALB target group"
+}
+
+output "paas_proxy_tg" {
+  value       = "${module.app-ecs-albs.paas_proxy_tg}"
+  description = "Paas proxy target group"
+}
+
+output "prom_public_record_fqdns" {
+  value       = "${module.app-ecs-albs.prom_public_record_fqdns}"
+  description = "Prometheus public DNS FQDNs"
+}
+
+output "alerts_public_record_fqdns" {
+  value       = "${module.app-ecs-albs.alerts_public_record_fqdns}"
+  description = "Alertmanagers public DNS FQDNs"
+}
+
+output "alerts_private_record_fqdns" {
+  value       = "${module.app-ecs-albs.alerts_private_record_fqdns}"
+  description = "Alertmanagers private DNS FQDNs"
+}
