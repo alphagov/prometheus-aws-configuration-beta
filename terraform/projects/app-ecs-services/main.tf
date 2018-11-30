@@ -120,7 +120,7 @@ data "terraform_remote_state" "app_ecs_instances" {
 
   config {
     bucket = "${var.remote_state_bucket}"
-    key    = "app-ecs-instances.tfstate"
+    key    = "app-ecs-instances-modular.tfstate"
     region = "${var.aws_region}"
   }
 }
