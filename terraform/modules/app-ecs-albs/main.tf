@@ -1,5 +1,5 @@
 /**
-* ## Project: app-ecs-albs
+* ## Module: app-ecs-albs
 *
 * Create ALBs for the ECS cluster
 *
@@ -14,19 +14,21 @@ variable "additional_tags" {
 variable "aws_region" {
   type        = "string"
   description = "AWS region"
-  default     = "eu-west-1"
 }
 
 variable "remote_state_bucket" {
   type        = "string"
   description = "S3 bucket we store our terraform state in"
-  default     = "ecs-monitoring"
 }
 
 variable "stack_name" {
   type        = "string"
   description = "Unique name for this collection of resources"
-  default     = "ecs-monitoring"
+}
+
+variable "project" {
+  type        = "string"
+  description = "Which project, in which environment, we're running"
 }
 
 # locals
@@ -35,30 +37,12 @@ variable "stack_name" {
 locals {
   default_tags = {
     Terraform = "true"
-    Project   = "app-ecs-albs"
+    Project   = "${var.project}"
   }
 
   infra_network_public_subnets_count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
   alerts_records_count               = "${local.infra_network_public_subnets_count}"
   prom_records_count                 = "${local.infra_network_public_subnets_count}"
-}
-
-# Resources
-# --------------------------------------------------------------
-
-## Providers
-
-terraform {
-  required_version = "= 0.11.10"
-
-  backend "s3" {
-    key = "app-ecs-albs.tfstate"
-  }
-}
-
-provider "aws" {
-  version = "~> 1.14.1"
-  region  = "${var.aws_region}"
 }
 
 ## Data sources
