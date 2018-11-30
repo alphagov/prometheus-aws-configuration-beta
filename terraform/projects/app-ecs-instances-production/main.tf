@@ -44,3 +44,8 @@ module "app-ecs-instances" {
   project             = "${var.project}"
   remote_state_bucket = "${var.remote_state_bucket}"
 }
+
+output "available_azs" {
+  value       = "${module.app-ecs-instances.available_azs}"
+  description = "AZs available with running container instances"
+}
