@@ -1,5 +1,5 @@
 /**
-* ## Project: app-ecs-services
+* ## Module: app-ecs-services
 *
 * Create services and task definitions for the ECS cluster
 *
