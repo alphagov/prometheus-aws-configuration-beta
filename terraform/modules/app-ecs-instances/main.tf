@@ -120,7 +120,7 @@ resource "aws_ecs_cluster" "prometheus_cluster" {
 }
 
 data "template_file" "instance_user_data" {
-  template = "${file("instance-user-data.tpl")}"
+  template = "${file("${path.module}/instance-user-data.tpl")}"
 
   vars {
     cluster_name = "${local.cluster_name}"
