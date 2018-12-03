@@ -1,0 +1,143 @@
+satisfy any;
+auth_basic "Prometheus";
+auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
+real_ip_header X-Forwarded-For;
+set_real_ip_from 10.0.0.0/8;
+set_real_ip_from 127.0.0.1/32;
+${allow_cidrs}
+deny all;
+
+server {
+  auth_basic off;
+  listen 80 default_server;
+
+  location /health {
+    return 200 "Static health check";
+  }
+}
+
+server {
+  listen 80;
+
+  server_name alerts-1.*;
+
+  if ($http_x_forwarded_proto = 'http') {
+    return 301 https://$host$request_uri;
+  }
+
+  set $alert "${alertmanager_1_dns_name}";
+
+  location / {
+    proxy_pass  http://$alert;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+
+  resolver 10.0.0.2 valid=10s;
+}
+
+server {
+  listen 80;
+
+  server_name alerts-2.*;
+
+  if ($http_x_forwarded_proto = 'http') {
+    return 301 https://$host$request_uri;
+  }
+
+  set $alert "${alertmanager_2_dns_name}";
+
+  location / {
+    proxy_pass  http://$alert;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+
+  resolver 10.0.0.2 valid=10s;
+}
+
+server {
+  listen 80;
+
+  server_name alerts-3.*;
+
+  if ($http_x_forwarded_proto = 'http') {
+    return 301 https://$host$request_uri;
+  }
+
+  set $alert "${alertmanager_3_dns_name}";
+
+  location / {
+    proxy_pass  http://$alert;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+
+  resolver 10.0.0.2 valid=10s;
+}
+
+server {
+  listen 80;
+
+  server_name prom-1.*;
+
+  if ($http_x_forwarded_proto = 'http') {
+    return 301 https://$host$request_uri;
+  }
+
+  set $prom "${prometheus_1_address}";
+
+  location / {
+    proxy_pass  http://$prom;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+
+  resolver 10.0.0.2 valid=10s;
+}
+
+server {
+  listen 80;
+
+  server_name prom-2.*;
+
+  if ($http_x_forwarded_proto = 'http') {
+    return 301 https://$host$request_uri;
+  }
+
+  set $prom "${prometheus_2_address}";
+
+  location / {
+    proxy_pass  http://$prom;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+
+  resolver 10.0.0.2 valid=10s;
+}
+
+server {
+  listen 80;
+
+  server_name prom-3.*;
+
+  if ($http_x_forwarded_proto = 'http') {
+    return 301 https://$host$request_uri;
+  }
+
+  set $prom "${prometheus_3_address}";
+
+  location / {
+    proxy_pass  http://$prom;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+
+  resolver 10.0.0.2 valid=10s;
+}

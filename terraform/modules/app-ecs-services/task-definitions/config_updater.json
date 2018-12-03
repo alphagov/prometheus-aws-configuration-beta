@@ -1,0 +1,46 @@
+[
+  {
+    "name": "s3-updater-config",
+    "image": "mesosphere/aws-cli",
+    "cpu": 128,
+    "memory": 128,
+    "essential": true,
+    "mountPoints": [
+      {
+        "sourceVolume": "config-from-s3",
+        "containerPath": "/configs"
+      }
+    ],
+    "command": ["s3", "sync", "s3://${config_bucket}/prometheus", "/configs"],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group}",
+        "awslogs-region": "${region}",
+        "awslogs-stream-prefix": "prometheus-config-grabber"
+      }
+    }
+  },
+  {
+    "name": "s3-updater-alertmanager",
+    "image": "mesosphere/aws-cli",
+    "cpu": 128,
+    "memory": 128,
+    "essential": true,
+    "mountPoints": [
+      {
+        "sourceVolume": "config-from-s3",
+        "containerPath": "/configs"
+      }
+    ],
+    "command": ["s3", "sync", "s3://${config_bucket}/alertmanager", "/configs/alertmanager"],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group}",
+        "awslogs-region": "${region}",
+        "awslogs-stream-prefix": "alertmanager-config-grabber"
+      }
+    }
+  }
+]
