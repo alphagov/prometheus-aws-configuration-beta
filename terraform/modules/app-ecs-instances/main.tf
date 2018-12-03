@@ -1,5 +1,5 @@
 /**
-* ## Project: app-ecs-instances
+* ## Module: app-ecs-instances
 *
 * Create ECS container instances
 *
@@ -57,6 +57,11 @@ variable "dev_environment" {
   default     = "false"
 }
 
+variable "project" {
+  type        = "string"
+  description = "Project name for tag"
+}
+
 variable "asg_dev_scaledown_schedules" {
   type        = "list"
   description = "Schedules for scaling down dev EC2 instances"
@@ -71,7 +76,7 @@ variable "asg_dev_scaledown_schedules" {
 locals {
   default_tags = {
     Terraform = "true"
-    Project   = "app-ecs-instances"
+    Project   = "${var.project}"
   }
 
   cluster_name = "${var.stack_name}-ecs-monitoring"
@@ -79,25 +84,6 @@ locals {
 
 # Resources
 # --------------------------------------------------------------
-
-## Providers
-
-terraform {
-  required_version = "= 0.11.10"
-
-  backend "s3" {
-    key = "app-ecs-instances.tfstate"
-  }
-}
-
-provider "aws" {
-  version = "~> 1.14.1"
-  region  = "${var.aws_region}"
-}
-
-provider "template" {
-  version = "~> 1.0.0"
-}
 
 ## Data sources
 
@@ -134,7 +120,7 @@ resource "aws_ecs_cluster" "prometheus_cluster" {
 }
 
 data "template_file" "instance_user_data" {
-  template = "${file("instance-user-data.tpl")}"
+  template = "${file("${path.module}/instance-user-data.tpl")}"
 
   vars {
     cluster_name = "${local.cluster_name}"
