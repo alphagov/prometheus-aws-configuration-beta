@@ -105,6 +105,15 @@ resource "aws_security_group_rule" "allow_prometheus_private" {
   source_security_group_id = "${var.source_security_group}"
 }
 
+resource "aws_security_group_rule" "allow_prometheus_self" {
+  security_group_id        = "${aws_security_group.allow_prometheus.id}"
+  type                     = "ingress"
+  from_port                = 9090
+  to_port                  = 9090
+  protocol                 = "tcp"
+  source_security_group_id = "${aws_security_group.allow_prometheus.id}"
+}
+
 resource "aws_security_group_rule" "allow_prometheus_node_exporter" {
   security_group_id        = "${aws_security_group.allow_prometheus.id}"
   type                     = "ingress"
