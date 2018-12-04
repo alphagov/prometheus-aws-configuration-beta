@@ -91,7 +91,7 @@ resource "aws_iam_role_policy_attachment" "alertmanager_policy_attachment" {
 
 data "template_file" "alertmanager_container_defn" {
   count    = "${length(local.alertmanager_public_fqdns)}"
-  template = "${file("task-definitions/alertmanager-server.json")}"
+  template = "${file("${path.module}/task-definitions/alertmanager-server.json")}"
 
   vars {
     alertmanager_url = "https://${local.alertmanager_public_fqdns[count.index]}"
@@ -163,7 +163,7 @@ data "pass_password" "observe_zendesk" {
 }
 
 data "template_file" "alertmanager_config_file" {
-  template = "${file("templates/alertmanager.tpl")}"
+  template = "${file("${path.module}/templates/alertmanager.tpl")}"
 
   vars {
     pagerduty_service_key     = "${data.pass_password.pagerduty_service_key.password}"
@@ -180,7 +180,7 @@ data "template_file" "alertmanager_config_file" {
 }
 
 data "template_file" "alertmanager_dev_config_file" {
-  template = "${file("templates/alertmanager-dev.tpl")}"
+  template = "${file("${path.module}/templates/alertmanager-dev.tpl")}"
 
   # For dev stacks, as we have not requested "AWS SES production access", by default
   # emails will not be sent unless you verify the recipient's email address

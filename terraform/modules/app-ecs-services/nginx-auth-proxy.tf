@@ -3,7 +3,7 @@
 ### container, task, service definitions
 
 data "template_file" "nginx_auth_container_def" {
-  template = "${file("task-definitions/nginx-auth-proxy.json")}"
+  template = "${file("${path.module}/task-definitions/nginx-auth-proxy.json")}"
 
   vars {
     log_group = "${aws_cloudwatch_log_group.task_logs.name}"
@@ -40,7 +40,7 @@ resource "aws_ecs_service" "nginx_auth_service" {
 }
 
 data "template_file" "nginx-auth-proxy-config-file" {
-  template = "${file("templates/nginx-auth-proxy.conf.tpl")}"
+  template = "${file("${path.module}/templates/nginx-auth-proxy.conf.tpl")}"
 
   vars {
     allow_cidrs             = "${join("",formatlist("allow %s;\n", var.cidr_admin_whitelist))}"
@@ -67,5 +67,5 @@ resource "aws_s3_bucket_object" "nginx-htpasswd" {
   bucket = "${aws_s3_bucket.config_bucket.id}"
   key    = "prometheus/nginx-auth-proxy/conf.d/.htpasswd"
   source = "config/vhosts/.htpasswd"
-  etag   = "${md5(file("config/vhosts/.htpasswd"))}"
+  etag   = "${md5(file("${path.module}/config/vhosts/.htpasswd"))}"
 }

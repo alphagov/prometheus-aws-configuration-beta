@@ -1,5 +1,5 @@
 data "template_file" "paas_proxy_container_defn" {
-  template = "${file("task-definitions/paas_proxy.json")}"
+  template = "${file("${path.module}/task-definitions/paas_proxy.json")}"
 
   vars {
     log_group     = "${aws_cloudwatch_log_group.task_logs.name}"
@@ -40,5 +40,5 @@ resource "aws_s3_bucket_object" "nginx-paas-proxy" {
   bucket = "${aws_s3_bucket.config_bucket.id}"
   key    = "prometheus/paas-proxy/conf.d/prometheus-paas-proxy.conf"
   source = "config/vhosts/paas-proxy.conf"
-  etag   = "${md5(file("config/vhosts/paas-proxy.conf"))}"
+  etag   = "${md5(file("${path.module}/config/vhosts/paas-proxy.conf"))}"
 }

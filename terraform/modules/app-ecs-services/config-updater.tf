@@ -60,7 +60,7 @@ resource "aws_ecs_service" "config_updater" {
 }
 
 data "template_file" "config_updater_defn" {
-  template = "${file("task-definitions/config_updater.json")}"
+  template = "${file("${path.module}/task-definitions/config_updater.json")}"
 
   vars {
     log_group     = "${aws_cloudwatch_log_group.task_logs.name}"

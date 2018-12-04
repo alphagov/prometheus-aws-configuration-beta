@@ -42,6 +42,22 @@ You will also need to clone the re-secrets repo into `~/.password-store/re-secre
 
     git clone git@github.com:alphagov/re-secrets.git ~/.password-store/re-secrets
 
+## Deploying Terraform
+
+```shell
+cd terraform/projects/PROJECT-ENV/
+aws-vault exec aws_profile_name -- terraform init
+aws-vault exec aws_profile_name -- terraform plan
+aws-vault exec aws_profile_name -- terraform apply
+```
+
+eg
+
+```shell
+cd terraform/projects/app-ecs-albs-staging
+aws-vault exec gds-prometheus-staging -- terraform plan
+```
+
 ## EC2 Enclave Prometheus Development
 
 Prometheis are not deployed on Amazon ECS and are instead deployed using the enclave modules onto EC2 instances. For details of how to develop and deploy them see the [terraform/modules/enclave README](terraform/modules/enclave).
@@ -50,95 +66,13 @@ Prometheis are not deployed on Amazon ECS and are instead deployed using the enc
 
 Alertmanager and NGINX are deployed on Amazon ECS.
 
-### Developing with the `Makefile` or `setup.sh` shell script
-
-Before using the Makefile or shell script you will need to make a copy of the `environment_sample.sh` to `environment.sh`.
-
-```shell
-export TERRAFORM_BUCKET=<terraform state bucket name, should be unique or match `remote_state_bucket` in `tfvars` file for staging / production>
-export PROFILE_NAME=<your profile name in `~/.aws/config` to access RE AWS>
-export ENV=<desired name of your test environment, or `staging` / `production`>
-export DEV_ENVIRONMENT=<'true' or 'false'>
-export DEV_TICKET_RECIPIENT_EMAIL=$(git config user.email) # or whatever email address you want to receive ticket notifications on
-```
-
-Applying or destroying the entire stack on the staging and production environments has been blocked but is possible on other development environments.
-
-<details>
-<summary>
-How to use the Makefile
-</summary>
-
-In order to create a new stack you can run these make commands in order:
-
-```shell
-# ensure that you have set up and sourced your environment variables using `source environment.sh`
-
-make create-stack   # Create the terraform stack env vars
-make create-bucket  # Create the terraform state bucket
-make init           # Initialise terraform
-make apply          # Apply all terraform, auto approves
-```
-
-If you are changing stacks or have a problem with the terraform state:
-
-`make clean create-stack init`
-
-To delete a stack:
-
-`make destroy`
-
-To apply terraform for a particular project:
-
-`make apply-single project=<project name in terraform/projects>`
-
-To apply terraform for a list of projects:
-
-`make apply-list list="<1st project>,<2nd project>,<3rd project>"`
-
-Execute `make` to give you a list of other possible commands to run against your terraform projects.
-</details>
-
-<details>
-<summary>
-How to use the setup.sh shell script
-</summary>
-
-In order to create a new stack run the following commands in order:
-
-```shell
-# ensure that you have set up and sourced your environment variables using `source environment.sh`
-
-. ./setup.sh -s     # create stack config files `backend` and `tfvars`
-. ./setup.sh -b     # create the terraform bucket for holding the state
-. ./setup.sh -i     # initialise the terraform state
-. ./setup.sh -a     # apply terraform
-```
-
-To delete a stack:
-
-`. ./setup.sh -d`
-
-If you are changing stacks or have a problem with the terraform state:
-
-`. ./setup.sh -c`
-
-To apply terraform for a particular project:
-
-`. ./setup.sh -a <project name in terraform/projects>`
-
-To apply terraform for a list of projects:
-
-`. ./setup.sh -a list "<1st project>,<2nd project>,<3rd project>"`
-</details>
-
 ### Dev ECS container instances
 
 By default the EC2 instances on dev stacks will be spun down at the end of the day, typically 6pm UTC on Monday to Fridays, so during BST EC2 instances will be terminated at 7pm.
 
 The schedule will automatically spin down EC2 instances at each hour outside the core working hours of 9am - 6pm UTC, Monday to Fridays. This is to ensure that the instances will be spun down even after they have been restarted.
 
-If the EC2 dev instance has been terminated, at the start of a day or if you are working after core hours, you can easily spin up your instances using this Makefile command: `make apply-single project=app-ecs-instances` or shell script: `. ./setup.sh -a app-ecs-instances`.
+If the EC2 dev instance has been terminated, at the start of a day or if you are working after core hours, you can easily spin up your instances by running `aws-vault exec gds-tech-ops -- terraform apply` inside `terraform/projects/app-ecs-instances-dev`, changing the stackname variable to the name of your stack.
 
 You can set your own cron schedules by adding `asg_dev_scaledown_schedules` to the `tfvars` file for your stack and specifying a list of cron schedules, for example:
 
@@ -164,11 +98,7 @@ aws-vault exec gds-tech-ops -- aws ssm start-session --target $INSTANCE_ID
 
 ## Viewing the Prometheus dashboard
 
-Once you have deployed your development stack you should be able to reach the prometheus dashboard using this url pattern:
-
-`https://prom-1.<your test environment specified in the ENV environment variable>.dev.gds-reliability.engineering`
-
-e.g.
+Once you have deployed your development stack you should be able to reach the prometheus dashboard using this URL pattern:
 
 `https://prom-1.your-test-stack.dev.gds-reliability.engineering`
 

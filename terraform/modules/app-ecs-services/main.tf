@@ -1,5 +1,5 @@
 /**
-* ## Project: app-ecs-services
+* ## Module: app-ecs-services
 *
 * Create services and task definitions for the ECS cluster
 *
@@ -59,32 +59,7 @@ variable "dev_ticket_recipient_email" {
 # Resources
 # --------------------------------------------------------------
 
-## Providers
-
-terraform {
-  required_version = "= 0.11.10"
-
-  backend "s3" {
-    key = "app-ecs-services.tfstate"
-  }
-}
-
-provider "aws" {
-  version = "~> 1.17"
-  region  = "${var.aws_region}"
-}
-
-provider "template" {
-  version = "~> 1.0.0"
-}
-
-provider "pass" {
-  store_dir     = "~/.password-store/re-secrets/observe"
-  refresh_store = true
-}
-
 ## Data sources
-
 data "terraform_remote_state" "infra_networking" {
   backend = "s3"
 

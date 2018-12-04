@@ -2,14 +2,6 @@
 .terraform/
 *.tfst*
 
-# terraform env vars
-stacks/*
-!stacks/staging.*
-!stacks/production.*
-
-# local env vars
-environment.sh
-
 # editor config stuff
 .idea
 .idea/*/**

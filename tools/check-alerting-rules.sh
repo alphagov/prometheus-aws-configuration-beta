@@ -4,4 +4,4 @@
 #
 set -e
 
-promtool check rules ./terraform/projects/app-ecs-services/config/alerts/*.yml
+promtool check rules ./terraform/modules/app-ecs-services/config/alerts/*.yml
