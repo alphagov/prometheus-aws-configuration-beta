@@ -6,7 +6,7 @@ There are two modules
  - `paas-config`, which contains configuration specific to our
    prometheus-for-paas deployment
 
-We use the script titled `deploy.sh` at the root of the project in order to perform a deployment.  We also run tests in order to verify the functionality of the environment and modules.
+We deploy using raw Terraform commands, scoped per environment.  We also run tests in order to verify the functionality of the environment and modules.
 
 ## Testing
 
@@ -14,8 +14,7 @@ Follow these steps to run infrastructure tests:
 
 1. Navigate to `terraform/modules/enclave/prometheus`
 2. `bundle install` - install all dependencies to your environment.
-3. source the test environment file `source environment-test.sh` in order to be able to run tests without clashing with other developers running tests.
-4. `aws-vault exec <your gds-tech-ops profile> -- kitchen <action> <optional target>` this is the general command that you can use in order to run the environment.
+3. `aws-vault exec <your gds-tech-ops profile> -- kitchen <action> <optional target>` this is the general command that you can use in order to run the environment.
   - actions
     - `test` - use this action to run through the tests unless you are developing the tests themselves.
     - `create`, `converge`, `verify` these are the three actions that can used in order to spin up a stack and test. The converge can be executed multiple times to test changes.
@@ -27,15 +26,12 @@ Follow these steps to run infrastructure tests:
 
 ## Deploying
 
-To deploy, run the following script (from the root of this repository):
+To deploy (for example to staging):
 
-    ./deploy.sh -e <environment> -p <aws vault profile> -a <terraform method> -s <state> -t <target>
-
-`<environment>` can only be one of: `paas-staging` or
-`paas-production` (unless it's your EC2 dev stack).  `<state>` must be
-`prometheus`.
-
-`<target>` is optional an example target module would be `module.prometheus.aws_instance.prometheus[0]`. This would deploy to the first Prometheus instance.
+```shell
+cd ../projects/enclave/paas-staging
+aws-vault exec gds-prometheus-staging -- terraform plan`
+```
 
 To ssh to the instance, with an ssh tunnel to view the web interface (using the `public_dns` values from the terraform apply):
 
