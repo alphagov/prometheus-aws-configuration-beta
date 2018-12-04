@@ -29,7 +29,7 @@ Follow these steps to run infrastructure tests:
 To deploy (for example to staging):
 
 ```shell
-cd ../projects/enclave/paas-staging
+cd projects/enclave/paas-staging/prometheus
 aws-vault exec gds-prometheus-staging -- terraform plan`
 ```
 
