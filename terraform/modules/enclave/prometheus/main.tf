@@ -66,8 +66,6 @@ data "template_file" "user_data_script" {
 
   vars {
     config_bucket     = "${aws_s3_bucket.prometheus_config.id}"
-    egress_proxy      = "${var.egress_proxy}"
-    aws_ec2_ip        = "${var.ec2_endpoint_ips[0]}"
     region            = "${var.region}"
     targets_bucket    = "${var.targets_bucket}"
     alerts_bucket     = "${aws_s3_bucket.prometheus_config.id}"
