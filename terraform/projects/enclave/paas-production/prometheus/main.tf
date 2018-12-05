@@ -96,7 +96,7 @@ module "paas-config" {
   environment              = "${local.environment}"
   prometheus_config_bucket = "${module.prometheus.s3_config_bucket}"
   alertmanager_dns_names   = "${local.active_alertmanager_private_fqdns}"
-  alerts_path              = "../../../../projects/app-ecs-services/config/alerts/"
+  alerts_path              = "../../../../modules/app-ecs-services/config/alerts/"
 
   prom_private_ips  = "${module.prometheus.private_ip_addresses}"
   private_zone_id   = "${data.terraform_remote_state.infra_networking.private_zone_id}"
@@ -104,10 +104,6 @@ module "paas-config" {
 
   paas_proxy_sg_id = "${data.terraform_remote_state.infra_security_groups.alertmanager_external_sg_id}"
   prometheus_sg_id = "${module.prometheus.ec2_instance_prometheus_sg}"
-}
-
-output "public_dns" {
-  value = "[\n    ${join("\n    ", formatlist("%s:9090", module.prometheus.prometheus_public_dns))}\n]"
 }
 
 output "instance_ids" {
