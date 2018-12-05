@@ -2,7 +2,7 @@ groups:
 - name: DataGovUk
   rules:
   - alert: DataGovUk_HighCpuUsage
-    expr: avg(cpu{job="metric-exporter"}) by (app) >= 80
+    expr: avg(cpu{job="metric-exporter"}) without (exported_instance) >= 80
     for: 5m
     labels:
         product: "data-gov-uk"
@@ -10,14 +10,14 @@ groups:
         summary: "App {{ $labels.app }} has high CPU usage"
         description: "Application {{ $labels.app }} has been using over 80% CPU (averaged over all instances) for 5 minutes or more"
   - alert: DataGovUk_HighDiskUsage
-    expr: max(disk_utilization{job="metric-exporter"}) by (app) >= 80
+    expr: max(disk_utilization{job="metric-exporter"}) without (exported_instance) >= 80
     labels:
         product: "data-gov-uk"
     annotations:
         summary: "App {{ $labels.app }} has high disk usage"
         description: "Application {{ $labels.app }} has an instance which is using over 80% disk."
   - alert: DataGovUk_ElasticSearchIndexSizeIncrease
-    expr: max by (job) (delta(elasticsearch_indices_docs{space="data-gov-uk"}[30m])) >= 300
+    expr: max without(instance, host, name, es_client_node, es_data_node, es_ingest_node, es_master_node) (delta(elasticsearch_indices_docs{space="data-gov-uk"}[30m])) >= 300
     for: 1m
     labels:
         product: "data-gov-uk"
@@ -26,7 +26,7 @@ groups:
         description: "The index size of Elasticsearch for {{ $labels.job }} has increased by more than 300 documents in the last 30 minutes"
         runbook: https://docs.publishing.service.gov.uk/manual/data-gov-uk-troubleshooting.html#different-number-of-datasets-in-ckan-to-find
   - alert: DataGovUk_ElasticSearchIndexSizeDecrease
-    expr: max by (job) (delta(elasticsearch_indices_docs{space="data-gov-uk"}[30m])) <= -300
+    expr: max without(instance, host, name, es_client_node, es_data_node, es_ingest_node, es_master_node) (delta(elasticsearch_indices_docs{space="data-gov-uk"}[30m])) <= -300
     for: 1m
     labels:
         product: "data-gov-uk"
