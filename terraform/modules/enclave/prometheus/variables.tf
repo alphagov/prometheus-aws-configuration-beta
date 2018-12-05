@@ -52,7 +52,7 @@ variable "ec2_endpoint_ips" {
 }
 
 variable "region" {
-  default = "eu-west-2"
+  default = "eu-west-1"
 }
 
 variable "egress_proxy" {
