@@ -106,10 +106,6 @@ module "paas-config" {
   prometheus_sg_id = "${module.prometheus.ec2_instance_prometheus_sg}"
 }
 
-output "public_dns" {
-  value = "[\n    ${join("\n    ", formatlist("%s:9090", module.prometheus.prometheus_public_dns))}\n]"
-}
-
 output "instance_ids" {
   value = "[\n    ${join("\n    ", module.prometheus.prometheus_instance_id)}\n]"
 }
