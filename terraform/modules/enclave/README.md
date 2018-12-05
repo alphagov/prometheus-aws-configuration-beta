@@ -33,12 +33,6 @@ cd projects/enclave/paas-staging/prometheus
 aws-vault exec gds-prometheus-staging -- terraform plan`
 ```
 
-To ssh to the instance, with an ssh tunnel to view the web interface (using the `public_dns` values from the terraform apply):
-
-    ssh ubuntu@<ip_from_output> -L 9090:localhost:9090
-
-Once this is done you can view Prometheus on http://localhost:9090.
-
 To try it out for yourself, either start a session in the SSM session
 manager web console, or [install the session manager CLI
 plugin][session-manager-install], then run (using the `instance_ids`
