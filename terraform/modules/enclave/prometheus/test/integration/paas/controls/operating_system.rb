@@ -1,5 +1,5 @@
 control "operating_system" do
-  
+
   describe os.family do
     it { should eq 'debian' }
   end
@@ -46,11 +46,6 @@ control "operating_system" do
     it { should be_mounted }
     its('device') { should eq  '/dev/xvdh' }
     its('type') { should eq  'ext4' }
-  end
-
-  describe apt('http://www.mirrorservice.org/sites/archive.ubuntu.com/ubuntu') do
-    it { should exist }
-    it { should be_enabled }
   end
 
   describe file('/etc/apt/apt.conf.d/05proxy') do
