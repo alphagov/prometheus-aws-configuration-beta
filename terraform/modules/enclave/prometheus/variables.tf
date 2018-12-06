@@ -46,17 +46,8 @@ variable "enable_ssh" {
   default = false
 }
 
-variable "ec2_endpoint_ips" {
-  type    = "list"
-  default = [""]
-}
-
 variable "region" {
-  default = "eu-west-2"
-}
-
-variable "egress_proxy" {
-  default = ""
+  default = "eu-west-1"
 }
 
 variable "allowed_cidrs" {
