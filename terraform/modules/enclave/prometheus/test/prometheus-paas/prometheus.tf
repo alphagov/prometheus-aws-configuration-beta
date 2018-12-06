@@ -29,7 +29,7 @@ module "paas-config" {
   environment              = "${local.environment}"
   prometheus_config_bucket = "${module.prometheus.s3_config_bucket}"
   alertmanager_dns_names   = "${local.active_alertmanager_private_fqdns}"
-  alerts_path              = "${path.module}/../../../../../projects/app-ecs-services/config/alerts/"
+  alerts_path              = "${path.module}/../../../../../modules/app-ecs-services/config/alerts/"
 
   prom_private_ips  = "${module.prometheus.private_ip_addresses}"
   private_zone_id   = "${aws_route53_zone.private.zone_id}"

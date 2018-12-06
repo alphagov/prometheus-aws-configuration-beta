@@ -18,7 +18,6 @@ ENV['AWS_REGION'] = 'eu-west-1'
 control "aws_cloud_resources" do
   describe aws_ec2_instance(prometheus_instance_id) do
     its('tags') { should include(key: 'ManagedBy', value: 'terraform')}
-    its('image_id') { should eq 'ami-0ee06eb8d6eebcde0' }
     its('root_device_type') { should eq 'ebs'}
     its('root_device_name') { should eq '/dev/sda1'}
     its('architecture') { should eq 'x86_64'}
