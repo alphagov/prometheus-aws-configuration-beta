@@ -24,7 +24,7 @@ resource "aws_instance" "prometheus" {
 
   associate_public_ip_address = "${local.enable_public_ip}"
 
-  key_name = "${var.enable_ssh ? format("$s-prom-key", var.environment) : ""}"
+  key_name = "${var.enable_ssh ? format("%s-prom-key", var.environment) : ""}"
 
   vpc_security_group_ids = ["${var.vpc_security_groups}", "${aws_security_group.allow_prometheus.id}"]
 
