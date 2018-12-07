@@ -12,7 +12,7 @@ We deploy using raw Terraform commands, scoped per environment.  We also run tes
 
 Follow these steps to run infrastructure tests:
 
-1. Navigate to `terraform/modules/enclave/prometheus`
+1. Navigate to `terraform/modules/prom-ec2/prometheus`
 2. `source environment-test.sh`
 3. `bundle install` - install all dependencies to your environment.
 4. `aws-vault exec <your gds-tech-ops profile> -- kitchen <action> <optional target>` this is the general command that you can use in order to run the environment.
@@ -30,7 +30,7 @@ Follow these steps to run infrastructure tests:
 To deploy (for example to staging):
 
 ```shell
-cd projects/enclave/paas-staging/prometheus
+cd terraform/projects/prom-ec2/paas-staging/prometheus
 aws-vault exec gds-prometheus-staging -- terraform plan`
 ```
 

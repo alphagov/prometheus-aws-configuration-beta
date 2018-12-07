@@ -52,7 +52,7 @@ variable "region" {
 
 variable "allowed_cidrs" {
   type        = "list"
-  description = "List of CIDRs which are able to access the enclave prometheus instance, default are GDS ips"
+  description = "List of CIDRs which are able to access the prometheus instance, default are GDS ips"
 
   default = [
     "213.86.153.212/32",

@@ -66,9 +66,9 @@ To avoid all three instances being respun at the same time you can do one instan
 
 where `i` is `0`, `1` or `2`.
 
-## EC2 Enclave Prometheus Development
+## EC2 Prometheus Development
 
-Prometheis are not deployed on Amazon ECS and are instead deployed using the enclave modules onto EC2 instances. For details of how to develop and deploy them see the [terraform/modules/enclave README](terraform/modules/enclave).
+Prometheis are not deployed on Amazon ECS and are instead deployed using the prom-ec2 modules onto EC2 instances. For details of how to develop and deploy them see the [terraform/modules/prom-ec2 README](terraform/modules/prom-ec2).
 
 ## ECS Development
 
