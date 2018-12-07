@@ -58,6 +58,14 @@ cd terraform/projects/app-ecs-albs-staging
 aws-vault exec gds-prometheus-staging -- terraform plan
 ```
 
+### Deploy EC2 Prometheus with zero downtime
+
+To avoid all three instances being respun at the same time you can do one instance at a time using:
+
+```aws-vault exec aws_profile_name -- terraform apply -target=module.paas-config.aws_route53_record.prom_ec2_a_record[i] -target=module.prometheus.aws_volume_attachment.attach-prometheus-disk[i] -target=module.prometheus.aws_instance.prometheus[i]```
+
+where `i` is `0`, `1` or `2`.
+
 ## EC2 Enclave Prometheus Development
 
 Prometheis are not deployed on Amazon ECS and are instead deployed using the enclave modules onto EC2 instances. For details of how to develop and deploy them see the [terraform/modules/enclave README](terraform/modules/enclave).
