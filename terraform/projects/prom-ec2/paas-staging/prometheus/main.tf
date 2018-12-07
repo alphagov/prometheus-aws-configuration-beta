@@ -1,6 +1,6 @@
 locals {
   product                           = "paas"
-  environment                       = "production"
+  environment                       = "staging"
   config_bucket                     = "gdsobserve-${local.product}-${local.environment}-config-store"
   active_alertmanager_private_fqdns = "${slice(data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdns, 0,
  3)}"
@@ -10,7 +10,7 @@ terraform {
   required_version = "= 0.11.10"
 
   backend "s3" {
-    bucket  = "govukobserve-tfstate-prom-enclave-paas-production"
+    bucket  = "govukobserve-tfstate-prom-enclave-paas-staging"
     key     = "prometheus.tfstate"
     encrypt = true
     region  = "eu-west-1"
@@ -19,7 +19,7 @@ terraform {
 
 provider "aws" {
   region              = "eu-west-1"
-  allowed_account_ids = ["455214962221"]
+  allowed_account_ids = ["027317422673"]
 }
 
 data "terraform_remote_state" "infra_networking" {
@@ -52,34 +52,24 @@ data "terraform_remote_state" "app_ecs_albs" {
   }
 }
 
-provider "pass" {
-  store_dir     = "~/.password-store/re-secrets/observe"
-  refresh_store = true
-}
-
-data "pass_password" "logstash_endpoint" {
-  path = "logit/prometheus-paas-logstash-endpoint-prod"
-}
-
 module "ami" {
   source = "../../../../modules/common/ami"
 }
 
 module "prometheus" {
-  source = "../../../../modules/enclave/prometheus"
+  source = "../../../../modules/prom-ec2/prometheus"
 
   ami_id = "${module.ami.ubuntu_bionic_ami_id}"
 
-  # Production
-  target_vpc = "vpc-0cdd9631927b526ce"
+  # Staging
+  target_vpc = "vpc-0bbf4123f5b385806"
   enable_ssh = false
 
   product        = "${local.product}"
   environment    = "${local.environment}"
   config_bucket  = "${local.config_bucket}"
-  targets_bucket = "gds-prometheus-targets"
+  targets_bucket = "gds-prometheus-targets-${local.environment}"
   instance_size  = "m4.large"
-  logstash_host  = "${data.pass_password.logstash_endpoint.password}"
 
   prometheus_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.prom_public_record_fqdns}"
 
@@ -91,12 +81,13 @@ module "prometheus" {
 }
 
 module "paas-config" {
-  source = "../../../../modules/enclave/paas-config"
+  source = "../../../../modules/prom-ec2/paas-config"
 
-  environment              = "${local.environment}"
-  prometheus_config_bucket = "${module.prometheus.s3_config_bucket}"
-  alertmanager_dns_names   = "${local.active_alertmanager_private_fqdns}"
-  alerts_path              = "../../../../modules/app-ecs-services/config/alerts/"
+  environment                 = "${local.environment}"
+  prometheus_config_bucket    = "${module.prometheus.s3_config_bucket}"
+  alertmanager_dns_names      = "${local.active_alertmanager_private_fqdns}"
+  external_alertmanager_names = ["alertman.cluster.re-managed-observe-staging.aws.ext.govsvc.uk"]
+  alerts_path                 = "../../../../modules/app-ecs-services/config/alerts/"
 
   prom_private_ips  = "${module.prometheus.private_ip_addresses}"
   private_zone_id   = "${data.terraform_remote_state.infra_networking.private_zone_id}"
