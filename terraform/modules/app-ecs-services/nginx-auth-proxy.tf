@@ -66,6 +66,6 @@ resource "aws_s3_bucket_object" "nginx-auth-proxy" {
 resource "aws_s3_bucket_object" "nginx-htpasswd" {
   bucket = "${aws_s3_bucket.config_bucket.id}"
   key    = "prometheus/nginx-auth-proxy/conf.d/.htpasswd"
-  source = "config/vhosts/.htpasswd"
+  source = "${path.module}/config/vhosts/.htpasswd"
   etag   = "${md5(file("${path.module}/config/vhosts/.htpasswd"))}"
 }

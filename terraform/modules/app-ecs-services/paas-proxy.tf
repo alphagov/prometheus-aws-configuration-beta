@@ -39,6 +39,6 @@ resource "aws_ecs_service" "paas_proxy_service" {
 resource "aws_s3_bucket_object" "nginx-paas-proxy" {
   bucket = "${aws_s3_bucket.config_bucket.id}"
   key    = "prometheus/paas-proxy/conf.d/prometheus-paas-proxy.conf"
-  source = "config/vhosts/paas-proxy.conf"
+  source = "${path.module}/config/vhosts/paas-proxy.conf"
   etag   = "${md5(file("${path.module}/config/vhosts/paas-proxy.conf"))}"
 }
