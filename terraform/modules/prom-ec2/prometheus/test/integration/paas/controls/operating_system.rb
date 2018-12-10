@@ -22,9 +22,20 @@ control "operating_system" do
     its('mode')  { should cmp '0755'}
   end
 
+  describe port(8080) do
+    it { should be_listening }
+    its('processes') {should include 'nginx'}
+  end
+
   describe port(9090) do
     it { should be_listening }
     its('processes') {should include 'prometheus'}
+  end
+
+  describe service('nginx') do
+    it { should be_installed }
+    it { should be_enabled }
+    it { should be_running }
   end
 
   describe service('prometheus') do
@@ -37,6 +48,10 @@ control "operating_system" do
     it { should be_installed }
     it { should be_enabled }
     it { should be_running }
+  end
+
+  describe package('nginx') do
+    it { should be_installed }
   end
 
   describe package('prometheus') do
