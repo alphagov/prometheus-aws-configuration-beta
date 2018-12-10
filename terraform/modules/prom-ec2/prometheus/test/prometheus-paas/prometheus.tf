@@ -26,7 +26,6 @@ module "prometheus" {
 module "paas-config" {
   source = "../../../paas-config"
 
-  environment              = "${local.environment}"
   prometheus_config_bucket = "${module.prometheus.s3_config_bucket}"
   alertmanager_dns_names   = "${local.active_alertmanager_private_fqdns}"
   alerts_path              = "${path.module}/../../../../../modules/app-ecs-services/config/alerts/"
