@@ -22,6 +22,22 @@ control "operating_system" do
     its('mode')  { should cmp '0755'}
   end
 
+  describe port(8080) do
+    it { should be_listening }
+    its('processes') {should include 'nginx'}
+  end
+
+  describe port(9090) do
+    it { should be_listening }
+    its('processes') {should include 'prometheus'}
+  end
+
+  describe service('nginx') do
+    it { should be_installed }
+    it { should be_enabled }
+    it { should be_running }
+  end
+
   describe service('prometheus') do
     it { should be_installed }
     it { should be_enabled }
@@ -32,6 +48,10 @@ control "operating_system" do
     it { should be_installed }
     it { should be_enabled }
     it { should be_running }
+  end
+
+  describe package('nginx') do
+    it { should be_installed }
   end
 
   describe package('prometheus') do
@@ -46,10 +66,6 @@ control "operating_system" do
     it { should be_mounted }
     its('device') { should eq  '/dev/xvdh' }
     its('type') { should eq  'ext4' }
-  end
-
-  describe file('/etc/apt/apt.conf.d/05proxy') do
-    its('content') { should eq nil}
   end
 
   describe directory('/etc/prometheus/targets') do

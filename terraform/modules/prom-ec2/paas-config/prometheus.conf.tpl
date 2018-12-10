@@ -17,7 +17,7 @@ scrape_configs:
       - targets: [${prometheus_addresses}]
   - job_name: paas-targets
     scheme: http
-    proxy_url: 'http://paas-proxy.${environment}.monitoring.private:8080'
+    proxy_url: 'http://localhost:8080'
     file_sd_configs:
       - files: ['/etc/prometheus/targets/*.json']
         refresh_interval: 30s

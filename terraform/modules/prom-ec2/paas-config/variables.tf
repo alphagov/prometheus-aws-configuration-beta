@@ -11,7 +11,6 @@ variable "external_alertmanager_names" {
 }
 
 variable "prometheus_config_bucket" {}
-variable "environment" {}
 variable "alerts_path" {}
 variable "private_zone_id" {}
 variable "private_subdomain" {}
