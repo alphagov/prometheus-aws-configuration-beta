@@ -2,7 +2,7 @@ groups:
 - name: Registers
   rules:
   - alert: Registers_AppRequestsExcess5xx
-    expr: sum by(app) (rate(requests{org="openregister", space="prod", status_range="5xx"}[5m])) / sum by(app) (rate(requests{org="openregister", space="prod"}[5m])) >= 0.25
+    expr: sum without(exported_instance, status_range) (rate(requests{org="openregister", space="prod", status_range="5xx"}[5m])) / sum without(exported_instance, status_range) (rate(requests{org="openregister", space="prod"}[5m]))>= 0.25
     for: 120s
     labels:
         product: "registers"
@@ -34,7 +34,7 @@ groups:
         dashboard_registers: https://grafana-paas.cloudapps.digital/d/sljj3z6zk/registers?orgId=1
 
   - alert: Registers_AppCrashesInLastHour
-    expr: sum(increase(crash{org="openregister"}[1h])) by (app) > 5
+    expr: sum(increase(crash{org="openregister"}[1h])) without (exported_instance) > 5
     labels:
         product: "registers"
     annotations:
