@@ -48,10 +48,6 @@ control "operating_system" do
     its('type') { should eq  'ext4' }
   end
 
-  describe file('/etc/apt/apt.conf.d/05proxy') do
-    its('content') { should eq nil}
-  end
-
   describe directory('/etc/prometheus/targets') do
     it { should exist }
   end
