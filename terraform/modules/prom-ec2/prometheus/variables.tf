@@ -78,3 +78,8 @@ variable "prometheus_public_fqdns" {
 variable "logstash_host" {
   default = ""
 }
+
+variable "prometheus_htpasswd" {
+  default = ""
+  description = "Basic auth htpasswd to be configured for NGINX to allow access from Grafana"
+}

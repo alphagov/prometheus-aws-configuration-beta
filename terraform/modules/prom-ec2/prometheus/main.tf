@@ -65,12 +65,13 @@ data "template_file" "user_data_script" {
   template = "${file("${path.module}/cloud.conf")}"
 
   vars {
-    config_bucket     = "${aws_s3_bucket.prometheus_config.id}"
-    region            = "${var.region}"
-    targets_bucket    = "${var.targets_bucket}"
-    alerts_bucket     = "${aws_s3_bucket.prometheus_config.id}"
-    prom_external_url = "https://${var.prometheus_public_fqdns[count.index]}"
-    logstash_host     = "${var.logstash_host}"
+    config_bucket       = "${aws_s3_bucket.prometheus_config.id}"
+    region              = "${var.region}"
+    targets_bucket      = "${var.targets_bucket}"
+    alerts_bucket       = "${aws_s3_bucket.prometheus_config.id}"
+    prom_external_url   = "https://${var.prometheus_public_fqdns[count.index]}"
+    logstash_host       = "${var.logstash_host}"
+    prometheus_htpasswd = "${var.prometheus_htpasswd}"
   }
 }
 

@@ -21,6 +21,9 @@ module "prometheus" {
   availability_zones = "${local.availability_zones}"
 
   vpc_security_groups = ["${aws_security_group.permit_internet_access.id}"]
+
+  # basic auth password is 'hello world'
+  prometheus_htpasswd = "grafana:$6$DoATHwJM$ws9EPPNpFe6fmKgBPa/3CX3C4f1F1cHi/pnxjYrGR3y652gIRtTzgl/ZFCLiRfa9/1jfgRBsNITelo1JNiiJD/"
 }
 
 module "paas-config" {

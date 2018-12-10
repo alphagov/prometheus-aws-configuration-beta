@@ -22,6 +22,11 @@ control "operating_system" do
     its('mode')  { should cmp '0755'}
   end
 
+  describe port(80) do
+    it { should be_listening }
+    its('processes') {should include 'nginx'}
+  end
+
   describe port(8080) do
     it { should be_listening }
     its('processes') {should include 'nginx'}
