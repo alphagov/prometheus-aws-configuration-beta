@@ -125,15 +125,6 @@ resource "aws_security_group_rule" "allow_prometheus_access_alertmanager" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-resource "aws_security_group_rule" "allow_prometheus_access_paas_proxy" {
-  type                     = "ingress"
-  to_port                  = 8080
-  from_port                = 8080
-  protocol                 = "tcp"
-  security_group_id        = "${aws_security_group.alertmanager_external_sg.id}"
-  source_security_group_id = "${aws_security_group.monitoring_internal_sg.id}"
-}
-
 resource "aws_security_group_rule" "alertmanager_external_sg_egress_any_any" {
   type              = "egress"
   from_port         = 0

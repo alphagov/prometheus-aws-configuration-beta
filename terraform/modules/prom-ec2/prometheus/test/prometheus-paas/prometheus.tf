@@ -34,6 +34,5 @@ module "paas-config" {
   private_zone_id   = "${aws_route53_zone.private.zone_id}"
   private_subdomain = "${aws_route53_zone.private.name}"
 
-  paas_proxy_sg_id = "${aws_security_group.permit_internet_access.id}"
   prometheus_sg_id = "${module.prometheus.ec2_instance_prometheus_sg}"
 }
