@@ -5,7 +5,7 @@ groups:
   - alert: AlwaysAlert
     expr: 1
     labels:
-      severity: page
+      severity: ticket
       product: prometheus
     annotations:
       summary: "This is a test alert that always fires."
