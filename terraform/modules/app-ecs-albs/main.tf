@@ -251,34 +251,6 @@ resource "aws_lb_listener_rule" "alerts_private_listener" {
   }
 }
 
-resource "aws_lb_target_group" "paas_proxy_internal_endpoint" {
-  name     = "${var.stack_name}-paas-proxy"
-  protocol = "HTTP"
-  port     = "8080"
-  vpc_id   = "${data.terraform_remote_state.infra_networking.vpc_id}"
-
-  health_check {
-    interval            = "10"
-    path                = "/health"
-    matcher             = "200"
-    protocol            = "HTTP"
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    timeout             = "5"
-  }
-}
-
-resource "aws_lb_listener" "paas_proxy_internal_listener" {
-  load_balancer_arn = "${aws_lb.monitoring_internal_alb.arn}"
-  port              = "8080"
-  protocol          = "HTTP"
-
-  default_action {
-    target_group_arn = "${aws_lb_target_group.paas_proxy_internal_endpoint.arn}"
-    type             = "forward"
-  }
-}
-
 resource "aws_route53_record" "prom_private_record" {
   count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
 
@@ -298,18 +270,6 @@ resource "aws_route53_record" "alerts_private_record" {
 
   zone_id = "${data.terraform_remote_state.infra_networking.private_zone_id}"
   name    = "alerts-${count.index + 1}"
-  type    = "A"
-
-  alias {
-    name                   = "${aws_lb.monitoring_internal_alb.dns_name}"
-    zone_id                = "${aws_lb.monitoring_internal_alb.zone_id}"
-    evaluate_target_health = false
-  }
-}
-
-resource "aws_route53_record" "paas_proxy_private_record" {
-  zone_id = "${data.terraform_remote_state.infra_networking.private_zone_id}"
-  name    = "paas-proxy"
   type    = "A"
 
   alias {
@@ -351,21 +311,6 @@ output "alertmanager_alb_dns" {
   description = "External Alertmanager ALB DNS name"
 }
 
-output "paas_proxy_alb_zoneid" {
-  value       = "${aws_lb.monitoring_internal_alb.*.zone_id}"
-  description = "Internal PaaS ALB target group"
-}
-
-output "paas_proxy_alb_dns" {
-  value       = "${aws_lb.monitoring_internal_alb.*.dns_name}"
-  description = "Internal PaaS ALB DNS name"
-}
-
-output "paas_proxy_tg" {
-  value       = "${aws_lb_target_group.paas_proxy_internal_endpoint.arn}"
-  description = "Paas proxy target group"
-}
-
 output "prom_public_record_fqdns" {
   value       = "${aws_route53_record.prom_alias.*.fqdn}"
   description = "Prometheus public DNS FQDNs"
@@ -384,9 +329,4 @@ output "alerts_private_record_fqdns" {
 output "prom_private_record_fqdns" {
   value       = "${aws_route53_record.prom_private_record.*.fqdn}"
   description = "Prometheus private DNS FQDNs"
-}
-
-output "paas_proxy_private_record_fqdn" {
-  value       = "${aws_route53_record.paas_proxy_private_record.fqdn}"
-  description = "PaaS Proxy private DNS FQDN"
 }

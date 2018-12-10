@@ -57,11 +57,6 @@ output "monitoring_internal_tg" {
   description = "External Alertmanager ALB target group"
 }
 
-output "paas_proxy_tg" {
-  value       = "${module.app-ecs-albs.paas_proxy_tg}"
-  description = "Paas proxy target group"
-}
-
 output "prom_public_record_fqdns" {
   value       = "${module.app-ecs-albs.prom_public_record_fqdns}"
   description = "Prometheus public DNS FQDNs"

@@ -85,7 +85,6 @@ module "paas-config" {
   alertmanager_dns_names   = "${join("\",\"", local.active_alertmanager_private_fqdns)}"
   alerts_path              = "../../../../projects/app-ecs-services/config/alerts/"
 
-  paas_proxy_sg_id = "${data.terraform_remote_state.infra_security_groups.alertmanager_external_sg_id}"
   prometheus_sg_id = "${module.prometheus.ec2_instance_prometheus_sg}"
 }
 

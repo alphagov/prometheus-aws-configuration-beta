@@ -92,7 +92,6 @@ module "paas-config" {
   private_zone_id   = "${data.terraform_remote_state.infra_networking.private_zone_id}"
   private_subdomain = "${data.terraform_remote_state.infra_networking.private_subdomain}"
 
-  paas_proxy_sg_id = "${data.terraform_remote_state.infra_security_groups.alertmanager_external_sg_id}"
   prometheus_sg_id = "${module.prometheus.ec2_instance_prometheus_sg}"
 }
 
