@@ -22,6 +22,11 @@ control "operating_system" do
     its('mode')  { should cmp '0755'}
   end
 
+  describe port(9090) do
+    it { should be_listening }
+    its('processes') {should include 'prometheus'}
+  end
+
   describe service('prometheus') do
     it { should be_installed }
     it { should be_enabled }
