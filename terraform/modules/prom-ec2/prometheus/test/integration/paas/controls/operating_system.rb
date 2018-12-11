@@ -36,7 +36,7 @@ control "operating_system" do
     its('status') {should cmp 401}
   end
 
-  describe http('http://localhost/'), auth: {user: 'grafana', pass: 'hello world'} do
+  describe http('http://localhost/', auth: {user: 'grafana', pass: 'hello world'}) do
     its('status') {should_not cmp 401}
   end
 
