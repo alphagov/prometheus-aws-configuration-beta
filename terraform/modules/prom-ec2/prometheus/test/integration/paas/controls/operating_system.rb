@@ -27,6 +27,19 @@ control "operating_system" do
     its('processes') {should include 'nginx'}
   end
 
+  describe http('http://localhost/health') do
+    its('status') {should cmp 200}
+    its('body') {should cmp 'Static health check'}
+  end
+
+  describe http('http://localhost/') do
+    its('status') {should cmp 401}
+  end
+
+  describe http('http://localhost/'), auth: {user: 'grafana', pass: 'hello world'} do
+    its('status') {should_not cmp 401}
+  end
+
   describe port(8080) do
     it { should be_listening }
     its('processes') {should include 'nginx'}
