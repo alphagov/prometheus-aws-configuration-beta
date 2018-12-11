@@ -68,10 +68,6 @@ control "operating_system" do
     it { should be_running }
   end
 
-  describe package('nginx') do
-    it { should be_installed }
-  end
-
   describe package('prometheus') do
     it { should be_installed }
   end
