@@ -321,8 +321,13 @@ resource "aws_lb_listener" "prometheus_listener_https" {
   certificate_arn   = "${aws_acm_certificate.monitoring_cert.arn}"
 
   default_action {
-    target_group_arn = "${aws_lb_target_group.prometheus_tg.0.arn}"
-    type             = "forward"
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Not found"
+      status_code  = "404"
+    }
   }
 }
 
