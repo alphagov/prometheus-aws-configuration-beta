@@ -13,8 +13,16 @@ rule_files:
   - "/etc/prometheus/alerts/*"
 scrape_configs:
   - job_name: prometheus
-    static_configs:
-      - targets: [${prometheus_addresses}]
+    ec2_sd_configs:
+      - region: eu-west-1
+        port: 9090
+    relabel_configs:
+      - source_labels: ['__meta_ec2_tag_Environment']
+        regex: '${environment}'
+        action: keep
+      - source_labels: ['__meta_ec2_tag_Job']
+        regex: 'prometheus'
+        action: keep
   - job_name: paas-targets
     scheme: http
     proxy_url: 'http://localhost:8080'
@@ -25,5 +33,13 @@ scrape_configs:
     static_configs:
       - targets: [${alertmanager_dns_names}]
   - job_name: prometheus_node
-    static_configs:
-      - targets: [${prometheus_node_addresses}]
+    ec2_sd_configs:
+      - region: eu-west-1
+        port: 9100
+    relabel_configs:
+      - source_labels: ['__meta_ec2_tag_Environment']
+        regex: '${environment}'
+        action: keep
+      - source_labels: ['__meta_ec2_tag_Job']
+        regex: '.+'
+        action: keep

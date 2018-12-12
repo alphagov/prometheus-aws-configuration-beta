@@ -94,6 +94,8 @@ module "prometheus" {
 module "paas-config" {
   source = "../../../modules/prom-ec2/paas-config"
 
+  environment = "${local.environment}"
+
   prometheus_config_bucket    = "${module.prometheus.s3_config_bucket}"
   alertmanager_dns_names      = "${local.active_alertmanager_private_fqdns}"
   external_alertmanager_names = ["alertman.cluster.re-managed-observe-staging.aws.ext.govsvc.uk"]
