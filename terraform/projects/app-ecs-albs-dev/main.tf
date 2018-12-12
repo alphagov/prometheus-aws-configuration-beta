@@ -72,3 +72,7 @@ output "alerts_private_record_fqdns" {
   value       = "${module.app-ecs-albs.alerts_private_record_fqdns}"
   description = "Alertmanagers private DNS FQDNs"
 }
+
+output "prometheus_target_group_arns" {
+  value = "${module.app-ecs-albs.prometheus_target_group_ids}"
+}

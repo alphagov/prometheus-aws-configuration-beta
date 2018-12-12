@@ -78,7 +78,8 @@ module "prometheus" {
   region                = "eu-west-1"
 
   # basic auth password is 'hello world'
-  prometheus_htpasswd = "grafana:$6$DoATHwJM$ws9EPPNpFe6fmKgBPa/3CX3C4f1F1cHi/pnxjYrGR3y652gIRtTzgl/ZFCLiRfa9/1jfgRBsNITelo1JNiiJD/"
+  prometheus_htpasswd          = "grafana:$6$DoATHwJM$ws9EPPNpFe6fmKgBPa/3CX3C4f1F1cHi/pnxjYrGR3y652gIRtTzgl/ZFCLiRfa9/1jfgRBsNITelo1JNiiJD/"
+  prometheus_target_group_arns = "${data.terraform_remote_state.app_ecs_albs.prometheus_target_group_arns}"
 }
 
 module "paas-config" {

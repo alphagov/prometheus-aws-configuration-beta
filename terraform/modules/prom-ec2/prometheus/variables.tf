@@ -83,3 +83,8 @@ variable "prometheus_htpasswd" {
   default     = ""
   description = "Contents of basic auth .htpasswd file for NGINX to allow access from Grafana"
 }
+
+variable "prometheus_target_group_arns" {
+  type    = "list"
+  default = []
+}
