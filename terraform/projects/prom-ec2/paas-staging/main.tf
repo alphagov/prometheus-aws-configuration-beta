@@ -70,8 +70,7 @@ module "prometheus" {
 
   ami_id = "${module.ami.ubuntu_bionic_ami_id}"
 
-  # Staging
-  target_vpc = "vpc-0bbf4123f5b385806"
+  target_vpc = "${data.terraform_remote_state.infra_networking.vpc_id}"
   enable_ssh = false
 
   product        = "${local.product}"
