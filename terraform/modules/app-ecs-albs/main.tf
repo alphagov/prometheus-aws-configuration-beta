@@ -303,8 +303,13 @@ resource "aws_lb_listener" "prometheus_listener_http" {
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = "${aws_lb_target_group.prometheus_tg.0.arn}"
-    type             = "forward"
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
   }
 }
 
@@ -318,26 +323,6 @@ resource "aws_lb_listener" "prometheus_listener_https" {
   default_action {
     target_group_arn = "${aws_lb_target_group.prometheus_tg.0.arn}"
     type             = "forward"
-  }
-}
-
-resource "aws_lb_listener_rule" "prom_listener" {
-  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
-
-  listener_arn = "${aws_lb_listener.prometheus_listener_http.arn}"
-  priority     = "${100 + count.index}"
-
-  action {
-    type             = "forward"
-    target_group_arn = "${element(aws_lb_target_group.prometheus_tg.*.arn, count.index)}"
-  }
-
-  condition {
-    field = "host-header"
-
-    values = [
-      "prom-${count.index + 1}.*",
-    ]
   }
 }
 
