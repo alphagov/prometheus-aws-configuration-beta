@@ -58,7 +58,7 @@ provider "pass" {
 }
 
 data "pass_password" "prometheus_htpasswd" {
-  path = "observe/prometheus-basic-auth-htpasswd"
+  path = "prometheus-basic-auth-htpasswd"
 }
 
 module "ami" {
