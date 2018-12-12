@@ -62,11 +62,11 @@ data "pass_password" "prometheus_htpasswd" {
 }
 
 module "ami" {
-  source = "../../../../modules/common/ami"
+  source = "../../../modules/common/ami"
 }
 
 module "prometheus" {
-  source = "../../../../modules/prom-ec2/prometheus"
+  source = "../../../modules/prom-ec2/prometheus"
 
   ami_id = "${module.ami.ubuntu_bionic_ami_id}"
 
@@ -92,12 +92,12 @@ module "prometheus" {
 }
 
 module "paas-config" {
-  source = "../../../../modules/prom-ec2/paas-config"
+  source = "../../../modules/prom-ec2/paas-config"
 
   prometheus_config_bucket    = "${module.prometheus.s3_config_bucket}"
   alertmanager_dns_names      = "${local.active_alertmanager_private_fqdns}"
   external_alertmanager_names = ["alertman.cluster.re-managed-observe-staging.aws.ext.govsvc.uk"]
-  alerts_path                 = "../../../../modules/app-ecs-services/config/alerts/"
+  alerts_path                 = "../../../modules/app-ecs-services/config/alerts/"
 
   prom_private_ips  = "${module.prometheus.private_ip_addresses}"
   private_zone_id   = "${data.terraform_remote_state.infra_networking.private_zone_id}"
