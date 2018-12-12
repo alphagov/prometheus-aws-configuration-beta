@@ -61,6 +61,10 @@ data "pass_password" "logstash_endpoint" {
   path = "logit/prometheus-paas-logstash-endpoint-prod"
 }
 
+data "pass_password" "prometheus_htpasswd" {
+  path = "observe/prometheus-basic-auth-htpasswd"
+}
+
 module "ami" {
   source = "../../../../modules/common/ami"
 }
@@ -88,6 +92,8 @@ module "prometheus" {
   vpc_security_groups   = ["${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}"]
   source_security_group = "${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}"
   region                = "eu-west-1"
+
+  prometheus_htpasswd = "${data.pass_password.prometheus_htpasswd.password}"
 }
 
 module "paas-config" {
