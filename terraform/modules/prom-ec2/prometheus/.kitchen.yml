@@ -28,6 +28,7 @@ suites:
         hosts_output: prometheus_dns
         controls:
           - operating_system
+          - prometheus
         user: <%= ENV['SSH_USER'] || "ubuntu" %>
     excludes:
       - west2
