@@ -279,6 +279,108 @@ resource "aws_route53_record" "alerts_private_record" {
   }
 }
 
+resource "aws_lb" "prometheus_alb" {
+  name               = "${var.stack_name}-prometheus-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = ["${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}"]
+
+  subnets = [
+    "${data.terraform_remote_state.infra_networking.public_subnets}",
+  ]
+
+  tags = "${merge(
+    local.default_tags,
+    var.additional_tags,
+    map("Stackname", "${var.stack_name}"),
+    map("Name", "${var.stack_name}-prometheus-alb")
+  )}"
+}
+
+resource "aws_lb_listener" "prometheus_listener_http" {
+  load_balancer_arn = "${aws_lb.prometheus_alb.arn}"
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    target_group_arn = "${aws_lb_target_group.prometheus_tg.0.arn}"
+    type             = "forward"
+  }
+}
+
+resource "aws_lb_listener" "prometheus_listener_https" {
+  load_balancer_arn = "${aws_lb.prometheus_alb.arn}"
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  certificate_arn   = "${aws_acm_certificate.monitoring_cert.arn}"
+
+  default_action {
+    target_group_arn = "${aws_lb_target_group.prometheus_tg.0.arn}"
+    type             = "forward"
+  }
+}
+
+resource "aws_lb_listener_rule" "prom_listener" {
+  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
+
+  listener_arn = "${aws_lb_listener.prometheus_listener_http.arn}"
+  priority     = "${100 + count.index}"
+
+  action {
+    type             = "forward"
+    target_group_arn = "${element(aws_lb_target_group.prometheus_tg.*.arn, count.index)}"
+  }
+
+  condition {
+    field = "host-header"
+
+    values = [
+      "prom-${count.index + 1}.*",
+    ]
+  }
+}
+
+resource "aws_lb_listener_rule" "prom_listener_https" {
+  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
+
+  listener_arn = "${aws_lb_listener.prometheus_listener_https.arn}"
+  priority     = "${100 + count.index}"
+
+  action {
+    type             = "forward"
+    target_group_arn = "${element(aws_lb_target_group.prometheus_tg.*.arn, count.index)}"
+  }
+
+  condition {
+    field = "host-header"
+
+    values = [
+      "prom-${count.index + 1}.*",
+    ]
+  }
+}
+
+resource "aws_lb_target_group" "prometheus_tg" {
+  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
+
+  name                 = "${var.stack_name}-prom-${count.index +1}-tg"
+  port                 = 80
+  protocol             = "HTTP"
+  vpc_id               = "${data.terraform_remote_state.infra_networking.vpc_id}"
+  deregistration_delay = 30
+
+  health_check {
+    interval            = "10"
+    path                = "/health" # static health check on nginx auth proxy
+    matcher             = "200"
+    protocol            = "HTTP"
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = "5"
+  }
+}
+
 ## Outputs
 
 output "monitoring_external_tg" {
@@ -329,4 +431,9 @@ output "alerts_private_record_fqdns" {
 output "prom_private_record_fqdns" {
   value       = "${aws_route53_record.prom_private_record.*.fqdn}"
   description = "Prometheus private DNS FQDNs"
+}
+
+output "prometheus_target_group_ids" {
+  value       = "${aws_lb_target_group.prometheus_tg.*.arn}"
+  description = "Prometheus target group IDs"
 }

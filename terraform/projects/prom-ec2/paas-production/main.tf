@@ -92,7 +92,8 @@ module "prometheus" {
   source_security_group = "${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}"
   region                = "eu-west-1"
 
-  prometheus_htpasswd = "${data.pass_password.prometheus_htpasswd.password}"
+  prometheus_htpasswd          = "${data.pass_password.prometheus_htpasswd.password}"
+  prometheus_target_group_arns = "${data.terraform_remote_state.app_ecs_albs.prometheus_target_group_arns}"
 }
 
 module "paas-config" {

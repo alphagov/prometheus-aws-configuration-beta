@@ -104,6 +104,16 @@ resource "aws_security_group_rule" "allow_prometheus_private" {
   source_security_group_id = "${var.source_security_group}"
 }
 
+resource "aws_security_group_rule" "allow_prometheus_from_lb" {
+  count                    = "${var.source_security_group == "" ? 0 : 1}"
+  security_group_id        = "${aws_security_group.allow_prometheus.id}"
+  type                     = "ingress"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
+  source_security_group_id = "${var.source_security_group}"
+}
+
 resource "aws_security_group_rule" "allow_prometheus_self" {
   security_group_id        = "${aws_security_group.allow_prometheus.id}"
   type                     = "ingress"
@@ -152,4 +162,11 @@ resource "aws_s3_bucket_object" "filebeat" {
   bucket  = "${var.config_bucket}"
   key     = "filebeat/filebeat.yml"
   content = "${data.template_file.filebeat_conf.rendered}"
+}
+
+resource "aws_lb_target_group_attachment" "prom_target_group_attachment" {
+  count            = "${length(keys(var.availability_zones))}"
+  target_group_arn = "${element(var.prometheus_target_group_arns, count.index)}"
+  target_id        = "${element(aws_instance.prometheus.*.id, count.index)}"
+  port             = 80
 }

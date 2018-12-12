@@ -42,7 +42,7 @@ module "infra-security-groups" {
 
   aws_region          = "${var.aws_region}"
   stack_name          = "module-refactor"
-  remote_state_bucket = "observe-dev"
+  remote_state_bucket = "${var.remote_state_bucket}"
   project             = "${var.project}"
 }
 

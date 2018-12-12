@@ -6,6 +6,7 @@ terraform {
   backend "s3" {
     bucket = "re-observe-dev"
     key    = "app-ecs-albs-modular.tfstate"
+    region = "eu-west-1"
   }
 }
 
@@ -70,4 +71,8 @@ output "alerts_public_record_fqdns" {
 output "alerts_private_record_fqdns" {
   value       = "${module.app-ecs-albs.alerts_private_record_fqdns}"
   description = "Alertmanagers private DNS FQDNs"
+}
+
+output "prometheus_target_group_arns" {
+  value = "${module.app-ecs-albs.prometheus_target_group_ids}"
 }
