@@ -34,6 +34,7 @@ terraform {
   backend "s3" {
     bucket = "prometheus-production"
     key    = "app-ecs-services-modular.tfstate"
+    region = "eu-west-1"
   }
 }
 

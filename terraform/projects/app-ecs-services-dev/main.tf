@@ -34,6 +34,7 @@ terraform {
   backend "s3" {
     bucket = "re-observe-dev"
     key    = "app-ecs-services-modular.tfstate"
+    region = "eu-west-1"
   }
 }
 
