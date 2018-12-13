@@ -6,6 +6,7 @@ terraform {
   backend "s3" {
     bucket = "prometheus-staging"
     key    = "app-ecs-albs-modular.tfstate"
+    region = "eu-west-1"
   }
 }
 
