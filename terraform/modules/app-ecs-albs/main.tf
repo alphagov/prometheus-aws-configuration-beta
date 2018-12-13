@@ -139,8 +139,8 @@ resource "aws_route53_record" "prom_alias" {
   type    = "A"
 
   alias {
-    name                   = "${aws_lb.nginx_auth_external_alb.dns_name}"
-    zone_id                = "${aws_lb.nginx_auth_external_alb.zone_id}"
+    name                   = "${aws_lb.prometheus_alb.dns_name}"
+    zone_id                = "${aws_lb.prometheus_alb.zone_id}"
     evaluate_target_health = false
   }
 }
