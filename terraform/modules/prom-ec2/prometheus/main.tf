@@ -72,6 +72,7 @@ data "template_file" "user_data_script" {
     prom_external_url   = "https://${var.prometheus_public_fqdns[count.index]}"
     logstash_host       = "${var.logstash_host}"
     prometheus_htpasswd = "${var.prometheus_htpasswd}"
+    allowed_cidrs       = "${join("\n        ",formatlist("allow %s;", var.allowed_cidrs))}"
   }
 }
 
