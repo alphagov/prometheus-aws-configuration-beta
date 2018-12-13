@@ -165,7 +165,7 @@ resource "aws_s3_bucket_object" "filebeat" {
 }
 
 resource "aws_lb_target_group_attachment" "prom_target_group_attachment" {
-  count            = "${length(keys(var.availability_zones))}"
+  count            = "${length(var.prometheus_target_group_arns)}"
   target_group_arn = "${element(var.prometheus_target_group_arns, count.index)}"
   target_id        = "${element(aws_instance.prometheus.*.id, count.index)}"
   port             = 80
