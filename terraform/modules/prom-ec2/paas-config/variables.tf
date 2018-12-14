@@ -1,9 +1,3 @@
-variable "alertmanager_dns_names" {
-  type        = "list"
-  default     = []
-  description = "alertmanagers to send alerts to on local network (via http)"
-}
-
 variable "external_alertmanager_names" {
   type        = "list"
   default     = []

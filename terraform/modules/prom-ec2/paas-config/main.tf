@@ -2,7 +2,6 @@ data "template_file" "prometheus_config_template" {
   template = "${file("${path.module}/prometheus.conf.tpl")}"
 
   vars {
-    alertmanager_dns_names = "${join(",", formatlist("\"%s\"", var.alertmanager_dns_names))}"
     external_alertmanagers = "${join(",", formatlist("\"%s\"", var.external_alertmanager_names))}"
 
     environment = "${var.environment}"

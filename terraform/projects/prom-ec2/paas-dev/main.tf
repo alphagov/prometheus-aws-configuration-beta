@@ -1,9 +1,7 @@
 locals {
-  product                           = "paas"
-  environment                       = "dev"
-  config_bucket                     = "gdsobserve-${local.product}-${local.environment}-config-store"
-  active_alertmanager_private_fqdns = "${slice(data.terraform_remote_state.app_ecs_albs.alerts_private_record_fqdns, 0,
- 3)}"
+  product       = "paas"
+  environment   = "dev"
+  config_bucket = "gdsobserve-${local.product}-${local.environment}-config-store"
 }
 
 terraform {
@@ -88,7 +86,6 @@ module "paas-config" {
   environment = "${local.environment}"
 
   prometheus_config_bucket = "${module.prometheus.s3_config_bucket}"
-  alertmanager_dns_names   = "${local.active_alertmanager_private_fqdns}"
   alerts_path              = "../../../modules/app-ecs-services/config/alerts/"
 
   prom_private_ips  = "${module.prometheus.private_ip_addresses}"
