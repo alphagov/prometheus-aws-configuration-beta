@@ -10,7 +10,7 @@ terraform {
   required_version = "= 0.11.10"
 
   backend "s3" {
-    bucket  = "re-observe-dev"
+    bucket  = "re-prom-dev-tfstate"
     key     = "prometheus.tfstate"
     encrypt = true
     region  = "eu-west-1"
@@ -19,7 +19,7 @@ terraform {
 
 provider "aws" {
   region              = "eu-west-1"
-  allowed_account_ids = ["047969882937"]
+  allowed_account_ids = ["455214962221"]
 }
 
 data "terraform_remote_state" "infra_networking" {
