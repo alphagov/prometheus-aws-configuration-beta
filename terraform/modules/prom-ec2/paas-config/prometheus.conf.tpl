@@ -61,7 +61,7 @@ scrape_configs:
         regex: '${environment}'
         action: keep
       - source_labels: ['__meta_ec2_tag_Job']
-        regex: '.+'
+        regex: 'prometheus'
         action: keep
       - source_labels: ['__meta_ec2_availability_zone']
         target_label: availability_zone
