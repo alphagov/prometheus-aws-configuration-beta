@@ -67,6 +67,7 @@ locals {
 
   # data.aws_route_53.XXX.name has a trailing dot which we remove with replace() to make ACM happy
   subdomain = "${replace(data.aws_route53_zone.public_zone.name, "/\\.$/", "")}"
+  vpc_id    = "${data.aws_subnet.first_subnet.vpc_id}"
 }
 
 ## Data sources
@@ -93,6 +94,10 @@ data "terraform_remote_state" "infra_security_groups" {
 
 data "aws_route53_zone" "public_zone" {
   zone_id = "${var.zone_id}"
+}
+
+data "aws_subnet" "first_subnet" {
+  id = "${var.subnets[0]}"
 }
 
 ## Resources
@@ -353,11 +358,39 @@ resource "aws_route53_record" "prom_alias" {
   }
 }
 
+resource "aws_security_group" "prometheus_alb" {
+  name        = "${var.stack_name}-prometheus-alb"
+  description = "Access to prometheus ALB (${var.stack_name})"
+  vpc_id      = "${local.vpc_id}"
+}
+
+resource "aws_security_group_rule" "prom_allow_http" {
+  security_group_id = "${aws_security_group.prometheus_alb.id}"
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "prom_allow_https" {
+  security_group_id = "${aws_security_group.prometheus_alb.id}"
+  type              = "ingress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
 resource "aws_lb" "prometheus_alb" {
   name               = "${var.stack_name}-prometheus-alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = ["${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}"]
+
+  security_groups = [
+    "${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}",
+    "${aws_security_group.prometheus_alb.id}",
+  ]
 
   subnets = [
     "${var.subnets}",
@@ -431,7 +464,7 @@ resource "aws_lb_target_group" "prometheus_tg" {
   name                 = "${var.stack_name}-prom-${count.index +1}-tg"
   port                 = 80
   protocol             = "HTTP"
-  vpc_id               = "${data.terraform_remote_state.infra_networking.vpc_id}"
+  vpc_id               = "${local.vpc_id}"
   deregistration_delay = 30
 
   health_check {
