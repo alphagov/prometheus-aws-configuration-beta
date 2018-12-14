@@ -57,6 +57,7 @@ module "app-ecs-albs" {
   remote_state_bucket = "${var.remote_state_bucket}"
   project             = "${var.project}"
   zone_id             = "${data.terraform_remote_state.infra_networking.public_zone_id}"
+  subnets             = "${data.terraform_remote_state.infra_networking.public_subnets}"
 }
 
 output "monitoring_external_tg" {

@@ -36,6 +36,23 @@ variable "zone_id" {
   description = "Route 53 zone ID for registering public DNS records"
 }
 
+variable "subnets" {
+  type        = "list"
+  description = "Subnets to attach load balancers to"
+}
+
+variable "prometheus_count" {
+  type        = "string"
+  description = "Number of prometheus instances to create listener rules and target groups for"
+  default     = "3"
+}
+
+variable "alertmanager_count" {
+  type        = "string"
+  description = "Number of alertmanager instances to create listener rules and target groups for"
+  default     = "3"
+}
+
 # locals
 # --------------------------------------------------------------
 
@@ -45,9 +62,8 @@ locals {
     Project   = "${var.project}"
   }
 
-  infra_network_public_subnets_count = "${length(data.terraform_remote_state.infra_networking.public_subnets)}"
-  alerts_records_count               = "${local.infra_network_public_subnets_count}"
-  prom_records_count                 = "${local.infra_network_public_subnets_count}"
+  alerts_records_count = "${var.alertmanager_count}"
+  prom_records_count   = "${var.prometheus_count}"
 
   # data.aws_route_53.XXX.name has a trailing dot which we remove with replace() to make ACM happy
   subdomain = "${replace(data.aws_route53_zone.public_zone.name, "/\\.$/", "")}"
@@ -88,7 +104,7 @@ resource "aws_lb" "nginx_auth_external_alb" {
   security_groups    = ["${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}"]
 
   subnets = [
-    "${data.terraform_remote_state.infra_networking.public_subnets}",
+    "${var.subnets}",
   ]
 
   tags = "${merge(
@@ -115,40 +131,6 @@ resource "aws_lb" "monitoring_internal_alb" {
     map("Stackname", "${var.stack_name}"),
     map("Name", "${var.stack_name}-monitoring-internal-${count.index + 1}")
   )}"
-}
-
-# AWS should manage the certificate renewal automatically
-# https://docs.aws.amazon.com/acm/latest/userguide/managed-renewal.html
-# If this fails, AWS will email associated with the AWS account
-resource "aws_acm_certificate" "prometheus_cert" {
-  domain_name       = "prom.${local.subdomain}"
-  validation_method = "DNS"
-
-  subject_alternative_names = ["${aws_route53_record.prom_alias.*.fqdn}"]
-
-  lifecycle {
-    # We can't destroy a certificate that's in use, and we can't stop
-    # using it until the new one is ready.  Hence
-    # create_before_destroy here.
-    create_before_destroy = true
-  }
-}
-
-resource "aws_route53_record" "prometheus_cert_validation" {
-  # Count matches the domain_name plus each `subject_alternative_domain`
-  count = "${1 + local.prom_records_count}"
-
-  name       = "${lookup(aws_acm_certificate.prometheus_cert.domain_validation_options[count.index], "resource_record_name")}"
-  type       = "${lookup(aws_acm_certificate.prometheus_cert.domain_validation_options[count.index], "resource_record_type")}"
-  zone_id    = "${var.zone_id}"
-  records    = ["${lookup(aws_acm_certificate.prometheus_cert.domain_validation_options[count.index], "resource_record_value")}"]
-  ttl        = 60
-  depends_on = ["aws_acm_certificate.prometheus_cert"]
-}
-
-resource "aws_acm_certificate_validation" "prometheus_cert" {
-  certificate_arn         = "${aws_acm_certificate.prometheus_cert.arn}"
-  validation_record_fqdns = ["${aws_route53_record.prometheus_cert_validation.*.fqdn}"]
 }
 
 # AWS should manage the certificate renewal automatically
@@ -183,20 +165,6 @@ resource "aws_route53_record" "alertmanager_cert_validation" {
 resource "aws_acm_certificate_validation" "alertmanager_cert" {
   certificate_arn         = "${aws_acm_certificate.alertmanager_cert.arn}"
   validation_record_fqdns = ["${aws_route53_record.alertmanager_cert_validation.*.fqdn}"]
-}
-
-resource "aws_route53_record" "prom_alias" {
-  count = "${local.prom_records_count}"
-
-  zone_id = "${var.zone_id}"
-  name    = "prom-${count.index + 1}"
-  type    = "A"
-
-  alias {
-    name                   = "${aws_lb.prometheus_alb.dns_name}"
-    zone_id                = "${aws_lb.prometheus_alb.zone_id}"
-    evaluate_target_health = false
-  }
 }
 
 resource "aws_route53_record" "alerts_alias" {
@@ -256,7 +224,7 @@ resource "aws_lb_listener" "external_listener_https" {
 }
 
 resource "aws_lb_target_group" "alertmanager_internal_endpoint" {
-  count = "${local.infra_network_public_subnets_count}"
+  count = "${var.alertmanager_count}"
 
   name     = "${var.stack_name}-alerts-internal-${count.index + 1}"
   port     = "9093"
@@ -333,6 +301,58 @@ resource "aws_route53_record" "alerts_private_record" {
   }
 }
 
+######################################################################
+# ----- prometheus public ALB -------
+######################################################################
+
+# AWS should manage the certificate renewal automatically
+# https://docs.aws.amazon.com/acm/latest/userguide/managed-renewal.html
+# If this fails, AWS will email associated with the AWS account
+resource "aws_acm_certificate" "prometheus_cert" {
+  domain_name       = "prom.${local.subdomain}"
+  validation_method = "DNS"
+
+  subject_alternative_names = ["${aws_route53_record.prom_alias.*.fqdn}"]
+
+  lifecycle {
+    # We can't destroy a certificate that's in use, and we can't stop
+    # using it until the new one is ready.  Hence
+    # create_before_destroy here.
+    create_before_destroy = true
+  }
+}
+
+resource "aws_route53_record" "prometheus_cert_validation" {
+  # Count matches the domain_name plus each `subject_alternative_domain`
+  count = "${1 + local.prom_records_count}"
+
+  name       = "${lookup(aws_acm_certificate.prometheus_cert.domain_validation_options[count.index], "resource_record_name")}"
+  type       = "${lookup(aws_acm_certificate.prometheus_cert.domain_validation_options[count.index], "resource_record_type")}"
+  zone_id    = "${var.zone_id}"
+  records    = ["${lookup(aws_acm_certificate.prometheus_cert.domain_validation_options[count.index], "resource_record_value")}"]
+  ttl        = 60
+  depends_on = ["aws_acm_certificate.prometheus_cert"]
+}
+
+resource "aws_acm_certificate_validation" "prometheus_cert" {
+  certificate_arn         = "${aws_acm_certificate.prometheus_cert.arn}"
+  validation_record_fqdns = ["${aws_route53_record.prometheus_cert_validation.*.fqdn}"]
+}
+
+resource "aws_route53_record" "prom_alias" {
+  count = "${local.prom_records_count}"
+
+  zone_id = "${var.zone_id}"
+  name    = "prom-${count.index + 1}"
+  type    = "A"
+
+  alias {
+    name                   = "${aws_lb.prometheus_alb.dns_name}"
+    zone_id                = "${aws_lb.prometheus_alb.zone_id}"
+    evaluate_target_health = false
+  }
+}
+
 resource "aws_lb" "prometheus_alb" {
   name               = "${var.stack_name}-prometheus-alb"
   internal           = false
@@ -340,7 +360,7 @@ resource "aws_lb" "prometheus_alb" {
   security_groups    = ["${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}"]
 
   subnets = [
-    "${data.terraform_remote_state.infra_networking.public_subnets}",
+    "${var.subnets}",
   ]
 
   tags = "${merge(
@@ -386,7 +406,7 @@ resource "aws_lb_listener" "prometheus_listener_https" {
 }
 
 resource "aws_lb_listener_rule" "prom_listener_https" {
-  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
+  count = "${var.prometheus_count}"
 
   listener_arn = "${aws_lb_listener.prometheus_listener_https.arn}"
   priority     = "${100 + count.index}"
@@ -406,7 +426,7 @@ resource "aws_lb_listener_rule" "prom_listener_https" {
 }
 
 resource "aws_lb_target_group" "prometheus_tg" {
-  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
+  count = "${var.prometheus_count}"
 
   name                 = "${var.stack_name}-prom-${count.index +1}-tg"
   port                 = 80
