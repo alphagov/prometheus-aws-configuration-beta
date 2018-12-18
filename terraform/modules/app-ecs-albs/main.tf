@@ -345,10 +345,9 @@ resource "aws_security_group" "prometheus_alb" {
   vpc_id      = "${local.vpc_id}"
 }
 
-# Prometheus is fronted by an nginx which controls access to
-# either approved IP addresses, or users with basic auth creds
-# so we need to allow all IPs here
-resource "aws_security_group_rule" "prom_allow_http" {
+# We allow all IPs to access the ALB as Prometheus is fronted by an nginx which controls access to either approved IP
+# addresses, or users with basic auth creds
+resource "aws_security_group_rule" "prom_alb_allow_http" {
   security_group_id = "${aws_security_group.prometheus_alb.id}"
   type              = "ingress"
   from_port         = 80
@@ -357,7 +356,7 @@ resource "aws_security_group_rule" "prom_allow_http" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-resource "aws_security_group_rule" "prom_allow_https" {
+resource "aws_security_group_rule" "prom_alb_allow_https" {
   security_group_id = "${aws_security_group.prometheus_alb.id}"
   type              = "ingress"
   from_port         = 443
@@ -525,7 +524,7 @@ resource "aws_security_group" "alertmanager_alb" {
 
 # Unlike prometheus, alertmanager is IP restricted by security group
 # here
-resource "aws_security_group_rule" "alerts_allow_http" {
+resource "aws_security_group_rule" "alertmanager_alb_allow_http" {
   security_group_id = "${aws_security_group.alertmanager_alb.id}"
   type              = "ingress"
   from_port         = 80
@@ -534,7 +533,7 @@ resource "aws_security_group_rule" "alerts_allow_http" {
   cidr_blocks       = ["${var.alerts_allowed_cidrs}"]
 }
 
-resource "aws_security_group_rule" "alerts_allow_https" {
+resource "aws_security_group_rule" "alertmanager_alb_allow_https" {
   security_group_id = "${aws_security_group.alertmanager_alb.id}"
   type              = "ingress"
   from_port         = 443
