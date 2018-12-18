@@ -19,7 +19,7 @@ terraform {
 
 provider "aws" {
   region              = "eu-west-1"
-  allowed_account_ids = ["455214962221"]
+  allowed_account_ids = ["931679966755"]
 }
 
 data "terraform_remote_state" "infra_networking" {
