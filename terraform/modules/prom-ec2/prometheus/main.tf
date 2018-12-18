@@ -33,6 +33,7 @@ resource "aws_instance" "prometheus" {
     Environment = "${var.environment}"
     Product     = "${var.product}"
     ManagedBy   = "terraform"
+    Job         = "prometheus"
   }
 }
 
