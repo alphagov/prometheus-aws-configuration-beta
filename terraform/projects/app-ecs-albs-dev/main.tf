@@ -25,7 +25,7 @@ variable "aws_region" {
 variable "remote_state_bucket" {
   type        = "string"
   description = "S3 bucket we store our terraform state in"
-  default     = "re-observe-dev"
+  default     = "re-prom-dev-tfstate"
 }
 
 variable "stack_name" {
