@@ -93,7 +93,7 @@ asg_dev_scaledown_schedules = ["30 19 * * MON,WED,THU,FRI", "30 18 * * TUE"]
 
 For other examples on how to set up your own cron schedule have a look at this web page: https://crontab.guru/examples.html
 
-### How to connect to your dev ECS container instance
+### How to connect to your dev EC2 container instance
 
 If you are experiencing problems after creating the stack, you may want to connect to the EC2 instance using AWS Session Manager:
 
@@ -101,9 +101,17 @@ Before starting a session:
   - [install the session-manager-plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
   - find the instance id of the instance you want to connect to
 
+Add a dev admin profile to your AWS config, `~/.aws/config`
+
+```
+[profile gds-tech-ops-dev]
+...
+role_arn=arn:aws:iam::931679966755:role/<first_name.last_name>-admin
+```
+
 To connect to an instance `$INSTANCE_ID`, run the command:
 ```shell
-aws-vault exec gds-tech-ops -- aws ssm start-session --target $INSTANCE_ID
+aws-vault exec gds-tech-ops-dev -- aws ssm start-session --target $INSTANCE_ID
 ```
 
 ## Viewing the Prometheus dashboard
