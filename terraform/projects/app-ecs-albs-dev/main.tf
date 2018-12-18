@@ -4,15 +4,16 @@ terraform {
   required_version = "= 0.11.10"
 
   backend "s3" {
-    bucket = "re-observe-dev"
+    bucket = "re-prom-dev-tfstate"
     key    = "app-ecs-albs-modular.tfstate"
     region = "eu-west-1"
   }
 }
 
 provider "aws" {
-  version = "~> 1.51.0"
-  region  = "${var.aws_region}"
+  version             = "~> 1.51.0"
+  allowed_account_ids = ["931679966755"]
+  region              = "${var.aws_region}"
 }
 
 variable "aws_region" {
