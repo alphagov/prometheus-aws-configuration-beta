@@ -53,7 +53,7 @@ variable "alertmanager_count" {
   default     = "3"
 }
 
-variable "alerts_allowed_cidrs" {
+variable "allowed_cidrs" {
   type        = "list"
   description = "List of CIDRs which are able to access the alertmanager ALB, default are GDS ips"
 
@@ -530,7 +530,7 @@ resource "aws_security_group_rule" "alertmanager_alb_allow_http" {
   from_port         = 80
   to_port           = 80
   protocol          = "tcp"
-  cidr_blocks       = ["${var.alerts_allowed_cidrs}"]
+  cidr_blocks       = ["${var.allowed_cidrs}"]
 }
 
 resource "aws_security_group_rule" "alertmanager_alb_allow_https" {
@@ -539,7 +539,7 @@ resource "aws_security_group_rule" "alertmanager_alb_allow_https" {
   from_port         = 443
   to_port           = 443
   protocol          = "tcp"
-  cidr_blocks       = ["${var.alerts_allowed_cidrs}"]
+  cidr_blocks       = ["${var.allowed_cidrs}"]
 }
 
 resource "aws_lb" "alertmanager_alb" {
