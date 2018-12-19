@@ -340,7 +340,7 @@ resource "aws_route53_record" "prom_alias" {
 }
 
 resource "aws_security_group" "prometheus_alb" {
-  name        = "${var.stack_name}-prometheus-alb"
+  name        = "${var.stack_name}-prometheus-alb-sg"
   description = "Access to prometheus ALB (${var.stack_name})"
   vpc_id      = "${local.vpc_id}"
 }
@@ -517,7 +517,7 @@ resource "aws_acm_certificate_validation" "alertmanager_cert" {
 # }
 
 resource "aws_security_group" "alertmanager_alb" {
-  name        = "${var.stack_name}-alertmanager-alb"
+  name        = "${var.stack_name}-alertmanager-alb-sg"
   description = "Access to alertmanager ALB (${var.stack_name})"
   vpc_id      = "${local.vpc_id}"
 }
