@@ -62,7 +62,8 @@ variable "remote_state_bucket" {
 module "app-ecs-services" {
   source = "../../modules/app-ecs-services"
 
-  dev_environment     = "true"
-  remote_state_bucket = "${var.remote_state_bucket}"
-  stack_name          = "${var.stack_name}"
+  dev_environment            = "true"
+  remote_state_bucket        = "${var.remote_state_bucket}"
+  stack_name                 = "${var.stack_name}"
+  dev_ticket_recipient_email = "test@example.com"
 }
