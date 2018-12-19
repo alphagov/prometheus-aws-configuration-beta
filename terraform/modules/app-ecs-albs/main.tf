@@ -548,7 +548,6 @@ resource "aws_lb" "alertmanager_alb" {
   load_balancer_type = "application"
 
   security_groups = [
-    "${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}",
     "${aws_security_group.alertmanager_alb.id}",
   ]
 
