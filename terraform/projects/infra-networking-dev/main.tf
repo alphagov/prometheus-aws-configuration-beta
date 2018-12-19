@@ -41,7 +41,7 @@ variable "project" {
 module "infra-networking" {
   source = "../../modules/infra-networking"
 
-  dev_environment = true
+  dev_environment = "true"
 
   project              = "${var.project}"
   stack_name           = "${var.stack_name}"
