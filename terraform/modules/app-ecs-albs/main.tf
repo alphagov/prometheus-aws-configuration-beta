@@ -622,14 +622,14 @@ resource "aws_lb_target_group" "alertmanager_tg" {
   count = "${var.alertmanager_count}"
 
   name                 = "${var.stack_name}-alerts-${count.index +1}-tg"
-  port                 = 80
+  port                 = 9093
   protocol             = "HTTP"
   vpc_id               = "${local.vpc_id}"
   deregistration_delay = 30
 
   health_check {
     interval            = "10"
-    path                = "/health" # static health check on nginx auth proxy
+    path                = "/"
     matcher             = "200"
     protocol            = "HTTP"
     healthy_threshold   = 2
