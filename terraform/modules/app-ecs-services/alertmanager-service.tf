@@ -131,7 +131,7 @@ resource "aws_ecs_service" "alertmanager_server" {
   desired_count   = 1
 
   load_balancer {
-    target_group_arn = "${element(data.terraform_remote_state.app_ecs_albs.monitoring_internal_tg, count.index)}"
+    target_group_arn = "${element(data.terraform_remote_state.app_ecs_albs.alertmanager_target_group_arns, count.index)}"
     container_name   = "alertmanager"
     container_port   = 9093
   }
