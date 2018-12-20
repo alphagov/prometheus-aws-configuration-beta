@@ -39,6 +39,16 @@ variable "project" {
   default     = "app-ecs-albs-staging"
 }
 
+data "terraform_remote_state" "infra_networking" {
+  backend = "s3"
+
+  config {
+    bucket = "${var.remote_state_bucket}"
+    key    = "infra-networking-modular.tfstate"
+    region = "${var.aws_region}"
+  }
+}
+
 module "app-ecs-albs" {
   source = "../../modules/app-ecs-albs/"
 
@@ -46,6 +56,8 @@ module "app-ecs-albs" {
   stack_name          = "${var.stack_name}"
   remote_state_bucket = "${var.remote_state_bucket}"
   project             = "${var.project}"
+  zone_id             = "${data.terraform_remote_state.infra_networking.public_zone_id}"
+  subnets             = "${data.terraform_remote_state.infra_networking.public_subnets}"
 }
 
 output "monitoring_external_tg" {

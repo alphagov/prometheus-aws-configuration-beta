@@ -24,7 +24,7 @@ data "terraform_remote_state" "infra_networking" {
   backend = "s3"
 
   config {
-    bucket = "re-observe-dev"
+    bucket = "re-prom-dev-tfstate"
     key    = "infra-networking-modular.tfstate"
     region = "eu-west-1"
   }
@@ -34,7 +34,7 @@ data "terraform_remote_state" "infra_security_groups" {
   backend = "s3"
 
   config {
-    bucket = "re-observe-dev"
+    bucket = "re-prom-dev-tfstate"
     key    = "infra-security-groups-modular.tfstate"
     region = "eu-west-1"
   }
@@ -44,7 +44,7 @@ data "terraform_remote_state" "app_ecs_albs" {
   backend = "s3"
 
   config {
-    bucket = "re-observe-dev"
+    bucket = "re-prom-dev-tfstate"
     key    = "app-ecs-albs-modular.tfstate"
     region = "eu-west-1"
   }

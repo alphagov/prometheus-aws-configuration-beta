@@ -56,13 +56,14 @@ provider "pass" {
 variable "remote_state_bucket" {
   type        = "string"
   description = "S3 bucket we store our terraform state in"
-  default     = "re-observe-dev"
+  default     = "re-prom-dev-tfstate"
 }
 
 module "app-ecs-services" {
   source = "../../modules/app-ecs-services"
 
-  dev_environment     = "true"
-  remote_state_bucket = "${var.remote_state_bucket}"
-  stack_name          = "${var.stack_name}"
+  dev_environment            = "true"
+  remote_state_bucket        = "${var.remote_state_bucket}"
+  stack_name                 = "${var.stack_name}"
+  dev_ticket_recipient_email = "test@example.com"
 }
