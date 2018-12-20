@@ -3,7 +3,7 @@ env:
     - TERRAFORM_VERSION=0.11.10
     - TERRAFORM_FILE_NAME=terraform_${TERRAFORM_VERSION}_linux_amd64.zip
     - TERRAFORM_DOWNLOAD_URL=https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/${TERRAFORM_FILE_NAME}
-    - PROMETHEUS_VERSION=2.6.0
+    - PROMETHEUS_VERSION=2.5.0
     - PROMETHEUS_FILE_NAME=prometheus-${PROMETHEUS_VERSION}.linux-amd64
     - PROMETHEUS_TAR_FILE_NAME=${PROMETHEUS_FILE_NAME}.tar.gz
     - PROMETHEUS_DOWNLOAD_URL=https://github.com/prometheus/prometheus/releases/download/v${PROMETHEUS_VERSION}/${PROMETHEUS_TAR_FILE_NAME}
