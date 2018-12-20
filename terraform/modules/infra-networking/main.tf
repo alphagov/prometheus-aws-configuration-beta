@@ -47,9 +47,8 @@ locals {
     Project   = "${var.project}"
   }
 
-  shared_dev_subdomain_name = "dev.gds-reliability.engineering"
-  subdomain_name            = "${var.dev_environment == "true" ? "${var.prometheus_subdomain}.${local.shared_dev_subdomain_name}" : "${var.prometheus_subdomain}.gds-reliability.engineering"}"
-  private_subdomain_name    = "${var.stack_name}.monitoring.private"
+  subdomain_name         = "${var.prometheus_subdomain}.gds-reliability.engineering"
+  private_subdomain_name = "${var.stack_name}.monitoring.private"
 }
 
 ## Data sources
@@ -96,31 +95,6 @@ resource "aws_route53_zone" "private" {
   vpc_id        = "${module.vpc.vpc_id}"
   name          = "${local.private_subdomain_name}"
   force_destroy = true
-}
-
-## Development resources
-# --------------------------------------------------------------
-# These resources are only created for development environments (not staging or prod)
-# This is to add the extra delegation from dev.gds-reliability.engineering to the prometheus subdomain
-
-data "aws_route53_zone" "shared_dev_subdomain" {
-  count = "${var.dev_environment == "true" ? 1 : 0}"
-  name  = "${local.shared_dev_subdomain_name}"
-}
-
-resource "aws_route53_record" "shared_dev_ns" {
-  count   = "${var.dev_environment == "true" ? 1 : 0}"
-  zone_id = "${data.aws_route53_zone.shared_dev_subdomain.zone_id}"
-  name    = "${var.stack_name}.${data.aws_route53_zone.shared_dev_subdomain.name}"
-  type    = "NS"
-  ttl     = "30"
-
-  records = [
-    "${aws_route53_zone.subdomain.name_servers.0}",
-    "${aws_route53_zone.subdomain.name_servers.1}",
-    "${aws_route53_zone.subdomain.name_servers.2}",
-    "${aws_route53_zone.subdomain.name_servers.3}",
-  ]
 }
 
 ## Outputs

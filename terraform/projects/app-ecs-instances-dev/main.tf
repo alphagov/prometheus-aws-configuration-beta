@@ -41,7 +41,7 @@ variable "remote_state_bucket" {
 module "app-ecs-instances" {
   source = "../../modules/app-ecs-instances"
 
-  dev_environment     = true
+  dev_environment     = "true"
   stack_name          = "${var.stack_name}"
   project             = "${var.project}"
   remote_state_bucket = "${var.remote_state_bucket}"
