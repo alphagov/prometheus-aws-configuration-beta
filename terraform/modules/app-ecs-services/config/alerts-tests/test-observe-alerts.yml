@@ -42,7 +42,7 @@ tests:
                       summary: "Prometheus is not able to scrape Grafana"
                       description: "Prometheus has not successfully scraped grafana-paas in the last 5 minutes. https://grafana-paas.cloudapps.digital/ may be down."
                       logs: "https://kibana.logit.io/s/8fd50110-7b0c-490a-bedf-7544daebbec4/app/kibana#/discover?_g=()&_a=(columns:!(_source),index:'*-*',interval:h,query:(query_string:(query:'grafana-paas.cloudapps.digital%20AND%20NOT%20access.response_code:200')),sort:!('@timestamp',desc))"
-                      runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-grafana-down"
+                      runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-paas-support.html#re-observe-grafana-down"
           - eval_time: 5m
             alertname: RE_Observe_AlertManager_Below_Threshold
             exp_alerts:
@@ -54,7 +54,7 @@ tests:
                   exp_annotations:
                       summary: "Service is below the expected instance Threshold"
                       description: "The service name is alertmanager. The URL experiencing the issue is localhost:9090."
-                      runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-alertmanager-below-threshold"
+                      runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-paas-support.html#re-observe-alertmanager-below-threshold"
 
           - eval_time: 5m
             alertname: RE_Observe_Prometheus_Below_Threshold
@@ -68,7 +68,7 @@ tests:
                       summary: "Service is below the expected instance Threshold"
                       description: "The service name is prometheus. The URL experiencing the issue is localhost:9090."
                       logs: "https://kibana.logit.io/s/8fd50110-7b0c-490a-bedf-7544daebbec4/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-15m,mode:quick,to:now))&_a=(columns:!(_source),index:'*-*',interval:auto,query:(query_string:(query:'tags:%20prometheus')),sort:!('@timestamp',desc))"
-                      runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-prometheus-below-threshold"
+                      runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-paas-support.html#re-observe-prometheus-below-threshold"
 
           - eval_time: 5m
             alertname: RE_Observe_No_FileSd_Targets
@@ -80,7 +80,7 @@ tests:
                       summary: "No file_sd targets detected"
                       description: "No file_sd targets were detected.  Is there a problem accessing the targets bucket?"
                       logs: "https://kibana.logit.io/s/8fd50110-7b0c-490a-bedf-7544daebbec4/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-15m,mode:quick,to:now))&_a=(columns:!(_source),index:'*-*',interval:auto,query:(query_string:(query:'tags:%20prometheus')),sort:!('@timestamp',desc))"
-                      runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-no-filesd-targets"
+                      runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-paas-support.html#re-observe-no-filesd-targets"
 
           - eval_time: 5m
             alertname: RE_Observe_Prometheus_Over_Capacity
@@ -94,7 +94,7 @@ tests:
                       summary: "Service is over capacity."
                       description: "The service name is prometheus. The URL experiencing the issue is prom-1."
                       logs: "https://kibana.logit.io/s/8fd50110-7b0c-490a-bedf-7544daebbec4/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-15m,mode:quick,to:now))&_a=(columns:!(_source),index:'*-*',interval:auto,query:(query_string:(query:'tags:%20prometheus')),sort:!('@timestamp',desc))"
-                      runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-prometheus-over-capacity"
+                      runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-paas-support.html#re-observe-prometheus-over-capacity"
 
           - eval_time: 2h
             alertname: RE_Observe_Prometheus_High_Load
@@ -108,7 +108,7 @@ tests:
                       summary: "Service is approaching capacity."
                       description: "The service name is prometheus. The URL experiencing the issue is prom-1."
                       logs: "https://kibana.logit.io/s/8fd50110-7b0c-490a-bedf-7544daebbec4/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-15m,mode:quick,to:now))&_a=(columns:!(_source),index:'*-*',interval:auto,query:(query_string:(query:'tags:%20prometheus')),sort:!('@timestamp',desc))"
-                      runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-prometheus-high-load"
+                      runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-paas-support.html#re-observe-prometheus-high-load"
 
           - eval_time: 24h
             alertname: RE_Observe_Target_Down
@@ -123,7 +123,7 @@ tests:
                   exp_annotations:
                       summary: "test target is down"
                       description: "One of the test targets has been down for 24 hours"
-                      runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-target-down"
+                      runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-paas-support.html#re-observe-target-down"
 
       promql_expr_test:
           - expr: (count(prometheus_sd_file_mtime_seconds) or count(up)*0) < 1
