@@ -1,5 +1,9 @@
 # Writing Tests for Alerts
 
+Note - Currently all the tests will not pass using the latest version of Prometheus 2.6
+
+In order to get the tests to pass it is possible to use the previous version of [Prometheus 2.5](https://github.com/prometheus/prometheus/releases/tag/v2.5.0)
+
 ## Create a test file for your alerts
 
 If you already have a test file you can skip this step, otherwise you should make a copy of the `test-template.yml` and rename it to match your team alerts file with the `test-` prefix then fill in the missing details in the yaml file.
