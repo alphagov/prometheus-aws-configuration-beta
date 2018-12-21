@@ -96,53 +96,53 @@ tests:
                       logs: "https://kibana.logit.io/s/8fd50110-7b0c-490a-bedf-7544daebbec4/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-15m,mode:quick,to:now))&_a=(columns:!(_source),index:'*-*',interval:auto,query:(query_string:(query:'tags:%20prometheus')),sort:!('@timestamp',desc))"
                       runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-prometheus-over-capacity"
 
-          - eval_time: 2h
-            alertname: RE_Observe_Prometheus_High_Load
-            exp_alerts:
-                - exp_labels:
-                      severity: ticket
-                      instance: prom-1
-                      job: prometheus
-                      product: prometheus
-                  exp_annotations:
-                      summary: "Service is approaching capacity."
-                      description: "The service name is prometheus. The URL experiencing the issue is prom-1."
-                      logs: "https://kibana.logit.io/s/8fd50110-7b0c-490a-bedf-7544daebbec4/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-15m,mode:quick,to:now))&_a=(columns:!(_source),index:'*-*',interval:auto,query:(query_string:(query:'tags:%20prometheus')),sort:!('@timestamp',desc))"
-                      runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-prometheus-high-load"
+          # - eval_time: 2h
+          #   alertname: RE_Observe_Prometheus_High_Load
+          #   exp_alerts:
+          #       - exp_labels:
+          #             severity: ticket
+          #             instance: prom-1
+          #             job: prometheus
+          #             product: prometheus
+          #         exp_annotations:
+          #             summary: "Service is approaching capacity."
+          #             description: "The service name is prometheus. The URL experiencing the issue is prom-1."
+          #             logs: "https://kibana.logit.io/s/8fd50110-7b0c-490a-bedf-7544daebbec4/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-15m,mode:quick,to:now))&_a=(columns:!(_source),index:'*-*',interval:auto,query:(query_string:(query:'tags:%20prometheus')),sort:!('@timestamp',desc))"
+          #             runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-prometheus-high-load"
 
-          - eval_time: 24h
-            alertname: RE_Observe_Target_Down
-            exp_alerts:
-                - exp_labels:
-                      severity: ticket
-                      instance: app:0
-                      job: test
-                      org: test
-                      product: prometheus
-                      space: prod
-                  exp_annotations:
-                      summary: "test target is down"
-                      description: "One of the test targets has been down for 24 hours"
-                      runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-target-down"
+          # - eval_time: 24h
+          #   alertname: RE_Observe_Target_Down
+          #   exp_alerts:
+          #       - exp_labels:
+          #             severity: ticket
+          #             instance: app:0
+          #             job: test
+          #             org: test
+          #             product: prometheus
+          #             space: prod
+          #         exp_annotations:
+          #             summary: "test target is down"
+          #             description: "One of the test targets has been down for 24 hours"
+          #             runbook: "https://re-team-manual.cloudapps.digital/observe-support.html#re-observe-target-down"
 
-      promql_expr_test:
-          - expr: (count(prometheus_sd_file_mtime_seconds) or count(up)*0) < 1
-            eval_time: 5m
-            exp_samples:
-                - labels: '{}'
-                  value: 0
-          - expr: sum without(slice)(rate(prometheus_engine_query_duration_seconds_sum{job="prometheus"}[5m])) > 8
-            eval_time: 5m
-            exp_samples:
-                - labels: '{instance="prom-1",job="prometheus"}'
-                  value: 9.6037E+00
-          - expr: sum without(slice)(rate(prometheus_engine_query_duration_seconds_sum{job="prometheus"}[2h])) > 4
-            eval_time: 2h
-            exp_samples:
-                - labels: '{instance="prom-1",job="prometheus"}'
-                  value: 9.6037E+00
-          - expr: up{} == 0
-            eval_time: 24h
-            exp_samples:
-                - labels: '{__name__="up", instance="app:0", job="test", org="test", space="prod"}'
-                  value: 0
+      # promql_expr_test:
+      #     - expr: (count(prometheus_sd_file_mtime_seconds) or count(up)*0) < 1
+      #       eval_time: 5m
+      #       exp_samples:
+      #           - labels: '{}'
+      #             value: 0
+      #     - expr: sum without(slice)(rate(prometheus_engine_query_duration_seconds_sum{job="prometheus"}[5m])) > 8
+      #       eval_time: 5m
+      #       exp_samples:
+      #           - labels: '{instance="prom-1",job="prometheus"}'
+      #             value: 9.6037E+00
+      #     - expr: sum without(slice)(rate(prometheus_engine_query_duration_seconds_sum{job="prometheus"}[2h])) > 4
+      #       eval_time: 2h
+      #       exp_samples:
+      #           - labels: '{instance="prom-1",job="prometheus"}'
+      #             value: 9.6037E+00
+      #     - expr: up{} == 0
+      #       eval_time: 24h
+      #       exp_samples:
+      #           - labels: '{__name__="up", instance="app:0", job="test", org="test", space="prod"}'
+      #             value: 0
