@@ -153,20 +153,6 @@ resource "aws_lb" "monitoring_internal_alb" {
   )}"
 }
 
-resource "aws_route53_record" "alerts_alias" {
-  count = "${local.alerts_records_count}"
-
-  zone_id = "${var.zone_id}"
-  name    = "alerts-${count.index + 1}"
-  type    = "A"
-
-  alias {
-    name                   = "${aws_lb.nginx_auth_external_alb.dns_name}"
-    zone_id                = "${aws_lb.nginx_auth_external_alb.zone_id}"
-    evaluate_target_health = false
-  }
-}
-
 resource "aws_lb_target_group" "nginx_auth_proxy_external_endpoint" {
   name                 = "${var.stack_name}-ext-tg"
   port                 = 80
@@ -499,22 +485,19 @@ resource "aws_acm_certificate_validation" "alertmanager_cert" {
   validation_record_fqdns = ["${aws_route53_record.alertmanager_cert_validation.*.fqdn}"]
 }
 
-#### Uncomment this and remove the other alerts_alias when switching
-#### over from the old ALB
-#
-# resource "aws_route53_record" "alerts_alias" {
-#   count = "${local.alerts_records_count}"
+resource "aws_route53_record" "alerts_alias" {
+  count = "${local.alerts_records_count}"
 
-#   zone_id = "${var.zone_id}"
-#   name    = "alerts-${count.index + 1}"
-#   type    = "A"
+  zone_id = "${var.zone_id}"
+  name    = "alerts-${count.index + 1}"
+  type    = "A"
 
-#   alias {
-#     name                   = "${aws_lb.alertmanager_alb.dns_name}"
-#     zone_id                = "${aws_lb.alertmanager_alb.zone_id}"
-#     evaluate_target_health = false
-#   }
-# }
+  alias {
+    name                   = "${aws_lb.alertmanager_alb.dns_name}"
+    zone_id                = "${aws_lb.alertmanager_alb.zone_id}"
+    evaluate_target_health = false
+  }
+}
 
 resource "aws_security_group" "alertmanager_alb" {
   name        = "${var.stack_name}-alertmanager-alb-sg"
@@ -540,6 +523,24 @@ resource "aws_security_group_rule" "alertmanager_alb_allow_https" {
   to_port           = 443
   protocol          = "tcp"
   cidr_blocks       = ["${var.allowed_cidrs}"]
+}
+
+resource "aws_security_group_rule" "alertmanager_alb_to_alertmanager" {
+  security_group_id        = "${aws_security_group.alertmanager_alb.id}"
+  type                     = "egress"
+  from_port                = 9093
+  to_port                  = 9093
+  protocol                 = "tcp"
+  source_security_group_id = "${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}"
+}
+
+resource "aws_security_group_rule" "alertmanager_from_alertmanager_alb" {
+  security_group_id        = "${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}"
+  type                     = "ingress"
+  from_port                = 9093
+  to_port                  = 9093
+  protocol                 = "tcp"
+  source_security_group_id = "${aws_security_group.alertmanager_alb.id}"
 }
 
 resource "aws_lb" "alertmanager_alb" {
