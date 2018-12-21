@@ -525,6 +525,24 @@ resource "aws_security_group_rule" "alertmanager_alb_allow_https" {
   cidr_blocks       = ["${var.allowed_cidrs}"]
 }
 
+resource "aws_security_group_rule" "alertmanager_alb_to_alertmanager" {
+  security_group_id        = "${aws_security_group.alertmanager_alb.id}"
+  type                     = "egress"
+  from_port                = 9093
+  to_port                  = 9093
+  protocol                 = "tcp"
+  source_security_group_id = "${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}"
+}
+
+resource "aws_security_group_rule" "alertmanager_from_alertmanager_alb" {
+  security_group_id        = "${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}"
+  type                     = "ingress"
+  from_port                = 9093
+  to_port                  = 9093
+  protocol                 = "tcp"
+  source_security_group_id = "${aws_security_group.alertmanager_alb.id}"
+}
+
 resource "aws_lb" "alertmanager_alb" {
   name               = "${var.stack_name}-alertmanager-alb"
   internal           = false
