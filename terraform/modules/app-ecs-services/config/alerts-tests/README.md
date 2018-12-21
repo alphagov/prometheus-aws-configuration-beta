@@ -6,6 +6,8 @@ In order to get the tests to pass it is possible to use the previous version of 
 
 ## Create a test file for your alerts
 
+Documentation is available from [prometheus](https://github.com/prometheus/prometheus/blob/master/docs/configuration/unit_testing_rules.md) regarding how to set up your rules unit test file.
+
 If you already have a test file you can skip this step, otherwise you should make a copy of the `test-template.yml` and rename it to match your team alerts file with the `test-` prefix then fill in the missing details in the yaml file.
 
 ## Create your alerting rule and the test for it
