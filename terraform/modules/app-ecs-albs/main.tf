@@ -1,7 +1,7 @@
 /**
 * ## Module: app-ecs-albs
 *
-* Create ALBs for the ECS cluster
+* Load balancers for Prometheus and Alertmanager
 *
 */
 
@@ -113,164 +113,6 @@ data "aws_route53_zone" "public_zone" {
 
 data "aws_subnet" "first_subnet" {
   id = "${var.subnets[0]}"
-}
-
-## Resources
-
-resource "aws_lb" "nginx_auth_external_alb" {
-  name               = "${var.stack_name}-external-alb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = ["${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}"]
-
-  subnets = [
-    "${var.subnets}",
-  ]
-
-  tags = "${merge(
-    local.default_tags,
-    var.additional_tags,
-    map("Stackname", "${var.stack_name}"),
-    map("Name", "${var.stack_name}-prometheus-external")
-  )}"
-}
-
-resource "aws_lb" "monitoring_internal_alb" {
-  name               = "${var.stack_name}-internal-alb"
-  internal           = true
-  load_balancer_type = "application"
-  security_groups    = ["${data.terraform_remote_state.infra_security_groups.alertmanager_external_sg_id}"]
-
-  subnets = [
-    "${data.terraform_remote_state.infra_networking.private_subnets}",
-  ]
-
-  tags = "${merge(
-    local.default_tags,
-    var.additional_tags,
-    map("Stackname", "${var.stack_name}"),
-    map("Name", "${var.stack_name}-monitoring-internal-${count.index + 1}")
-  )}"
-}
-
-resource "aws_lb_target_group" "nginx_auth_proxy_external_endpoint" {
-  name                 = "${var.stack_name}-ext-tg"
-  port                 = 80
-  protocol             = "HTTP"
-  vpc_id               = "${data.terraform_remote_state.infra_networking.vpc_id}"
-  deregistration_delay = 30
-
-  health_check {
-    interval            = "10"
-    path                = "/health" # static health check on nginx auth proxy
-    matcher             = "200"
-    protocol            = "HTTP"
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    timeout             = "5"
-  }
-}
-
-resource "aws_lb_listener" "external_listener_http" {
-  load_balancer_arn = "${aws_lb.nginx_auth_external_alb.arn}"
-  port              = "80"
-  protocol          = "HTTP"
-
-  default_action {
-    target_group_arn = "${aws_lb_target_group.nginx_auth_proxy_external_endpoint.arn}"
-    type             = "forward"
-  }
-}
-
-resource "aws_lb_listener" "external_listener_https" {
-  load_balancer_arn = "${aws_lb.nginx_auth_external_alb.arn}"
-  port              = "443"
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
-  certificate_arn   = "${aws_acm_certificate_validation.alertmanager_cert.certificate_arn}"
-
-  default_action {
-    target_group_arn = "${aws_lb_target_group.nginx_auth_proxy_external_endpoint.arn}"
-    type             = "forward"
-  }
-}
-
-resource "aws_lb_target_group" "alertmanager_internal_endpoint" {
-  count = "${var.alertmanager_count}"
-
-  name     = "${var.stack_name}-alerts-internal-${count.index + 1}"
-  port     = "9093"
-  protocol = "HTTP"
-  vpc_id   = "${data.terraform_remote_state.infra_networking.vpc_id}"
-
-  health_check {
-    interval            = "10"
-    path                = "/"
-    matcher             = "200"
-    protocol            = "HTTP"
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    timeout             = "5"
-  }
-}
-
-resource "aws_lb_listener" "internal_listener" {
-  load_balancer_arn = "${aws_lb.monitoring_internal_alb.arn}"
-  port              = "80"
-  protocol          = "HTTP"
-
-  default_action {
-    target_group_arn = "${aws_lb_target_group.alertmanager_internal_endpoint.0.arn}"
-    type             = "forward"
-  }
-}
-
-resource "aws_lb_listener_rule" "alerts_private_listener" {
-  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
-
-  listener_arn = "${aws_lb_listener.internal_listener.arn}"
-  priority     = "${100 + count.index}"
-
-  action {
-    type             = "forward"
-    target_group_arn = "${element(aws_lb_target_group.alertmanager_internal_endpoint.*.arn, count.index)}"
-  }
-
-  condition {
-    field = "host-header"
-
-    values = [
-      "alerts-${count.index + 1}.*",
-    ]
-  }
-}
-
-resource "aws_route53_record" "prom_private_record" {
-  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
-
-  zone_id = "${data.terraform_remote_state.infra_networking.private_zone_id}"
-  name    = "prom-${count.index + 1}"
-  type    = "A"
-
-  alias {
-    name                   = "${aws_lb.monitoring_internal_alb.dns_name}"
-    zone_id                = "${aws_lb.monitoring_internal_alb.zone_id}"
-    evaluate_target_health = false
-  }
-}
-
-resource "aws_route53_record" "alerts_private_record" {
-  count = "${length(data.terraform_remote_state.infra_networking.private_subnets)}"
-
-  zone_id = "${data.terraform_remote_state.infra_networking.private_zone_id}"
-  name    = "alerts-${count.index + 1}"
-  type    = "A"
-
-  alias {
-    name                   = "${aws_lb.monitoring_internal_alb.dns_name}"
-    zone_id                = "${aws_lb.monitoring_internal_alb.zone_id}"
-    evaluate_target_health = false
-  }
 }
 
 ######################################################################
@@ -640,36 +482,6 @@ resource "aws_lb_target_group" "alertmanager_tg" {
 
 ## Outputs
 
-output "monitoring_external_tg" {
-  value       = "${aws_lb_target_group.nginx_auth_proxy_external_endpoint.arn}"
-  description = "Monitoring external target group"
-}
-
-output "prometheus_alb_dns" {
-  value       = "${aws_lb.nginx_auth_external_alb.*.dns_name}"
-  description = "External Monitoring ALB DNS name"
-}
-
-output "zone_id" {
-  value       = "${aws_lb.nginx_auth_external_alb.*.zone_id}"
-  description = "External Monitoring ALB hosted zone ID"
-}
-
-output "monitoring_internal_tg" {
-  value       = "${aws_lb_target_group.alertmanager_internal_endpoint.*.arn}"
-  description = "External Alertmanager ALB target group"
-}
-
-output "alertmanager_alb_zoneid" {
-  value       = "${aws_lb.monitoring_internal_alb.*.zone_id}"
-  description = "External Alertmanager ALB zone id"
-}
-
-output "alertmanager_alb_dns" {
-  value       = "${aws_lb.monitoring_internal_alb.*.dns_name}"
-  description = "External Alertmanager ALB DNS name"
-}
-
 output "prom_public_record_fqdns" {
   value       = "${aws_route53_record.prom_alias.*.fqdn}"
   description = "Prometheus public DNS FQDNs"
@@ -678,16 +490,6 @@ output "prom_public_record_fqdns" {
 output "alerts_public_record_fqdns" {
   value       = "${aws_route53_record.alerts_alias.*.fqdn}"
   description = "Alertmanagers public DNS FQDNs"
-}
-
-output "alerts_private_record_fqdns" {
-  value       = "${aws_route53_record.alerts_private_record.*.fqdn}"
-  description = "Alertmanagers private DNS FQDNs"
-}
-
-output "prom_private_record_fqdns" {
-  value       = "${aws_route53_record.prom_private_record.*.fqdn}"
-  description = "Prometheus private DNS FQDNs"
 }
 
 output "prometheus_target_group_ids" {
