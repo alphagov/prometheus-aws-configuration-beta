@@ -172,10 +172,11 @@ data "template_file" "alertmanager_config_file" {
     smtp_from                 = "alerts@${data.terraform_remote_state.infra_networking.public_subdomain}"
 
     # Port as requested by https://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-connect.html
-    smtp_smarthost         = "email-smtp.${var.aws_region}.amazonaws.com:587"
-    smtp_username          = "${aws_iam_access_key.smtp.id}"
-    smtp_password          = "${aws_iam_access_key.smtp.ses_smtp_password}"
-    ticket_recipient_email = "${data.pass_password.observe_zendesk.password}"
+    smtp_smarthost            = "email-smtp.${var.aws_region}.amazonaws.com:587"
+    smtp_username             = "${aws_iam_access_key.smtp.id}"
+    smtp_password             = "${aws_iam_access_key.smtp.ses_smtp_password}"
+    ticket_recipient_email    = "${data.pass_password.observe_zendesk.password}"
+    dead_mans_switch_cronitor = "${var.dead_mans_switch_cronitor}"
   }
 }
 

@@ -95,3 +95,10 @@ groups:
         summary: "{{ $labels.job }} target is down"
         description: "One of the {{ $labels.job }} targets has been down for 24 hours"
         runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-paas-support.html#re-observe-target-down"
+
+  - alert: Dead_Mans_Switch_Constant_Alert
+    expr: vector(1)
+    labels:
+        product: "prometheus"
+        severity: "constant"
+
