@@ -8,14 +8,23 @@ global:
 
 route:
   receiver: "unmatched-default-root-route"
+  group_interval: 1m
   routes:
   - receiver: "ticket-alert"
     match:
       product: "prometheus"
       severity: "ticket"
+  - receiver: "dead-mans-switch"
+    repeat_interval: 1m
+    match:
+      product: "prometheus"
+      severity: "constant"  
 
 receivers:
 - name: "unmatched-default-root-route"
 - name: "ticket-alert"
   email_configs:
   - to: "${dev_ticket_recipient_email}"
+- name: "dead-mans-switch"
+  webhook_configs:
+  - url: "${dead_mans_switch_cronitor}"
