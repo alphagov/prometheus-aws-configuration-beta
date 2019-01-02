@@ -11,7 +11,7 @@
         "containerPath": "/configs"
       }
     ],
-    "command": ["s3", "sync", "s3://${config_bucket}/alertmanager", "/configs/alertmanager"],
+    "command": ["s3", "sync", "--exact-timestamps", "s3://${config_bucket}/alertmanager", "/configs/alertmanager"],
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {
