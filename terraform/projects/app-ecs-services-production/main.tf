@@ -70,5 +70,5 @@ module "app-ecs-services" {
   dev_environment           = false
   remote_state_bucket       = "${var.remote_state_bucket}"
   stack_name                = "${var.stack_name}"
-  dead_mans_switch_cronitor = "{var.dead_mans_switch_cronitor}"
+  dead_mans_switch_cronitor = "${var.dead_mans_switch_cronitor.password}"
 }

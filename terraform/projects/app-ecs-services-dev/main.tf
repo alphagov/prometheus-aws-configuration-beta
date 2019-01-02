@@ -53,6 +53,10 @@ provider "pass" {
   refresh_store = true
 }
 
+data "pass_password" "cronitor_production_url" {
+  path        = "cronitor/cronitor-production-url"
+}
+
 variable "remote_state_bucket" {
   type        = "string"
   description = "S3 bucket we store our terraform state in"
@@ -66,4 +70,5 @@ module "app-ecs-services" {
   remote_state_bucket        = "${var.remote_state_bucket}"
   stack_name                 = "${var.stack_name}"
   dev_ticket_recipient_email = "test@example.com"
+  dead_mans_switch_cronitor  = "${data.pass_password.cronitor_production_url.password}"
 }

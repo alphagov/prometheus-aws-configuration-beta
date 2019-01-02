@@ -195,6 +195,7 @@ data "template_file" "alertmanager_dev_config_file" {
     smtp_username              = "${aws_iam_access_key.smtp.id}"
     smtp_password              = "${aws_iam_access_key.smtp.ses_smtp_password}"
     dev_ticket_recipient_email = "${var.dev_ticket_recipient_email}"
+    dead_mans_switch_cronitor  = "${var.dead_mans_switch_cronitor}"
   }
 }
 
