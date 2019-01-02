@@ -23,10 +23,9 @@ variable "stack_name" {
   default     = "production"
 }
 
-variable "dead_mans_switch_cronitor" {
-  type        = "string"
+data "pass_password" "cronitor_production_url" {
+  path        = "cronitor/cronitor-production-url"
   description = "Cronitor URL we need to constantly hit for the dead mans switch."
-  default     = "https://cronitor.link/VfKpim/run"
 }
 
 # Resources
@@ -70,5 +69,5 @@ module "app-ecs-services" {
   dev_environment           = false
   remote_state_bucket       = "${var.remote_state_bucket}"
   stack_name                = "${var.stack_name}"
-  dead_mans_switch_cronitor = "${var.dead_mans_switch_cronitor.password}"
+  dead_mans_switch_cronitor = "${data.pass_password.cronitor_production_url.password}"
 }

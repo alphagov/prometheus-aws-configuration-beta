@@ -11,16 +11,16 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
-variable "dev_environment" {
-  type        = "string"
-  description = "Boolean flag for development environments"
-  default     = "false"
-}
-
 variable "stack_name" {
   type        = "string"
   description = "Unique name for this collection of resources"
   default     = "dev"
+}
+
+variable "use_staging_dead_mans_switch" {
+  type        = "string"
+  description = "Flag to use staging dead mans switch"
+  default     = "false"
 }
 
 # Resources
@@ -70,5 +70,5 @@ module "app-ecs-services" {
   remote_state_bucket        = "${var.remote_state_bucket}"
   stack_name                 = "${var.stack_name}"
   dev_ticket_recipient_email = "test@example.com"
-  dead_mans_switch_cronitor  = "${data.pass_password.cronitor_staging_url.password}"
+  dead_mans_switch_cronitor  = "${var.use_staging_dead_mans_switch == "true" ? "${data.pass_password.cronitor_staging_url.password}" : "http://localhost/"}"
 }
