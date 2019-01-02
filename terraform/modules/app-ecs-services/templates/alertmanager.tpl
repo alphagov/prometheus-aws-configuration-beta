@@ -47,4 +47,5 @@ receivers:
   - to: "${registers_zendesk}"
 - name: "dead-mans-switch"
   webhook_configs:
-  - url: "${dead_mans_switch_cronitor}"
+  - send_resolved: false
+    url: "${dead_mans_switch_cronitor}"
