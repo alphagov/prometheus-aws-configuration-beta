@@ -25,6 +25,12 @@ route:
     match:
       product: "prometheus"
       severity: "page"
+  - receiver: "dead-mans-switch"
+    group_interval: 1m
+    repeat_interval: 1m
+    match:
+      product: "prometheus"
+      severity: "constant"  
 
 receivers:
 - name: "re-observe-pagerduty"
@@ -39,3 +45,6 @@ receivers:
 - name: "registers-zendesk"
   email_configs:
   - to: "${registers_zendesk}"
+- name: "dead-mans-switch"
+  webhook_configs:
+  - url: "${dead_mans_switch_cronitor}"
