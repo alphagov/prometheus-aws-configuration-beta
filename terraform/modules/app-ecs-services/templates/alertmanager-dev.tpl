@@ -13,9 +13,19 @@ route:
     match:
       product: "prometheus"
       severity: "ticket"
+  - receiver: "dead-mans-switch"
+    group_interval: 1m
+    repeat_interval: 1m
+    match:
+      product: "prometheus"
+      severity: "constant"
 
 receivers:
 - name: "unmatched-default-root-route"
 - name: "ticket-alert"
   email_configs:
   - to: "${dev_ticket_recipient_email}"
+- name: "dead-mans-switch"
+  webhook_configs:
+  - send_resolved: false
+    url: "${dead_mans_switch_cronitor}"

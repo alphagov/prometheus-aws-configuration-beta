@@ -101,4 +101,3 @@ groups:
     labels:
         product: "prometheus"
         severity: "constant"
-
