@@ -24,8 +24,7 @@ variable "stack_name" {
 }
 
 data "pass_password" "cronitor_staging_url" {
-  path        = "cronitor/cronitor-staging-url"
-  description = "Cronitor URL we need to constantly hit for the dead mans switch."
+  path = "cronitor/cronitor-staging-url"
 }
 
 # Resources
