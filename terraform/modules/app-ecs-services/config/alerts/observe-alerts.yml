@@ -11,7 +11,7 @@ groups:
         summary: "Prometheus is not able to scrape Grafana"
         description: "Prometheus has not successfully scraped {{ $labels.job }} in the last 5 minutes. https://grafana-paas.cloudapps.digital/ may be down."
         logs: "https://kibana.logit.io/s/8fd50110-7b0c-490a-bedf-7544daebbec4/app/kibana#/discover?_g=()&_a=(columns:!(_source),index:'*-*',interval:h,query:(query_string:(query:'grafana-paas.cloudapps.digital%20AND%20NOT%20access.response_code:200')),sort:!('@timestamp',desc))"
-        runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-paas-support.html#re-observe-grafana-down"
+        runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-gds-paas-users.html#re-observe-grafana-down"
 
   - alert: RE_Observe_AlertManager_Below_Threshold
     expr: sum(up{job="alertmanager"}) <= 1
@@ -21,7 +21,7 @@ groups:
         severity: "page"
     annotations:
         summary: "There is one or less Alertmanagers that can be scraped"
-        runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-paas-support.html#re-observe-alertmanager-below-threshold"
+        runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-gds-paas-users.html#re-observe-alertmanager-below-threshold"
 
   - alert: RE_Observe_Prometheus_Below_Threshold
     expr: sum(up{job="prometheus"}) <= 1
@@ -32,7 +32,7 @@ groups:
     annotations:
         summary: "There is one or less Prometheis that can be scraped"
         logs: "https://kibana.logit.io/s/8fd50110-7b0c-490a-bedf-7544daebbec4/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-15m,mode:quick,to:now))&_a=(columns:!(_source),index:'*-*',interval:auto,query:(query_string:(query:'tags:%20prometheus')),sort:!('@timestamp',desc))"
-        runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-paas-support.html#re-observe-prometheus-below-threshold"
+        runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-gds-paas-users.html#re-observe-prometheus-below-threshold"
 
   - alert: RE_Observe_PrometheusDiskPredictedToFill
     expr: predict_linear(node_filesystem_avail{ mountpoint="/mnt", job="prometheus_node" }[12h], 3 * 86400) <= 0
@@ -42,7 +42,7 @@ groups:
     annotations:
         summary: "Instance {{ $labels.instance }} disk {{ $labels.mountpoint }} is predicted to fill in 72h"
         logs: "https://kibana.logit.io/s/8fd50110-7b0c-490a-bedf-7544daebbec4/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-15m,mode:quick,to:now))&_a=(columns:!(_source),index:'*-*',interval:auto,query:(query_string:(query:'tags:%20prometheus')),sort:!('@timestamp',desc))"
-        runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-paas-support.html#re-observe-prometheus-disk-predicted-to-fill"
+        runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-gds-paas-users.html#re-observe-prometheus-disk-predicted-to-fill"
 
   - alert: RE_Observe_No_FileSd_Targets
     # Notes:
@@ -58,7 +58,7 @@ groups:
         summary: "No file_sd targets detected"
         description: "No file_sd targets were detected.  Is there a problem accessing the targets bucket?"
         logs: "https://kibana.logit.io/s/8fd50110-7b0c-490a-bedf-7544daebbec4/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-15m,mode:quick,to:now))&_a=(columns:!(_source),index:'*-*',interval:auto,query:(query_string:(query:'tags:%20prometheus')),sort:!('@timestamp',desc))"
-        runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-paas-support.html#re-observe-no-filesd-targets"
+        runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-gds-paas-users.html#re-observe-no-filesd-targets"
 
   - alert: RE_Observe_Prometheus_Over_Capacity
     expr: sum without(slice)(rate(prometheus_engine_query_duration_seconds_sum{job="prometheus"}[5m])) > 8
@@ -70,7 +70,7 @@ groups:
         summary: "Service is over capacity."
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}."
         logs: "https://kibana.logit.io/s/8fd50110-7b0c-490a-bedf-7544daebbec4/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-15m,mode:quick,to:now))&_a=(columns:!(_source),index:'*-*',interval:auto,query:(query_string:(query:'tags:%20prometheus')),sort:!('@timestamp',desc))"
-        runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-paas-support.html#re-observe-prometheus-over-capacity"
+        runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-gds-paas-users.html#re-observe-prometheus-over-capacity"
 
   - alert: RE_Observe_Prometheus_High_Load
     expr: sum without(slice)(rate(prometheus_engine_query_duration_seconds_sum{job="prometheus"}[2h])) > 4
@@ -81,7 +81,7 @@ groups:
         summary: "Service is approaching capacity."
         description: "The service name is {{ $labels.job }}. The URL experiencing the issue is {{ $labels.instance }}."
         logs: "https://kibana.logit.io/s/8fd50110-7b0c-490a-bedf-7544daebbec4/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-15m,mode:quick,to:now))&_a=(columns:!(_source),index:'*-*',interval:auto,query:(query_string:(query:'tags:%20prometheus')),sort:!('@timestamp',desc))"
-        runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-paas-support.html#re-observe-prometheus-high-load"
+        runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-gds-paas-users.html#re-observe-prometheus-high-load"
 
   - alert: RE_Observe_Target_Down
     expr: up{} == 0
@@ -92,7 +92,7 @@ groups:
     annotations:
         summary: "{{ $labels.job }} target is down"
         description: "One of the {{ $labels.job }} targets has been down for 24 hours"
-        runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-paas-support.html#re-observe-target-down"
+        runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-gds-paas-users.html#re-observe-target-down"
 
   - alert: Dead_Mans_Switch_Constant_Alert
     expr: vector(1)
