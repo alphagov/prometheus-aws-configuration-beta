@@ -76,28 +76,6 @@ resource "aws_security_group" "monitoring_external_sg" {
   )}"
 }
 
-resource "aws_security_group" "alertmanager_external_sg" {
-  name        = "${var.stack_name}-alert-external-sg"
-  vpc_id      = "${data.terraform_remote_state.infra_networking.vpc_id}"
-  description = "Controls external access to the LBs"
-
-  tags = "${merge(
-    local.default_tags,
-    var.additional_tags,
-    map("Stackname", "${var.stack_name}"),
-    map("Name", "${var.stack_name}-monitoring-external-sg")
-  )}"
-}
-
-resource "aws_security_group_rule" "alertmanager_internal_alb" {
-  type                     = "ingress"
-  to_port                  = 80
-  from_port                = 80
-  protocol                 = "tcp"
-  security_group_id        = "${aws_security_group.alertmanager_external_sg.id}"
-  source_security_group_id = "${aws_security_group.monitoring_internal_sg.id}"
-}
-
 resource "aws_security_group_rule" "monitoring_external_sg_ingress_any_http" {
   type              = "ingress"
   to_port           = 80
@@ -114,24 +92,6 @@ resource "aws_security_group_rule" "monitoring_external_sg_ingress_any_https" {
   protocol          = "tcp"
   security_group_id = "${aws_security_group.monitoring_external_sg.id}"
   cidr_blocks       = ["0.0.0.0/0"]
-}
-
-resource "aws_security_group_rule" "allow_prometheus_access_alertmanager" {
-  type              = "ingress"
-  to_port           = 80
-  from_port         = 80
-  protocol          = "tcp"
-  security_group_id = "${aws_security_group.alertmanager_external_sg.id}"
-  cidr_blocks       = ["0.0.0.0/0"]
-}
-
-resource "aws_security_group_rule" "alertmanager_external_sg_egress_any_any" {
-  type              = "egress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
-  cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = "${aws_security_group.alertmanager_external_sg.id}"
 }
 
 resource "aws_security_group_rule" "monitoring_external_sg_egress_any_any" {
@@ -168,16 +128,6 @@ resource "aws_security_group_rule" "monitoring_internal_sg_ingress_alb_http" {
   source_security_group_id = "${aws_security_group.monitoring_external_sg.id}"
 }
 
-resource "aws_security_group_rule" "monitoring_internal_sg_alertmanager_alb" {
-  type      = "ingress"
-  from_port = 0
-  to_port   = 0
-  protocol  = "-1"
-
-  security_group_id        = "${aws_security_group.monitoring_internal_sg.id}"
-  source_security_group_id = "${aws_security_group.alertmanager_external_sg.id}"
-}
-
 resource "aws_security_group_rule" "monitoring_internal_sg_egress_any_any" {
   type              = "egress"
   from_port         = 0
@@ -192,11 +142,6 @@ resource "aws_security_group_rule" "monitoring_internal_sg_egress_any_any" {
 output "monitoring_external_sg_id" {
   value       = "${aws_security_group.monitoring_external_sg.id}"
   description = "monitoring_external_sg ID"
-}
-
-output "alertmanager_external_sg_id" {
-  value       = "${aws_security_group.alertmanager_external_sg.id}"
-  description = "alertmanager_external_sg ID"
 }
 
 output "monitoring_internal_sg_id" {

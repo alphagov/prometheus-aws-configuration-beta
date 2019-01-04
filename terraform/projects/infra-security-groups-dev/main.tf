@@ -54,11 +54,6 @@ output "monitoring_external_sg_id" {
   description = "monitoring_external_sg ID"
 }
 
-output "alertmanager_external_sg_id" {
-  value       = "${module.infra-security-groups.alertmanager_external_sg_id}"
-  description = "alertmanager_external_sg ID"
-}
-
 output "monitoring_internal_sg_id" {
   value       = "${module.infra-security-groups.monitoring_internal_sg_id}"
   description = "monitoring_internal_sg ID"
