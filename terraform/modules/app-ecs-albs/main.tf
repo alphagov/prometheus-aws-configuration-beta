@@ -192,8 +192,7 @@ resource "aws_lb" "prometheus_alb" {
   internal           = false
   load_balancer_type = "application"
 
-  security_groups = [
-    "${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}",
+  security_groups = ["${data.terraform_remote_state.infra_security_groups.prometheus_alb_sg_id}", "${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}",
     "${aws_security_group.prometheus_alb.id}",
   ]
 
@@ -384,6 +383,7 @@ resource "aws_lb" "alertmanager_alb" {
   load_balancer_type = "application"
 
   security_groups = [
+    "${data.terraform_remote_state.infra_security_groups.alertmanager_alb_sg_id}",
     "${aws_security_group.alertmanager_alb.id}",
   ]
 

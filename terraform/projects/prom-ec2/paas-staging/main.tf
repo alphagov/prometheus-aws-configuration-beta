@@ -81,7 +81,7 @@ module "prometheus" {
 
   subnet_ids            = "${data.terraform_remote_state.infra_networking.private_subnets}"
   availability_zones    = "${data.terraform_remote_state.infra_networking.subnets_by_az}"
-  vpc_security_groups   = ["${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}"]
+  vpc_security_groups   = ["${data.terraform_remote_state.infra_security_groups.prometheus_ec2_sg_id}", "${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}"]
   source_security_group = "${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}"
   region                = "eu-west-1"
 
