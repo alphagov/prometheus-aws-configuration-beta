@@ -8,12 +8,6 @@
 *
 */
 
-variable "additional_tags" {
-  type        = "map"
-  description = "Stack specific tags to apply"
-  default     = {}
-}
-
 variable "aws_region" {
   type        = "string"
   description = "The AWS region to use."
@@ -70,7 +64,6 @@ resource "aws_security_group" "monitoring_external_sg" {
 
   tags = "${merge(
     local.default_tags,
-    var.additional_tags,
     map("Stackname", "${var.stack_name}"),
     map("Name", "${var.stack_name}-monitoring-external-sg")
   )}"
@@ -112,7 +105,6 @@ resource "aws_security_group" "monitoring_internal_sg" {
 
   tags = "${merge(
     local.default_tags,
-    var.additional_tags,
     map("Stackname", "${var.stack_name}"),
     map("Name", "${var.stack_name}-monitoring-internal-sg")
   )}"

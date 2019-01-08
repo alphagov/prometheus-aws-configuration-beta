@@ -6,12 +6,6 @@
 *
 */
 
-variable "additional_tags" {
-  type        = "map"
-  description = "Stack specific tags to apply"
-  default     = {}
-}
-
 variable "aws_region" {
   type        = "string"
   description = "AWS region"
@@ -82,7 +76,6 @@ module "vpc" {
   # no `Name` tag unlike other resources as this is taken care of by the vpc module `name` property
   tags = "${merge(
     local.default_tags,
-    var.additional_tags,
     map("Stackname", var.stack_name)
   )}"
 }
