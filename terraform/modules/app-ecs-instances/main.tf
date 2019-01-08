@@ -5,12 +5,6 @@
 *
 */
 
-variable "additional_tags" {
-  type        = "map"
-  description = "Stack specific tags to apply"
-  default     = {}
-}
-
 variable "aws_region" {
   type        = "string"
   description = "AWS region"
@@ -168,7 +162,6 @@ module "ecs_instance" {
 
   tags_as_map = "${merge(
     local.default_tags,
-    var.additional_tags,
     map("Stackname", "${var.stack_name}"),
     map("Name", "${var.stack_name}-ecs-instance")
   )}"

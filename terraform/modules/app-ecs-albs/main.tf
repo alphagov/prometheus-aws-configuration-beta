@@ -5,12 +5,6 @@
 *
 */
 
-variable "additional_tags" {
-  type        = "map"
-  description = "Stack specific tags to apply"
-  default     = {}
-}
-
 variable "aws_region" {
   type        = "string"
   description = "AWS region"
@@ -209,7 +203,6 @@ resource "aws_lb" "prometheus_alb" {
 
   tags = "${merge(
     local.default_tags,
-    var.additional_tags,
     map("Stackname", "${var.stack_name}"),
     map("Name", "${var.stack_name}-prometheus-alb")
   )}"
@@ -400,7 +393,6 @@ resource "aws_lb" "alertmanager_alb" {
 
   tags = "${merge(
     local.default_tags,
-    var.additional_tags,
     map("Stackname", "${var.stack_name}"),
     map("Name", "${var.stack_name}-alertmanager-alb")
   )}"
