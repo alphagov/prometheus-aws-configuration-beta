@@ -26,7 +26,7 @@ resource "aws_instance" "prometheus" {
 
   key_name = "${var.enable_ssh ? format("%s-prom-key", var.environment) : ""}"
 
-  vpc_security_group_ids = ["${var.vpc_security_groups}", "${aws_security_group.allow_prometheus.id}"]
+  vpc_security_group_ids = ["${var.vpc_security_groups}"]
 
   tags {
     Name        = "${var.product}-${var.environment}-prometheus-${element(keys(var.availability_zones), count.index)}"
@@ -75,68 +75,6 @@ data "template_file" "user_data_script" {
     prometheus_htpasswd = "${var.prometheus_htpasswd}"
     allowed_cidrs       = "${join("\n        ",formatlist("allow %s;", var.allowed_cidrs))}"
   }
-}
-
-resource "aws_security_group_rule" "allow_ssh" {
-  count             = "${var.enable_ssh}"
-  security_group_id = "${aws_security_group.allow_prometheus.id}"
-  type              = "ingress"
-  from_port         = 22
-  to_port           = 22
-  protocol          = "tcp"
-  cidr_blocks       = ["${var.allowed_cidrs}"]
-}
-
-resource "aws_security_group_rule" "allow_prometheus" {
-  security_group_id = "${aws_security_group.allow_prometheus.id}"
-  type              = "ingress"
-  from_port         = 9090
-  to_port           = 9090
-  protocol          = "tcp"
-  cidr_blocks       = ["${var.allowed_cidrs}"]
-}
-
-resource "aws_security_group_rule" "allow_prometheus_private" {
-  count                    = "${var.source_security_group == "" ? 0 : 1}"
-  security_group_id        = "${aws_security_group.allow_prometheus.id}"
-  type                     = "ingress"
-  from_port                = 9090
-  to_port                  = 9090
-  protocol                 = "tcp"
-  source_security_group_id = "${var.source_security_group}"
-}
-
-resource "aws_security_group_rule" "allow_prometheus_from_lb" {
-  count                    = "${var.source_security_group == "" ? 0 : 1}"
-  security_group_id        = "${aws_security_group.allow_prometheus.id}"
-  type                     = "ingress"
-  from_port                = 80
-  to_port                  = 80
-  protocol                 = "tcp"
-  source_security_group_id = "${var.source_security_group}"
-}
-
-resource "aws_security_group_rule" "allow_prometheus_self" {
-  security_group_id        = "${aws_security_group.allow_prometheus.id}"
-  type                     = "ingress"
-  from_port                = 9090
-  to_port                  = 9090
-  protocol                 = "tcp"
-  source_security_group_id = "${aws_security_group.allow_prometheus.id}"
-}
-
-resource "aws_security_group_rule" "allow_prometheus_node_exporter" {
-  security_group_id        = "${aws_security_group.allow_prometheus.id}"
-  type                     = "ingress"
-  from_port                = 9100
-  to_port                  = 9100
-  protocol                 = "tcp"
-  source_security_group_id = "${aws_security_group.allow_prometheus.id}"
-}
-
-resource "aws_security_group" "allow_prometheus" {
-  name   = "${var.product}-${var.environment}-sg"
-  vpc_id = "${var.target_vpc}"
 }
 
 resource "aws_s3_bucket" "prometheus_config" {
