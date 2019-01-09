@@ -136,7 +136,9 @@ module "ecs_instance" {
   image_id      = "${module.ami.ecs_optimized_ami_id}"
   instance_type = "${var.ecs_instance_type}"
 
-  security_groups = ["${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}",
+  security_groups = [
+    "${data.terraform_remote_state.infra_security_groups.alertmanager_ec2_sg_id}",
+    "${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}",
     "${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}",
   ]
 
