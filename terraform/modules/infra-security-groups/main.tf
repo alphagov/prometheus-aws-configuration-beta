@@ -140,8 +140,8 @@ resource "aws_security_group_rule" "ingress_from_prometheus_ec2_to_prometheus_ec
 resource "aws_security_group_rule" "ingress_from_prometheus_to_prometheus_node_exporter" {
   security_group_id        = "${aws_security_group.prometheus_ec2.id}"
   type                     = "ingress"
-  to_port                  = 9090
-  from_port                = 9090
+  to_port                  = 9100
+  from_port                = 9100
   protocol                 = "tcp"
   source_security_group_id = "${aws_security_group.prometheus_ec2.id}"
 }
