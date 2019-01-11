@@ -36,12 +36,6 @@ variable "vpc_security_groups" {
   description = "Security groups to attach to the prometheus instances"
 }
 
-variable "source_security_group" {
-  type        = "string"
-  default     = ""
-  description = "Security group which should be allowed to access port 9090 on the prometheus instances"
-}
-
 variable "enable_ssh" {
   default = false
 }

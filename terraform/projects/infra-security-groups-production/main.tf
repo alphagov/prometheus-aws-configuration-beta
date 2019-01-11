@@ -48,16 +48,6 @@ module "infra-security-groups" {
 
 ## Outputs
 
-output "monitoring_external_sg_id" {
-  value       = "${module.infra-security-groups.monitoring_external_sg_id}"
-  description = "monitoring_external_sg ID"
-}
-
-output "monitoring_internal_sg_id" {
-  value       = "${module.infra-security-groups.monitoring_internal_sg_id}"
-  description = "monitoring_internal_sg ID"
-}
-
 output "prometheus_ec2_sg_id" {
   value       = "${module.infra-security-groups.prometheus_ec2_sg_id}"
   description = "security group prometheus_ec2 ID"

@@ -79,11 +79,10 @@ module "prometheus" {
 
   prometheus_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.prom_public_record_fqdns}"
 
-  subnet_ids            = "${data.terraform_remote_state.infra_networking.private_subnets}"
-  availability_zones    = "${data.terraform_remote_state.infra_networking.subnets_by_az}"
-  vpc_security_groups   = ["${data.terraform_remote_state.infra_security_groups.prometheus_ec2_sg_id}", "${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}"]
-  source_security_group = "${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}"
-  region                = "eu-west-1"
+  subnet_ids          = "${data.terraform_remote_state.infra_networking.private_subnets}"
+  availability_zones  = "${data.terraform_remote_state.infra_networking.subnets_by_az}"
+  vpc_security_groups = ["${data.terraform_remote_state.infra_security_groups.prometheus_ec2_sg_id}"]
+  region              = "eu-west-1"
 
   prometheus_htpasswd          = "${data.pass_password.prometheus_htpasswd.password}"
   prometheus_target_group_arns = "${data.terraform_remote_state.app_ecs_albs.prometheus_target_group_arns}"
@@ -101,8 +100,6 @@ module "paas-config" {
   prom_private_ips  = "${module.prometheus.private_ip_addresses}"
   private_zone_id   = "${data.terraform_remote_state.infra_networking.private_zone_id}"
   private_subdomain = "${data.terraform_remote_state.infra_networking.private_subdomain}"
-
-  prometheus_sg_id = "${module.prometheus.ec2_instance_prometheus_sg}"
 }
 
 output "instance_ids" {

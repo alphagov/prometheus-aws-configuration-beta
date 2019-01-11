@@ -47,21 +47,6 @@ variable "alertmanager_count" {
   default     = "3"
 }
 
-variable "allowed_cidrs" {
-  type        = "list"
-  description = "List of CIDRs which are able to access the alertmanager ALB, default are GDS ips"
-
-  default = [
-    "213.86.153.212/32",
-    "213.86.153.213/32",
-    "213.86.153.214/32",
-    "213.86.153.235/32",
-    "213.86.153.236/32",
-    "213.86.153.237/32",
-    "85.133.67.244/32",
-  ]
-}
-
 # locals
 # --------------------------------------------------------------
 
@@ -161,40 +146,12 @@ resource "aws_route53_record" "prom_alias" {
   }
 }
 
-resource "aws_security_group" "prometheus_alb" {
-  name        = "${var.stack_name}-prometheus-alb-sg"
-  description = "Access to prometheus ALB (${var.stack_name})"
-  vpc_id      = "${local.vpc_id}"
-}
-
-# We allow all IPs to access the ALB as Prometheus is fronted by an nginx which controls access to either approved IP
-# addresses, or users with basic auth creds
-resource "aws_security_group_rule" "prom_alb_allow_http" {
-  security_group_id = "${aws_security_group.prometheus_alb.id}"
-  type              = "ingress"
-  from_port         = 80
-  to_port           = 80
-  protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
-}
-
-resource "aws_security_group_rule" "prom_alb_allow_https" {
-  security_group_id = "${aws_security_group.prometheus_alb.id}"
-  type              = "ingress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
-}
-
 resource "aws_lb" "prometheus_alb" {
   name               = "${var.stack_name}-prometheus-alb"
   internal           = false
   load_balancer_type = "application"
 
-  security_groups = ["${data.terraform_remote_state.infra_security_groups.prometheus_alb_sg_id}", "${data.terraform_remote_state.infra_security_groups.monitoring_external_sg_id}",
-    "${aws_security_group.prometheus_alb.id}",
-  ]
+  security_groups = ["${data.terraform_remote_state.infra_security_groups.prometheus_alb_sg_id}"]
 
   subnets = [
     "${var.subnets}",
@@ -333,59 +290,12 @@ resource "aws_route53_record" "alerts_alias" {
   }
 }
 
-resource "aws_security_group" "alertmanager_alb" {
-  name        = "${var.stack_name}-alertmanager-alb-sg"
-  description = "Access to alertmanager ALB (${var.stack_name})"
-  vpc_id      = "${local.vpc_id}"
-}
-
-# Unlike prometheus, alertmanager is IP restricted by security group
-# here
-resource "aws_security_group_rule" "alertmanager_alb_allow_http" {
-  security_group_id = "${aws_security_group.alertmanager_alb.id}"
-  type              = "ingress"
-  from_port         = 80
-  to_port           = 80
-  protocol          = "tcp"
-  cidr_blocks       = ["${var.allowed_cidrs}"]
-}
-
-resource "aws_security_group_rule" "alertmanager_alb_allow_https" {
-  security_group_id = "${aws_security_group.alertmanager_alb.id}"
-  type              = "ingress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  cidr_blocks       = ["${var.allowed_cidrs}"]
-}
-
-resource "aws_security_group_rule" "alertmanager_alb_to_alertmanager" {
-  security_group_id        = "${aws_security_group.alertmanager_alb.id}"
-  type                     = "egress"
-  from_port                = 9093
-  to_port                  = 9093
-  protocol                 = "tcp"
-  source_security_group_id = "${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}"
-}
-
-resource "aws_security_group_rule" "alertmanager_from_alertmanager_alb" {
-  security_group_id        = "${data.terraform_remote_state.infra_security_groups.monitoring_internal_sg_id}"
-  type                     = "ingress"
-  from_port                = 9093
-  to_port                  = 9093
-  protocol                 = "tcp"
-  source_security_group_id = "${aws_security_group.alertmanager_alb.id}"
-}
-
 resource "aws_lb" "alertmanager_alb" {
   name               = "${var.stack_name}-alertmanager-alb"
   internal           = false
   load_balancer_type = "application"
 
-  security_groups = [
-    "${data.terraform_remote_state.infra_security_groups.alertmanager_alb_sg_id}",
-    "${aws_security_group.alertmanager_alb.id}",
-  ]
+  security_groups = ["${data.terraform_remote_state.infra_security_groups.alertmanager_alb_sg_id}"]
 
   subnets = [
     "${var.subnets}",
