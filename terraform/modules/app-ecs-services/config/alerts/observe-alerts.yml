@@ -35,7 +35,7 @@ groups:
         runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-gds-paas-users.html#re-observe-prometheus-below-threshold"
 
   - alert: RE_Observe_PrometheusDiskPredictedToFill
-    expr: predict_linear(node_filesystem_avail{ mountpoint="/mnt", job="prometheus_node" }[12h], 3 * 86400) <= 0
+    expr: predict_linear(node_filesystem_avail{ mountpoint="/mnt", job="prometheus_node" }[12h], 3 * 86400)  and on (instance) (time() - node_creation_time) > 43200 <= 0
     labels:
         product: "prometheus"
         severity: "ticket"
