@@ -117,7 +117,9 @@ data "template_file" "instance_user_data" {
   template = "${file("${path.module}/instance-user-data.tpl")}"
 
   vars {
-    cluster_name = "${local.cluster_name}"
+    dns_zone_id       = "${data.terraform_remote_state.infra_networking.private_zone_id}"
+    private_subdomain = "${data.terraform_remote_state.infra_networking.private_subdomain}"
+    cluster_name      = "${local.cluster_name}"
   }
 }
 
