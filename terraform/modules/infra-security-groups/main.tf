@@ -230,6 +230,15 @@ resource "aws_security_group_rule" "ingress_from_prometheus_ec2_to_alertmanager_
   source_security_group_id = "${aws_security_group.prometheus_ec2.id}"
 }
 
+resource "aws_security_group_rule" "ingress_from_alertmanager_ec2_to_alertmanager_ec2" {
+  security_group_id        = "${aws_security_group.alertmanager_ec2.id}"
+  type                     = "ingress"
+  from_port                = 9094
+  to_port                  = 9094
+  protocol                 = "tcp"
+  source_security_group_id = "${aws_security_group.alertmanager_ec2.id}"
+}
+
 # This rule allows all egress out of alertmanager_ec2. This is for the following purposes:
 # - downloading packages from package repos
 # - calling AWS APIs such as SSM, S3 and EC2
