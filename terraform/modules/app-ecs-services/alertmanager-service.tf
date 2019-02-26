@@ -108,6 +108,7 @@ resource "aws_ecs_task_definition" "alertmanager_server" {
   family                = "${var.stack_name}-alertmanager-server-${count.index + 1}"
   container_definitions = "${element(data.template_file.alertmanager_container_defn.*.rendered, count.index)}"
   task_role_arn         = "${aws_iam_role.alertmanager_task_iam_role.arn}"
+  network_mode          = "host"
 
   volume {
     name      = "config-from-s3"
