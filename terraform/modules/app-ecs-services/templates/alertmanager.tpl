@@ -30,7 +30,10 @@ route:
     repeat_interval: 1m
     match:
       product: "prometheus"
-      severity: "constant"  
+      severity: "constant"
+  - receiver: "dev_null"
+    match:
+      product: "verify"
 
 receivers:
 - name: "re-observe-pagerduty"
@@ -49,3 +52,6 @@ receivers:
   webhook_configs:
   - send_resolved: false
     url: "${dead_mans_switch_cronitor}"
+# receiver which ignores anything sent to it.  For testing purposes
+# for the moment.
+- name: "dev_null"
