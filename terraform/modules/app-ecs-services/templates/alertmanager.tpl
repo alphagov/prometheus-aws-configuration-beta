@@ -38,13 +38,13 @@ route:
 receivers:
 - name: "re-observe-pagerduty"
   pagerduty_configs:
-    - service_key: "${pagerduty_service_key}"
+    - service_key: "${observe_pagerduty_key}"
 - name: "re-observe-ticket-alert"
   email_configs:
   - to: "${ticket_recipient_email}"
 - name: "dgu-pagerduty"
   pagerduty_configs:
-    - service_key: "${dgu_pagerduty_service_key}"
+    - service_key: "${dgu_pagerduty_key}"
 - name: "registers-zendesk"
   email_configs:
   - to: "${registers_zendesk}"

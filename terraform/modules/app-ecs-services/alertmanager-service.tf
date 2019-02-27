@@ -146,11 +146,11 @@ resource "aws_ecs_service" "alertmanager_server" {
 
 #### alertmanager
 
-data "pass_password" "pagerduty_service_key" {
+data "pass_password" "observe_pagerduty_key" {
   path = "pagerduty/integration-keys/production"
 }
 
-data "pass_password" "dgu_pagerduty_service_key" {
+data "pass_password" "dgu_pagerduty_key" {
   path = "pagerduty/integration-keys/dgu"
 }
 
@@ -166,10 +166,10 @@ data "template_file" "alertmanager_config_file" {
   template = "${file("${path.module}/templates/alertmanager.tpl")}"
 
   vars {
-    pagerduty_service_key     = "${data.pass_password.pagerduty_service_key.password}"
-    dgu_pagerduty_service_key = "${data.pass_password.dgu_pagerduty_service_key.password}"
-    registers_zendesk         = "${data.pass_password.registers_zendesk.password}"
-    smtp_from                 = "alerts@${data.terraform_remote_state.infra_networking.public_subdomain}"
+    observe_pagerduty_key = "${data.pass_password.observe_pagerduty_key.password}"
+    dgu_pagerduty_key     = "${data.pass_password.dgu_pagerduty_key.password}"
+    registers_zendesk     = "${data.pass_password.registers_zendesk.password}"
+    smtp_from             = "alerts@${data.terraform_remote_state.infra_networking.public_subdomain}"
 
     # Port as requested by https://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-connect.html
     smtp_smarthost            = "email-smtp.${var.aws_region}.amazonaws.com:587"
