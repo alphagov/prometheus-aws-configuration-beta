@@ -5,6 +5,7 @@ global:
   smtp_smarthost: "${smtp_smarthost}"
   smtp_auth_username: "${smtp_username}"
   smtp_auth_password: "${smtp_password}"
+  slack_api_url: "${slack_api_url}"
 
 route:
   receiver: "re-observe-pagerduty"
@@ -31,20 +32,25 @@ route:
     match:
       product: "prometheus"
       severity: "constant"
-  - receiver: "dev_null"
+  - receiver: "autom8-slack"
     match:
       product: "verify"
+    routes:
+    - receiver: "verify-p1"
+      match:
+        deployment: prod
+        severity: p1
 
 receivers:
 - name: "re-observe-pagerduty"
   pagerduty_configs:
-    - service_key: "${pagerduty_service_key}"
+    - service_key: "${observe_pagerduty_key}"
 - name: "re-observe-ticket-alert"
   email_configs:
   - to: "${ticket_recipient_email}"
 - name: "dgu-pagerduty"
   pagerduty_configs:
-    - service_key: "${dgu_pagerduty_service_key}"
+    - service_key: "${dgu_pagerduty_key}"
 - name: "registers-zendesk"
   email_configs:
   - to: "${registers_zendesk}"
@@ -52,6 +58,11 @@ receivers:
   webhook_configs:
   - send_resolved: false
     url: "${dead_mans_switch_cronitor}"
-# receiver which ignores anything sent to it.  For testing purposes
-# for the moment.
-- name: "dev_null"
+- name: "autom8-slack"
+  slack_configs:
+  - channel: '#re-autom8-alerts'
+    icon_emoji: ':verify-shield:'
+    username: alertmanager
+- name: "verify-p1"
+  pagerduty_configs:
+    - service_key: "${verify_p1_pagerduty_key}"

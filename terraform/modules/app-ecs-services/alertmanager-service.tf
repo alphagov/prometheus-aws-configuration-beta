@@ -94,7 +94,6 @@ data "template_file" "alertmanager_container_defn" {
   template = "${file("${path.module}/task-definitions/alertmanager-server.json")}"
 
   vars {
-    alertmanager_url = "https://${local.alertmanager_public_fqdns[count.index]}"
     log_group        = "${aws_cloudwatch_log_group.task_logs.name}"
     region           = "${var.aws_region}"
     config_bucket    = "${aws_s3_bucket.config_bucket.id}"
@@ -147,12 +146,20 @@ resource "aws_ecs_service" "alertmanager_server" {
 
 #### alertmanager
 
-data "pass_password" "pagerduty_service_key" {
+data "pass_password" "observe_pagerduty_key" {
   path = "pagerduty/integration-keys/production"
 }
 
-data "pass_password" "dgu_pagerduty_service_key" {
+data "pass_password" "dgu_pagerduty_key" {
   path = "pagerduty/integration-keys/dgu"
+}
+
+data "pass_password" "verify_p1_pagerduty_key" {
+  path = "pagerduty/integration-keys/verify-p1"
+}
+
+data "pass_password" "slack_api_url" {
+  path = "slack-api-url"
 }
 
 data "pass_password" "registers_zendesk" {
@@ -167,10 +174,12 @@ data "template_file" "alertmanager_config_file" {
   template = "${file("${path.module}/templates/alertmanager.tpl")}"
 
   vars {
-    pagerduty_service_key     = "${data.pass_password.pagerduty_service_key.password}"
-    dgu_pagerduty_service_key = "${data.pass_password.dgu_pagerduty_service_key.password}"
-    registers_zendesk         = "${data.pass_password.registers_zendesk.password}"
-    smtp_from                 = "alerts@${data.terraform_remote_state.infra_networking.public_subdomain}"
+    observe_pagerduty_key   = "${data.pass_password.observe_pagerduty_key.password}"
+    dgu_pagerduty_key       = "${data.pass_password.dgu_pagerduty_key.password}"
+    verify_p1_pagerduty_key = "${data.pass_password.verify_p1_pagerduty_key.password}"
+    slack_api_url           = "${data.pass_password.slack_api_url.password}"
+    registers_zendesk       = "${data.pass_password.registers_zendesk.password}"
+    smtp_from               = "alerts@${data.terraform_remote_state.infra_networking.public_subdomain}"
 
     # Port as requested by https://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-connect.html
     smtp_smarthost            = "email-smtp.${var.aws_region}.amazonaws.com:587"
