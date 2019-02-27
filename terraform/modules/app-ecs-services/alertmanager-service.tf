@@ -94,7 +94,6 @@ data "template_file" "alertmanager_container_defn" {
   template = "${file("${path.module}/task-definitions/alertmanager-server.json")}"
 
   vars {
-    alertmanager_url = "https://${local.alertmanager_public_fqdns[count.index]}"
     log_group        = "${aws_cloudwatch_log_group.task_logs.name}"
     region           = "${var.aws_region}"
     config_bucket    = "${aws_s3_bucket.config_bucket.id}"
