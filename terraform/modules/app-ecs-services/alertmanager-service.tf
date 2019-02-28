@@ -170,6 +170,22 @@ data "pass_password" "observe_zendesk" {
   path = "receivers/observe/zendesk"
 }
 
+data "pass_password" "verify_joint_cronitor" {
+  path = "cronitor/verify-joint-url"
+}
+
+data "pass_password" "verify_staging_cronitor" {
+  path = "cronitor/verify-staging-url"
+}
+
+data "pass_password" "verify_integration_cronitor" {
+  path = "cronitor/verify-integration-url"
+}
+
+data "pass_password" "verify_prod_cronitor" {
+  path = "cronitor/verify-prod-url"
+}
+
 data "template_file" "alertmanager_config_file" {
   template = "${file("${path.module}/templates/alertmanager.tpl")}"
 
@@ -182,11 +198,15 @@ data "template_file" "alertmanager_config_file" {
     smtp_from               = "alerts@${data.terraform_remote_state.infra_networking.public_subdomain}"
 
     # Port as requested by https://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-connect.html
-    smtp_smarthost            = "email-smtp.${var.aws_region}.amazonaws.com:587"
-    smtp_username             = "${aws_iam_access_key.smtp.id}"
-    smtp_password             = "${aws_iam_access_key.smtp.ses_smtp_password}"
-    ticket_recipient_email    = "${data.pass_password.observe_zendesk.password}"
-    dead_mans_switch_cronitor = "${var.dead_mans_switch_cronitor}"
+    smtp_smarthost              = "email-smtp.${var.aws_region}.amazonaws.com:587"
+    smtp_username               = "${aws_iam_access_key.smtp.id}"
+    smtp_password               = "${aws_iam_access_key.smtp.ses_smtp_password}"
+    ticket_recipient_email      = "${data.pass_password.observe_zendesk.password}"
+    observe_cronitor            = "${var.observe_cronitor}"
+    verify_joint_cronitor       = "${data.pass_password.verify_joint_cronitor.password}"
+    verify_staging_cronitor     = "${data.pass_password.verify_staging_cronitor.password}"
+    verify_integration_cronitor = "${data.pass_password.verify_integration_cronitor.password}"
+    verify_prod_cronitor        = "${data.pass_password.verify_prod_cronitor.password}"
   }
 }
 
@@ -205,7 +225,7 @@ data "template_file" "alertmanager_dev_config_file" {
     smtp_username              = "${aws_iam_access_key.smtp.id}"
     smtp_password              = "${aws_iam_access_key.smtp.ses_smtp_password}"
     dev_ticket_recipient_email = "${var.dev_ticket_recipient_email}"
-    dead_mans_switch_cronitor  = "${var.dead_mans_switch_cronitor}"
+    observe_cronitor           = "${var.observe_cronitor}"
   }
 }
 

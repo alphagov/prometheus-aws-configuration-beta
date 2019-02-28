@@ -26,7 +26,7 @@ route:
     match:
       product: "prometheus"
       severity: "page"
-  - receiver: "dead-mans-switch"
+  - receiver: "observe-cronitor"
     group_interval: 1m
     repeat_interval: 1m
     match:
@@ -40,6 +40,23 @@ route:
       match:
         deployment: prod
         severity: p1
+    - match:
+        severity: constant
+      group_interval: 1m
+      repeat_interval: 1m
+      routes:
+        - match:
+            deployment: prod
+          receiver: "verify-prod-cronitor"
+        - match:
+            deployment: integration
+          receiver: "verify-integration-cronitor"
+        - match:
+            deployment: staging
+          receiver: "verify-staging-cronitor"
+        - match:
+            deployment: joint
+          receiver: "verify-joint-cronitor"
 
 receivers:
 - name: "re-observe-pagerduty"
@@ -54,10 +71,26 @@ receivers:
 - name: "registers-zendesk"
   email_configs:
   - to: "${registers_zendesk}"
-- name: "dead-mans-switch"
+- name: "observe-cronitor"
   webhook_configs:
   - send_resolved: false
-    url: "${dead_mans_switch_cronitor}"
+    url: "${observe_cronitor}"
+- name: "verify-prod-cronitor"
+  webhook_configs:
+  - send_resolved: false
+    url: "${verify_prod_cronitor}"
+- name: "verify-integration-cronitor"
+  webhook_configs:
+  - send_resolved: false
+    url: "${verify_integration_cronitor}"
+- name: "verify-staging-cronitor"
+  webhook_configs:
+  - send_resolved: false
+    url: "${verify_staging_cronitor}"
+- name: "verify-joint-cronitor"
+  webhook_configs:
+  - send_resolved: false
+    url: "${verify_joint_cronitor}"
 - name: "autom8-slack"
   slack_configs:
   - channel: '#re-autom8-alerts'

@@ -65,8 +65,8 @@ variable "remote_state_bucket" {
 module "app-ecs-services" {
   source = "../../modules/app-ecs-services"
 
-  dev_environment           = false
-  remote_state_bucket       = "${var.remote_state_bucket}"
-  stack_name                = "${var.stack_name}"
-  dead_mans_switch_cronitor = "${data.pass_password.cronitor_production_url.password}"
+  dev_environment     = false
+  remote_state_bucket = "${var.remote_state_bucket}"
+  stack_name          = "${var.stack_name}"
+  observe_cronitor    = "${data.pass_password.cronitor_production_url.password}"
 }
