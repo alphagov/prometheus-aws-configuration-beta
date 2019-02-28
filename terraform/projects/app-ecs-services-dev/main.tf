@@ -17,9 +17,9 @@ variable "stack_name" {
   default     = "dev"
 }
 
-variable "use_staging_dead_mans_switch" {
+variable "use_staging_cronitor" {
   type        = "string"
-  description = "Flag to use staging dead mans switch"
+  description = "Flag to use staging cronitor"
   default     = "false"
 }
 
@@ -70,5 +70,5 @@ module "app-ecs-services" {
   remote_state_bucket        = "${var.remote_state_bucket}"
   stack_name                 = "${var.stack_name}"
   dev_ticket_recipient_email = "test@example.com"
-  dead_mans_switch_cronitor  = "${var.use_staging_dead_mans_switch == "true" ? "${data.pass_password.cronitor_staging_url.password}" : "http://localhost/"}"
+  observe_cronitor           = "${var.use_staging_cronitor == "true" ? "${data.pass_password.cronitor_staging_url.password}" : "http://localhost/"}"
 }

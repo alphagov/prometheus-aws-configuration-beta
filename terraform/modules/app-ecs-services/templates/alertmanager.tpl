@@ -26,7 +26,7 @@ route:
     match:
       product: "prometheus"
       severity: "page"
-  - receiver: "dead-mans-switch"
+  - receiver: "observe-cronitor"
     group_interval: 1m
     repeat_interval: 1m
     match:
@@ -54,10 +54,10 @@ receivers:
 - name: "registers-zendesk"
   email_configs:
   - to: "${registers_zendesk}"
-- name: "dead-mans-switch"
+- name: "observe-cronitor"
   webhook_configs:
   - send_resolved: false
-    url: "${dead_mans_switch_cronitor}"
+    url: "${observe_cronitor}"
 - name: "autom8-slack"
   slack_configs:
   - channel: '#re-autom8-alerts'

@@ -56,9 +56,9 @@ variable "dev_ticket_recipient_email" {
   default     = ""
 }
 
-variable "dead_mans_switch_cronitor" {
+variable "observe_cronitor" {
   type        = "string"
-  description = "Email address to send Dead Mans Switch heart beats to"
+  description = "URL to send Observe heartbeats to"
   default     = ""
 }
 
