@@ -94,7 +94,13 @@ groups:
         description: "One of the {{ $labels.job }} targets has been down for 24 hours"
         runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-gds-paas-users.html#re-observe-target-down"
 
-  - alert: Dead_Mans_Switch_Constant_Alert
+  - alert: AlwaysAlert
+    annotations:
+      message: |
+        This is an alert meant to ensure that the entire alerting pipeline is functional.
+        This alert is always firing, therefore it should always be firing in Alertmanager
+        and always fire against a receiver.  We use cronitor to alert us if this ever
+        *doesn't* fire, because this indicates a problem with our alerting pipeline
     expr: vector(1)
     labels:
         product: "prometheus"
