@@ -40,6 +40,23 @@ route:
       match:
         deployment: prod
         severity: p1
+    - match:
+        severity: constant
+      group_interval: 1m
+      repeat_interval: 1m
+      routes:
+        - match:
+            deployment: prod
+          receiver: "verify-prod-cronitor"
+        - match:
+            deployment: integration
+          receiver: "verify-integration-cronitor"
+        - match:
+            deployment: staging
+          receiver: "verify-staging-cronitor"
+        - match:
+            deployment: joint
+          receiver: "verify-joint-cronitor"
 
 receivers:
 - name: "re-observe-pagerduty"
@@ -58,6 +75,22 @@ receivers:
   webhook_configs:
   - send_resolved: false
     url: "${observe_cronitor}"
+- name: "verify-prod-cronitor"
+  webhook_configs:
+  - send_resolved: false
+    url: "${verify_prod_cronitor}"
+- name: "verify-integration-cronitor"
+  webhook_configs:
+  - send_resolved: false
+    url: "${verify_integration_cronitor}"
+- name: "verify-staging-cronitor"
+  webhook_configs:
+  - send_resolved: false
+    url: "${verify_staging_cronitor}"
+- name: "verify-joint-cronitor"
+  webhook_configs:
+  - send_resolved: false
+    url: "${verify_joint_cronitor}"
 - name: "autom8-slack"
   slack_configs:
   - channel: '#re-autom8-alerts'
