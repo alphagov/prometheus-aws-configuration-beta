@@ -93,7 +93,8 @@ receivers:
     url: "${verify_joint_cronitor}"
 - name: "autom8-slack"
   slack_configs:
-  - channel: '#re-autom8-alerts'
+  - send_resolved: true
+    channel: '#re-autom8-alerts'
     icon_emoji: ':verify-shield:'
     username: alertmanager
 - name: "verify-p1"
