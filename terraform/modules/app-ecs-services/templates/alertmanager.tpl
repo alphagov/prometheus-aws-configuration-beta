@@ -94,7 +94,7 @@ receivers:
 - name: "autom8-slack"
   slack_configs:
   - send_resolved: true
-    channel: '#re-autom8-alerts'
+    channel: '#verify-2ndline'
     icon_emoji: ':verify-shield:'
     username: alertmanager
 - name: "verify-p1"
