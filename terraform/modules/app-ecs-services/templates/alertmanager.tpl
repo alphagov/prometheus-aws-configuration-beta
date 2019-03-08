@@ -32,7 +32,7 @@ route:
     match:
       product: "prometheus"
       severity: "constant"
-  - receiver: "autom8-slack"
+  - receiver: "verify-2ndline-slack"
     match:
       product: "verify"
     routes:
@@ -91,8 +91,8 @@ receivers:
   webhook_configs:
   - send_resolved: false
     url: "${verify_joint_cronitor}"
-- name: "autom8-slack"
-  slack_configs:
+- name: "verify-2ndline-slack"
+  slack_configs: &verify-2ndline-slack-configs
   - send_resolved: true
     channel: '#verify-2ndline'
     icon_emoji: ':verify-shield:'
@@ -100,3 +100,5 @@ receivers:
 - name: "verify-p1"
   pagerduty_configs:
     - service_key: "${verify_p1_pagerduty_key}"
+  slack_configs: *verify-2ndline-slack-configs
+
