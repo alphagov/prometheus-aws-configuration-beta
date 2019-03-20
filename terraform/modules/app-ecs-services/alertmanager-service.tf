@@ -158,6 +158,10 @@ data "pass_password" "verify_p1_pagerduty_key" {
   path = "pagerduty/integration-keys/verify-p1"
 }
 
+data "pass_password" "verify_p2_pagerduty_key" {
+  path = "pagerduty/integration-keys/verify-p2"
+}
+
 data "pass_password" "slack_api_url" {
   path = "slack-api-url"
 }
