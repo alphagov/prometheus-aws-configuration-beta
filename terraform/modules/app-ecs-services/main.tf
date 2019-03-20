@@ -97,6 +97,7 @@ resource "aws_cloudwatch_log_group" "task_logs" {
   retention_in_days = 7
 }
 
+# TODO: delete this when we're confident we don't need it
 resource "aws_s3_bucket" "config_bucket" {
   bucket_prefix = "ecs-monitoring-${var.stack_name}-config"
   acl           = "private"

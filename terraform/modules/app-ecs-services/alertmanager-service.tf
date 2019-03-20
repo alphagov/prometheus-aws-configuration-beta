@@ -24,67 +24,10 @@ variable "prometheis_total" {
 locals {
   alertmanager_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.alerts_public_record_fqdns}"
   alertmanager_mesh         = "${formatlist("--cluster.peer=%s.${local.private_subdomain}:9094", var.mesh_urls)}"
-  list_of_args              = ["--config.file=/etc/alertmanager/alertmanager.yml"]
 
   #We have to define alert manager args counts on at template definition level since we have no local instance
   private_subdomain = "${data.terraform_remote_state.infra_networking.private_subdomain}"
-  flattened_args    = "${flatten(concat(list(local.list_of_args), list(local.alertmanager_mesh)))}"
-}
-
-## IAM roles & policies
-
-resource "aws_iam_role" "alertmanager_task_iam_role" {
-  name = "${var.stack_name}-alertmanager-task"
-  path = "/"
-
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "ecs-tasks.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-EOF
-}
-
-data "aws_iam_policy_document" "alertmanager_policy_doc" {
-  statement {
-    sid = "GetAlertmanagerFiles"
-
-    resources = ["arn:aws:s3:::${aws_s3_bucket.config_bucket.id}/alertmanager/*"]
-
-    actions = [
-      "s3:Get*",
-    ]
-  }
-
-  statement {
-    sid = "ListConfigBucket"
-
-    resources = ["arn:aws:s3:::${aws_s3_bucket.config_bucket.id}"]
-
-    actions = [
-      "s3:List*",
-    ]
-  }
-}
-
-resource "aws_iam_policy" "alertmanager_task_policy" {
-  name   = "${var.stack_name}-alertmanager-task-policy"
-  path   = "/"
-  policy = "${data.aws_iam_policy_document.alertmanager_policy_doc.json}"
-}
-
-resource "aws_iam_role_policy_attachment" "alertmanager_policy_attachment" {
-  role       = "${aws_iam_role.alertmanager_task_iam_role.name}"
-  policy_arn = "${aws_iam_policy.alertmanager_task_policy.arn}"
+  flattened_args    = "${local.alertmanager_mesh}"
 }
 
 ### container, task, service definitions
@@ -94,11 +37,17 @@ data "template_file" "alertmanager_container_defn" {
   template = "${file("${path.module}/task-definitions/alertmanager-server.json")}"
 
   vars {
-    log_group        = "${aws_cloudwatch_log_group.task_logs.name}"
-    region           = "${var.aws_region}"
-    config_bucket    = "${aws_s3_bucket.config_bucket.id}"
+    alertmanager_config_base64 = "${
+      base64encode(var.dev_environment == "true"
+                   ? data.template_file.alertmanager_dev_config_file.rendered
+                   : data.template_file.alertmanager_config_file.rendered)
+    }"
+
     alertmanager_url = "--web.external-url=https://${local.alertmanager_public_fqdns[count.index]}"
-    commands         = "${var.prometheis_total == "1" ? join("\",\"", flatten(list(local.list_of_args))) : join("\",\"", local.flattened_args) }"
+    commands         = "${join(" ", local.flattened_args)}"
+
+    log_group = "${aws_cloudwatch_log_group.task_logs.name}"
+    region    = "${var.aws_region}"
   }
 }
 
@@ -106,20 +55,7 @@ resource "aws_ecs_task_definition" "alertmanager_server" {
   count                 = "${length(local.alertmanager_public_fqdns)}"
   family                = "${var.stack_name}-alertmanager-server-${count.index + 1}"
   container_definitions = "${element(data.template_file.alertmanager_container_defn.*.rendered, count.index)}"
-  task_role_arn         = "${aws_iam_role.alertmanager_task_iam_role.arn}"
   network_mode          = "host"
-
-  volume {
-    name      = "config-from-s3"
-    host_path = "/ecs/config-from-s3"
-  }
-
-  volume {
-    name      = "alertmanager"
-    host_path = "/ecs/config-from-s3/alertmanager"
-  }
-
-  depends_on = ["data.template_file.alertmanager_config_file"]
 }
 
 resource "aws_ecs_service" "alertmanager_server" {
@@ -227,13 +163,6 @@ data "template_file" "alertmanager_dev_config_file" {
     dev_ticket_recipient_email = "${var.dev_ticket_recipient_email}"
     observe_cronitor           = "${var.observe_cronitor}"
   }
-}
-
-resource "aws_s3_bucket_object" "alertmanager" {
-  bucket  = "${aws_s3_bucket.config_bucket.id}"
-  key     = "alertmanager/alertmanager.yml"
-  content = "${var.dev_environment == "true" ? data.template_file.alertmanager_dev_config_file.rendered : data.template_file.alertmanager_config_file.rendered}"
-  etag    = "${md5(var.dev_environment == "true" ? data.template_file.alertmanager_dev_config_file.rendered : data.template_file.alertmanager_config_file.rendered)}"
 }
 
 ## AWS SES

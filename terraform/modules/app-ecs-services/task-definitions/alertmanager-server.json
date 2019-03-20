@@ -15,12 +15,16 @@
         "hostPort": 9094
       }
     ],
-    "command": ["${commands}", "${alertmanager_url}"],
-    "mountPoints": [
+    "environment": [
       {
-        "sourceVolume": "alertmanager",
-        "containerPath": "/etc/alertmanager"
+        "Name": "ALERTMANAGER_CONFIG",
+        "Value": "${alertmanager_config_base64}"
       }
+    ],
+    "entryPoint": [
+      "/bin/sh",
+      "-c",
+      "echo \"$ALERTMANAGER_CONFIG\" | base64 -d > /etc/alertmanager/alertmanager.yml; /bin/alertmanager --config.file=/etc/alertmanager/alertmanager.yml ${commands} ${alertmanager_url}"
     ],
     "logConfiguration": {
       "logDriver": "awslogs",
@@ -28,28 +32,6 @@
         "awslogs-group": "${log_group}",
         "awslogs-region": "${region}",
         "awslogs-stream-prefix": "alertmanager"
-      }
-    }
-  },
-  {
-    "name": "s3-config-grabber",
-    "image": "mesosphere/aws-cli",
-    "cpu": 128,
-    "memory": 128,
-    "essential": false,
-    "mountPoints": [
-      {
-        "sourceVolume": "config-from-s3",
-        "containerPath": "/configs"
-      }
-    ],
-    "command": ["s3", "sync", "--exact-timestamps", "s3://${config_bucket}/alertmanager", "/configs/alertmanager"],
-    "logConfiguration": {
-      "logDriver": "awslogs",
-      "options": {
-        "awslogs-group": "${log_group}",
-        "awslogs-region": "${region}",
-        "awslogs-stream-prefix": "alertmanager-config"
       }
     }
   }
