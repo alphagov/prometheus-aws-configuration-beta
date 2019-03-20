@@ -40,6 +40,10 @@ route:
       match:
         deployment: prod
         severity: p1
+    - receiver: "verify-p2"
+      match:
+        deployment: integration
+        severity: p2
     - match:
         severity: constant
       group_interval: 1m
@@ -101,4 +105,7 @@ receivers:
   pagerduty_configs:
     - service_key: "${verify_p1_pagerduty_key}"
   slack_configs: *verify-2ndline-slack-configs
-
+- name: "verify-p2"
+  pagerduty_configs:
+    - service_key: "${verify_p1_pagerduty_key}"
+  slack_configs: *verify-2ndline-slack-configs
