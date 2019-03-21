@@ -38,12 +38,6 @@ variable "remote_state_bucket" {
   default     = "ecs-monitoring"
 }
 
-variable "targets_s3_bucket" {
-  type        = "string"
-  description = "The default s3 bucket to grab targets"
-  default     = "gds-prometheus-targets"
-}
-
 variable "stack_name" {
   type        = "string"
   description = "Unique name for this collection of resources"
@@ -76,16 +70,6 @@ data "terraform_remote_state" "infra_networking" {
   }
 }
 
-data "terraform_remote_state" "infra_security_groups" {
-  backend = "s3"
-
-  config {
-    bucket = "${var.remote_state_bucket}"
-    key    = "infra-security-groups-modular.tfstate"
-    region = "${var.aws_region}"
-  }
-}
-
 data "terraform_remote_state" "app_ecs_albs" {
   backend = "s3"
 
@@ -113,6 +97,7 @@ resource "aws_cloudwatch_log_group" "task_logs" {
   retention_in_days = 7
 }
 
+# TODO: delete this when we're confident we don't need it
 resource "aws_s3_bucket" "config_bucket" {
   bucket_prefix = "ecs-monitoring-${var.stack_name}-config"
   acl           = "private"
