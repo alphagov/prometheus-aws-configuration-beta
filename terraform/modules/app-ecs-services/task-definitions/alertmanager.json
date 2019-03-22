@@ -1,0 +1,37 @@
+[
+  {
+    "name": "alertmanager",
+    "image": "prom/alertmanager",
+    "memoryReservation": 512,
+    "essential": true,
+    "portMappings": [
+      {
+        "containerPort": 9093,
+        "hostPort": 9093
+      },
+      {
+        "containerPort": 9094,
+        "hostPort": 9094
+      }
+    ],
+    "environment": [
+      {
+        "Name": "ALERTMANAGER_CONFIG",
+        "Value": "${alertmanager_config_base64}"
+      }
+    ],
+    "entryPoint": [
+      "/bin/sh",
+      "-c",
+      "echo \"$ALERTMANAGER_CONFIG\" | base64 -d > /etc/alertmanager/alertmanager.yml; /bin/alertmanager --config.file=/etc/alertmanager/alertmanager.yml --cluster.peer=alertmanager.observe.local:9094 ${alertmanager_url}"
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group}",
+        "awslogs-region": "${region}",
+        "awslogs-stream-prefix": "alertmanager"
+      }
+    }
+  }
+]

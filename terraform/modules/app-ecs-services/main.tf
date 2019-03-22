@@ -70,6 +70,16 @@ data "terraform_remote_state" "infra_networking" {
   }
 }
 
+data "terraform_remote_state" "infra_security_groups" {
+  backend = "s3"
+
+  config {
+    bucket = "${var.remote_state_bucket}"
+    key    = "infra-security-groups-modular.tfstate"
+    region = "${var.aws_region}"
+  }
+}
+
 data "terraform_remote_state" "app_ecs_albs" {
   backend = "s3"
 
