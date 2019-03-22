@@ -133,6 +133,7 @@ data "template_file" "alertmanager_config_file" {
     observe_pagerduty_key   = "${data.pass_password.observe_pagerduty_key.password}"
     dgu_pagerduty_key       = "${data.pass_password.dgu_pagerduty_key.password}"
     verify_p1_pagerduty_key = "${data.pass_password.verify_p1_pagerduty_key.password}"
+    verify_p2_pagerduty_key = "${data.pass_password.verify_p2_pagerduty_key.password}"
     slack_api_url           = "${data.pass_password.slack_api_url.password}"
     registers_zendesk       = "${data.pass_password.registers_zendesk.password}"
     smtp_from               = "alerts@${data.terraform_remote_state.infra_networking.public_subdomain}"
