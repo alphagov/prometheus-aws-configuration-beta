@@ -55,6 +55,12 @@ scrape_configs:
         regex: '(.*)/metrics;digitalmarketplace;.*-frontend'
         target_label: '__metrics_path__'
         replacement: '$1/_metrics'
+  - job_name: alertmanager_fargate
+    dns_sd_configs:
+      - names:
+          - 'alertmanager.local.gds-reliability.engineering'
+        type: 'A'
+        port: 9093
   - job_name: alertmanager
     ec2_sd_configs:
       - region: eu-west-1

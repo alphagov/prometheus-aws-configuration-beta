@@ -32,9 +32,9 @@ locals {
 
 ### container, task, service definitions
 
-data "template_file" "alertmanager_container_defn" {
+data "template_file" "alertmanager_old_container_defn" {
   count    = "${length(local.alertmanager_public_fqdns)}"
-  template = "${file("${path.module}/task-definitions/alertmanager-server.json")}"
+  template = "${file("${path.module}/task-definitions/alertmanager-old.json")}"
 
   vars {
     alertmanager_config_base64 = "${
@@ -54,7 +54,7 @@ data "template_file" "alertmanager_container_defn" {
 resource "aws_ecs_task_definition" "alertmanager_server" {
   count                 = "${length(local.alertmanager_public_fqdns)}"
   family                = "${var.stack_name}-alertmanager-server-${count.index + 1}"
-  container_definitions = "${element(data.template_file.alertmanager_container_defn.*.rendered, count.index)}"
+  container_definitions = "${element(data.template_file.alertmanager_old_container_defn.*.rendered, count.index)}"
   network_mode          = "host"
 }
 
@@ -75,6 +75,108 @@ resource "aws_ecs_service" "alertmanager_server" {
   placement_constraints {
     type       = "memberOf"
     expression = "attribute:ecs.availability-zone == ${data.terraform_remote_state.app_ecs_instances.available_azs[count.index]}"
+  }
+
+  depends_on = ["aws_ecs_task_definition.alertmanager_server"]
+}
+
+### alertmanager fargate
+
+resource "aws_iam_role" "execution" {
+  name = "${var.stack_name}-alertmanager-execution"
+
+  assume_role_policy = <<-EOF
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Principal": {
+          "Service": "ecs-tasks.amazonaws.com"
+        },
+        "Action": "sts:AssumeRole"
+      }
+    ]
+  }
+  EOF
+}
+
+resource "aws_iam_policy" "execution" {
+  name = "${var.stack_name}-alertmanager-execution"
+
+  policy = <<-EOF
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        "Resource": "*"
+      }
+    ]
+  }
+  EOF
+}
+
+resource "aws_iam_role_policy_attachment" "execution_execution" {
+  role       = "${aws_iam_role.execution.name}"
+  policy_arn = "${aws_iam_policy.execution.arn}"
+}
+
+data "template_file" "alertmanager_container_defn" {
+  count    = "${length(local.alertmanager_public_fqdns)}"
+  template = "${file("${path.module}/task-definitions/alertmanager.json")}"
+
+  vars {
+    alertmanager_config_base64 = "${
+      base64encode(var.dev_environment == "true"
+                   ? data.template_file.alertmanager_dev_config_file.rendered
+                   : data.template_file.alertmanager_config_file.rendered)
+    }"
+
+    alertmanager_url = "--web.external-url=https://${local.alertmanager_public_fqdns[count.index]}"
+
+    log_group = "${aws_cloudwatch_log_group.task_logs.name}"
+    region    = "${var.aws_region}"
+  }
+}
+
+resource "aws_ecs_task_definition" "alertmanager" {
+  count                    = "${length(local.alertmanager_public_fqdns)}"
+  family                   = "${var.stack_name}-alertmanager-${count.index + 1}"
+  container_definitions    = "${element(data.template_file.alertmanager_container_defn.*.rendered, count.index)}"
+  network_mode             = "awsvpc"
+  execution_role_arn       = "${aws_iam_role.execution.arn}"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = 256
+  memory                   = 512
+}
+
+resource "aws_ecs_service" "alertmanager" {
+  count = "${length(data.terraform_remote_state.app_ecs_instances.available_azs)}"
+
+  name            = "${var.stack_name}-alertmanager-${count.index + 1}"
+  cluster         = "${var.stack_name}-ecs-monitoring"
+  task_definition = "${element(aws_ecs_task_definition.alertmanager.*.arn, count.index)}"
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  load_balancer {
+    target_group_arn = "${element(data.terraform_remote_state.app_ecs_albs.alertmanager_ip_target_group_arns, count.index)}"
+    container_name   = "alertmanager"
+    container_port   = 9093
+  }
+
+  network_configuration {
+    subnets         = ["${data.terraform_remote_state.infra_networking.private_subnets[count.index]}"]
+    security_groups = ["${data.terraform_remote_state.infra_security_groups.alertmanager_ec2_sg_id}"]
+  }
+
+  service_registries {
+    registry_arn = "${aws_service_discovery_service.alertmanager.arn}"
   }
 
   depends_on = ["aws_ecs_task_definition.alertmanager_server"]

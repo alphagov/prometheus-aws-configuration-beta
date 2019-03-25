@@ -382,6 +382,61 @@ resource "aws_lb_target_group" "alertmanager_tg" {
   }
 }
 
+resource "aws_route53_record" "alerts_fargate_alias" {
+  count = "${local.alerts_records_count}"
+
+  zone_id = "${var.zone_id}"
+  name    = "alerts-fargate-${count.index + 1}"
+  type    = "A"
+
+  alias {
+    name                   = "${aws_lb.alertmanager_alb.dns_name}"
+    zone_id                = "${aws_lb.alertmanager_alb.zone_id}"
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_lb_listener_rule" "alerts_listener_https_fargate_hack" {
+  count = "${var.alertmanager_count}"
+
+  listener_arn = "${aws_lb_listener.alertmanager_listener_https.arn}"
+  priority     = "${200 + count.index}"
+
+  action {
+    type             = "forward"
+    target_group_arn = "${element(aws_lb_target_group.alertmanager_fargate.*.arn, count.index)}"
+  }
+
+  condition {
+    field = "host-header"
+
+    values = [
+      "alerts-fargate-${count.index + 1}.*",
+    ]
+  }
+}
+
+resource "aws_lb_target_group" "alertmanager_fargate" {
+  count = "${var.alertmanager_count}"
+
+  name                 = "${var.stack_name}-alerts-${count.index +1}-fargate"
+  port                 = 9093
+  protocol             = "HTTP"
+  vpc_id               = "${local.vpc_id}"
+  deregistration_delay = 30
+  target_type          = "ip"
+
+  health_check {
+    interval            = "10"
+    path                = "/"
+    matcher             = "200"
+    protocol            = "HTTP"
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = "5"
+  }
+}
+
 ## Outputs
 
 output "prom_public_record_fqdns" {
@@ -402,4 +457,9 @@ output "prometheus_target_group_ids" {
 output "alertmanager_target_group_ids" {
   value       = "${aws_lb_target_group.alertmanager_tg.*.arn}"
   description = "Alertmanager target group IDs"
+}
+
+output "alertmanager_ip_target_group_ids" {
+  value       = "${aws_lb_target_group.alertmanager_fargate.*.arn}"
+  description = "Alertmanager IP-type target group IDs"
 }
