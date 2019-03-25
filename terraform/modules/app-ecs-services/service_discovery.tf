@@ -1,5 +1,5 @@
 resource "aws_service_discovery_private_dns_namespace" "observe" {
-  name        = "observe.local"
+  name        = "local.gds-reliability.engineering"
   description = "Observe instances"
   vpc         = "${data.terraform_remote_state.infra_networking.vpc_id}"
 }

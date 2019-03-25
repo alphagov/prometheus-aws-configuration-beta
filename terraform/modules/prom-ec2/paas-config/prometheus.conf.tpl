@@ -58,7 +58,7 @@ scrape_configs:
   - job_name: alertmanager_fargate
     dns_sd_configs:
       - names:
-          - 'alertmanager.observe.local'
+          - 'alertmanager.local.gds-reliability.engineering'
         type: 'A'
         port: 9093
   - job_name: alertmanager
