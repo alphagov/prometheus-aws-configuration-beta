@@ -74,10 +74,6 @@ output "prometheus_target_group_arns" {
   value = "${module.app-ecs-albs.prometheus_target_group_ids}"
 }
 
-output "alertmanager_target_group_arns" {
-  value = "${module.app-ecs-albs.alertmanager_target_group_ids}"
-}
-
 output "alertmanager_ip_target_group_arns" {
   value = "${module.app-ecs-albs.alertmanager_ip_target_group_ids}"
 }
