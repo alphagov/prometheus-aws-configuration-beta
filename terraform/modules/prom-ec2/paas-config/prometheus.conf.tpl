@@ -9,9 +9,6 @@ alerting:
           - 'alertmanager.local.gds-reliability.engineering'
         type: 'A'
         port: 9093
-  - scheme: https
-    static_configs:
-      - targets: [${external_alertmanagers}]
 rule_files:
   - "/etc/prometheus/alerts/*"
 scrape_configs:
