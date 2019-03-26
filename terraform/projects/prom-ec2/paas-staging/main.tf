@@ -93,9 +93,8 @@ module "paas-config" {
 
   environment = "${local.environment}"
 
-  prometheus_config_bucket    = "${module.prometheus.s3_config_bucket}"
-  external_alertmanager_names = ["alertman.cluster.re-managed-observe-staging.aws.ext.govsvc.uk"]
-  alerts_path                 = "../../../modules/app-ecs-services/config/alerts/"
+  prometheus_config_bucket = "${module.prometheus.s3_config_bucket}"
+  alerts_path              = "../../../modules/app-ecs-services/config/alerts/"
 
   prom_private_ips  = "${module.prometheus.private_ip_addresses}"
   private_zone_id   = "${data.terraform_remote_state.infra_networking.private_zone_id}"
