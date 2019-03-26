@@ -8,12 +8,6 @@
 */
 
 ## Variables
-variable "mesh_urls" {
-  type = "list"
-
-  default = ["mesh-1", "mesh-2", "mesh-3"]
-}
-
 variable "prometheis_total" {
   type        = "string"
   description = "Desired number of prometheus servers.  Maximum 3."
@@ -23,64 +17,13 @@ variable "prometheis_total" {
 ## Locals
 locals {
   alertmanager_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.alerts_public_record_fqdns}"
-  alertmanager_mesh         = "${formatlist("--cluster.peer=%s.${local.private_subdomain}:9094", var.mesh_urls)}"
-
-  #We have to define alert manager args counts on at template definition level since we have no local instance
-  private_subdomain = "${data.terraform_remote_state.infra_networking.private_subdomain}"
-  flattened_args    = "${local.alertmanager_mesh}"
 }
 
 ### container, task, service definitions
 
-data "template_file" "alertmanager_old_container_defn" {
-  count    = "${length(local.alertmanager_public_fqdns)}"
-  template = "${file("${path.module}/task-definitions/alertmanager-old.json")}"
-
-  vars {
-    alertmanager_config_base64 = "${
-      base64encode(var.dev_environment == "true"
-                   ? data.template_file.alertmanager_dev_config_file.rendered
-                   : data.template_file.alertmanager_config_file.rendered)
-    }"
-
-    alertmanager_url = "--web.external-url=https://${local.alertmanager_public_fqdns[count.index]}"
-    commands         = "${join(" ", local.flattened_args)}"
-
-    log_group = "${aws_cloudwatch_log_group.task_logs.name}"
-    region    = "${var.aws_region}"
-  }
+resource "aws_ecs_cluster" "prometheus_cluster" {
+  name = "${var.stack_name}-ecs-monitoring"
 }
-
-resource "aws_ecs_task_definition" "alertmanager_server" {
-  count                 = "${length(local.alertmanager_public_fqdns)}"
-  family                = "${var.stack_name}-alertmanager-server-${count.index + 1}"
-  container_definitions = "${element(data.template_file.alertmanager_old_container_defn.*.rendered, count.index)}"
-  network_mode          = "host"
-}
-
-resource "aws_ecs_service" "alertmanager_server" {
-  count = "${length(data.terraform_remote_state.app_ecs_instances.available_azs)}"
-
-  name            = "${var.stack_name}-alertmanager-server-${count.index + 1}"
-  cluster         = "${var.stack_name}-ecs-monitoring"
-  task_definition = "${element(aws_ecs_task_definition.alertmanager_server.*.arn, count.index)}"
-  desired_count   = 1
-
-  load_balancer {
-    target_group_arn = "${element(data.terraform_remote_state.app_ecs_albs.alertmanager_target_group_arns, count.index)}"
-    container_name   = "alertmanager"
-    container_port   = 9093
-  }
-
-  placement_constraints {
-    type       = "memberOf"
-    expression = "attribute:ecs.availability-zone == ${data.terraform_remote_state.app_ecs_instances.available_azs[count.index]}"
-  }
-
-  depends_on = ["aws_ecs_task_definition.alertmanager_server"]
-}
-
-### alertmanager fargate
 
 resource "aws_iam_role" "execution" {
   name = "${var.stack_name}-alertmanager-execution"
@@ -156,7 +99,7 @@ resource "aws_ecs_task_definition" "alertmanager" {
 }
 
 resource "aws_ecs_service" "alertmanager" {
-  count = "${length(data.terraform_remote_state.app_ecs_instances.available_azs)}"
+  count = "${var.prometheis_total}"
 
   name            = "${var.stack_name}-alertmanager-${count.index + 1}"
   cluster         = "${var.stack_name}-ecs-monitoring"
@@ -179,7 +122,7 @@ resource "aws_ecs_service" "alertmanager" {
     registry_arn = "${aws_service_discovery_service.alertmanager.arn}"
   }
 
-  depends_on = ["aws_ecs_task_definition.alertmanager_server"]
+  depends_on = ["aws_ecs_task_definition.alertmanager"]
 }
 
 #### alertmanager
