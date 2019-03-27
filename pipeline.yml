@@ -1,0 +1,117 @@
+resources:
+  - name: prometheus-aws-configuration-beta-git
+    type: git
+    source:
+      uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
+      branch: master
+
+jobs:
+  - name: deploy-app-ecs-services-staging
+    serial: true
+    plan:
+      - get: prometheus-aws-configuration-beta-git
+        trigger: true
+      - task: wait-for-ecs
+        timeout: 15m
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: gdsre/aws-ruby
+              tag: 2.6.1-3.0.1
+          params:
+            DEPLOYMENT: staging
+            ACCOUNT_ID: '027317422673'
+            AWS_REGION: 'eu-west-2'
+            AWS_DEFAULT_REGION: 'eu-west-2'
+          run: &wait-for-ecs
+            path: ruby
+            args:
+              - -e
+              - |
+                require 'aws-sdk'
+
+                puts <<~HELP
+                  This waits for each ECS service in each cluster to be stable
+
+                  I.e. there are no pending deployments and desired == running
+
+                  It will spend most of its time waiting for the first services
+                  This is because it waits for them serially, not in parallel
+
+                  If this task times out then you should go and look in AWS
+                HELP
+
+                ACCOUNT_ID = ENV.fetch('ACCOUNT_ID')
+                DEPLOYMENT = ENV.fetch('DEPLOYMENT')
+
+                role_arn          = "arn:aws:iam::#{ACCOUNT_ID}:role/#{DEPLOYMENT}-deployer"
+                role_session_name = "deploy-concourse-#{Time.new.to_i}"
+                duration          = 1800
+
+                puts "Assuming role #{role_arn} for #{duration} with name #{role_session_name}"
+                creds = Aws::STS::Client.new.assume_role(
+                  role_arn: role_arn,
+                  role_session_name: role_session_name,
+                  duration_seconds: duration
+                )
+
+                puts "Creating ECS client"
+                ECS = Aws::ECS::Client.new(credentials: creds)
+
+                cluster_name = "#{DEPLOYMENT}-ecs-monitoring"
+                services     = [
+                  "#{DEPLOYMENT}-alertmanager-1",
+                  "#{DEPLOYMENT}-alertmanager-2",
+                  "#{DEPLOYMENT}-alertmanager-3",
+                ]
+
+                ECS.wait_until(
+                  :services_stable,
+                  { cluster: cluster_name, services: services },
+                  {
+                    max_attempts: nil, # Do timeout in Concourse, not here
+                    delay: 15,
+                    before_wait: -> (attempt, response) do
+                      puts <<~HELP
+                        Waiting for stable...
+                          Cluster:  #{cluster_name}
+                          Services: #{services.join(', ')}
+                          Attempt:  #{attempt}
+                      HELP
+                    end
+                  }
+                )
+
+                puts "Stable #{cluster_name}"
+      - aggregate:
+        - task: smoke-test-alertmanager-1
+          timeout: 2m
+          config: &smoke-test-alertmanager
+            platform: linux
+            image_resource:
+              type: docker-image
+              source:
+                repository: governmentpaas/curl-ssl
+                tag: cd404e5f6e7b96082c586e80921189769131f593
+            params:
+              ALERTMANAGER_URL: 'https://alerts-1.monitoring-staging.gds-reliability.engineering/-/healthy'
+            run:
+              path: sh
+              args:
+                - -euxc
+                - |
+                  curl --silent --fail --max-time 5 "$ALERTMANAGER_URL"
+        - task: smoke-test-alertmanager-2
+          timeout: 2m
+          config:
+            <<: *smoke-test-alertmanager
+            params:
+              ALERTMANAGER_URL: 'https://alerts-2.monitoring-staging.gds-reliability.engineering/-/healthy'
+        - task: smoke-test-alertmanager-3
+          timeout: 2m
+          config:
+            <<: *smoke-test-alertmanager
+            params:
+              ALERTMANAGER_URL: 'https://alerts-3.monitoring-staging.gds-reliability.engineering/-/healthy'
