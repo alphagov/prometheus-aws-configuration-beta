@@ -32,6 +32,10 @@ route:
     match:
       product: "prometheus"
       severity: "constant"
+  - receiver: "autom8-alerts-slack"
+    match:
+      layer: "infra"
+      severity: "ticket"
   - receiver: "verify-2ndline-slack"
     match:
       product: "verify"
@@ -99,6 +103,12 @@ receivers:
   slack_configs: &verify-2ndline-slack-configs
   - send_resolved: true
     channel: '#verify-2ndline'
+    icon_emoji: ':verify-shield:'
+    username: alertmanager
+- name: "autom8-alerts-slack"
+  slack_configs:
+  - send_resolved: true
+    channel: '#re-autom8-alerts'
     icon_emoji: ':verify-shield:'
     username: alertmanager
 - name: "verify-p1"
