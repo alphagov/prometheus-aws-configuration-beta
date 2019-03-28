@@ -2,11 +2,6 @@
 
 Terraform configuration to manage a Prometheus server running on AWS.
 
-## Deployment ##
-
-We track deployments in this spreadsheet: https://docs.google.com/spreadsheets/d/1J09k3WweluiywrB1y7ntrIxTjVL1Uv6bCUGjluV3P8o/edit#gid=413288099
-Please follow the deployment checklist and keep the deployment log up to date
-
 ## Setup ##
 
 ### Install dependencies
@@ -127,7 +122,6 @@ If you want to make a change to our Prometheus infrastructure you should:
 - Create a new branch
 - Create a new stack for testing purposes in the re-prom-dev AWS account by following the above set up instructions
 - Once you are happy with your code, put in a pull request and get it reviewed by another team member
-- Once your PR is merged, follow the team checklist for deployment (available from other team members) and record your deployment time for staging and production.
 
 
 ## AWS Vault tips
