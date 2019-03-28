@@ -82,7 +82,7 @@ By default the EC2 instances on dev stacks will be spun down at the end of the d
 
 The schedule will automatically spin down EC2 instances at each hour outside the core working hours of 9am - 6pm UTC, Monday to Fridays. This is to ensure that the instances will be spun down even after they have been restarted.
 
-If the EC2 dev instance has been terminated, at the start of a day or if you are working after core hours, you can easily spin up your instances by running `aws-vault exec gds-tech-ops -- terraform apply` inside `terraform/projects/app-ecs-instances-dev`, changing the stackname variable to the name of your stack.
+If the EC2 dev instance has been terminated, at the start of a day or if you are working after core hours, you can easily spin up your instances by running `aws-vault exec re-prom -- terraform apply` inside `terraform/projects/app-ecs-instances-dev`, changing the stackname variable to the name of your stack.
 
 You can set your own cron schedules by adding `asg_dev_scaledown_schedules` to the `tfvars` file for your stack and specifying a list of cron schedules, for example:
 
@@ -104,14 +104,14 @@ Before starting a session:
 Add a dev admin profile to your AWS config, `~/.aws/config`
 
 ```
-[profile gds-tech-ops-dev]
+[profile re-prom-dev]
 ...
 role_arn=arn:aws:iam::931679966755:role/<first_name.last_name>-admin
 ```
 
 To connect to an instance `$INSTANCE_ID`, run the command:
 ```shell
-aws-vault exec gds-tech-ops-dev -- aws ssm start-session --target $INSTANCE_ID
+aws-vault exec re-prom-dev -- aws ssm start-session --target $INSTANCE_ID
 ```
 
 ## Viewing the Prometheus dashboard
@@ -125,7 +125,7 @@ Once you have deployed your development stack you should be able to reach the pr
 If you want to make a change to our Prometheus infrastructure you should:
 
 - Create a new branch
-- Create a new stack for testing purposes in the gds-tech-ops AWS account by following the above set up instructions
+- Create a new stack for testing purposes in the re-prom-dev AWS account by following the above set up instructions
 - Once you are happy with your code, put in a pull request and get it reviewed by another team member
 - Once your PR is merged, follow the team checklist for deployment (available from other team members) and record your deployment time for staging and production.
 
