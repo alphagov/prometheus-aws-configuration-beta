@@ -37,6 +37,12 @@ variable "project" {
   default     = "infra-security-groups-staging"
 }
 
+module "csw_role" {
+  source = "git::https://github.com/alphagov/csw-client-role.git?ref=v1.2"
+
+  csw_agent_account_id = "779799343306"
+}
+
 module "infra-security-groups" {
   source = "../../modules/infra-security-groups/"
 

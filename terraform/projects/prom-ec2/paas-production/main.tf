@@ -63,6 +63,12 @@ data "pass_password" "prometheus_htpasswd" {
   path = "prometheus-basic-auth-htpasswd"
 }
 
+module "csw_role" {
+  source = "git::https://github.com/alphagov/csw-client-role.git?ref=v1.2"
+
+  csw_agent_account_id = "779799343306"
+}
+
 module "ami" {
   source = "../../../modules/common/ami"
 }
