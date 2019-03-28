@@ -77,7 +77,7 @@ By default the EC2 instances on dev stacks will be spun down at the end of the d
 
 The schedule will automatically spin down EC2 instances at each hour outside the core working hours of 9am - 6pm UTC, Monday to Fridays. This is to ensure that the instances will be spun down even after they have been restarted.
 
-If the EC2 dev instance has been terminated, at the start of a day or if you are working after core hours, you can easily spin up your instances by running `aws-vault exec re-prom -- terraform apply` inside `terraform/projects/app-ecs-instances-dev`, changing the stackname variable to the name of your stack.
+If the EC2 dev instance has been terminated, at the start of a day or if you are working after core hours, you can easily spin up your instances by running `aws-vault exec re-prom-dev -- terraform apply` inside `terraform/projects/app-ecs-instances-dev`, changing the stackname variable to the name of your stack.
 
 You can set your own cron schedules by adding `asg_dev_scaledown_schedules` to the `tfvars` file for your stack and specifying a list of cron schedules, for example:
 
