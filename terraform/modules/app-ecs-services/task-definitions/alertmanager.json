@@ -18,12 +18,16 @@
       {
         "Name": "ALERTMANAGER_CONFIG",
         "Value": "${alertmanager_config_base64}"
+      },
+      {
+        "Name": "TEMPLATES",
+        "Value": "${templates_base64}"
       }
     ],
     "entryPoint": [
       "/bin/sh",
       "-c",
-      "echo \"$ALERTMANAGER_CONFIG\" | base64 -d > /etc/alertmanager/alertmanager.yml; /bin/alertmanager --config.file=/etc/alertmanager/alertmanager.yml --cluster.peer=alertmanager.local.gds-reliability.engineering:9094 ${alertmanager_url}"
+      "echo \"$ALERTMANAGER_CONFIG\" | base64 -d > /etc/alertmanager/alertmanager.yml; echo \"$TEMPLATES\" | base64 -d > /etc/alertmanager/default.tmpl; /bin/alertmanager --config.file=/etc/alertmanager/alertmanager.yml --cluster.peer=alertmanager.local.gds-reliability.engineering:9094 ${alertmanager_url}"
     ],
     "logConfiguration": {
       "logDriver": "awslogs",

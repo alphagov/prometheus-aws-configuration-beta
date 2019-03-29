@@ -10,19 +10,21 @@ global:
   scrape_interval: 30s
   evaluation_interval: 30s
   external_labels:
-    env: local-dev
+    env: phils-laptop
 
 rule_files:
   - 'rules/*'
 
 alerting:
   alertmanagers:
-  # # Here is an example configuration for sending to a specific alertmanager:
-  # # it is commented out by default to avoid annoying the support person
-  # - scheme: https
-  #   static_configs:
-  #   - targets:
-  #     - 'alertman.cluster.re-managed-observe-staging.aws.ext.govsvc.uk'
+  # Here is an example configuration for sending to a specific alertmanager:
+  # it is commented out by default to avoid annoying the support person
+  - scheme: https
+    static_configs:
+    - targets:
+      - 'alerts-1.monitoring-staging.gds-reliability.engineering'
+      - 'alerts-2.monitoring-staging.gds-reliability.engineering'
+      - 'alerts-3.monitoring-staging.gds-reliability.engineering'
 
 scrape_configs:
   - job_name: prometheus
