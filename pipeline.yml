@@ -12,11 +12,6 @@ resources:
       uri: git@github.com:alphagov/re-secrets.git
       branch: master
 
-- name: re-secrets
-    type: docker-image
-    source:
-
-
 jobs:
   - name: deploy-app-ecs-services-staging
     serial: true
