@@ -76,9 +76,8 @@ jobs:
 
                 cd prometheus-aws-configuration-beta-git/terraform/projects/app-ecs-services-$DEPLOYMENT
 
-                echo "In $(pwd)"
-                # raise a pr to do this lol
-                git grep -lF 0.11.10 | xargs sed -i 's/0.11.10/0.11.13/' # lol
+                export PASSWORD_STORE_DIR="$(pwd)/re-secrets/observe"
+                echo "$GPG_PRIVATE_KEY" | gpg --import
 
                 # Show what command terraform is running
                 set -x
