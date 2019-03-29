@@ -4,6 +4,18 @@ resources:
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
       branch: master
+  - name: re-secrets
+    type: git
+    source:
+      private_key: |
+        ((re-secrets-ssh-key))
+      uri: git@github.com:alphagov/re-secrets.git
+      branch: master
+
+- name: re-secrets
+    type: docker-image
+    source:
+
 
 jobs:
   - name: deploy-app-ecs-services-staging
@@ -11,6 +23,70 @@ jobs:
     plan:
       - get: prometheus-aws-configuration-beta-git
         trigger: true
+      - get: re-secrets
+      - task: apply-terraform
+        timeout: 15m
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: gdsre/aws-terraform
+              tag: 18.04-0.11.13
+          inputs:
+            - name: prometheus-aws-configuration-beta-git
+            - name: re-secrets
+          params:
+            DEPLOYMENT: staging
+            ACCOUNT_ID: '027317422673'
+            AWS_REGION: 'eu-west-1'
+            AWS_DEFAULT_REGION: 'eu-west-1'
+          run: &run-apply-terraform
+            path: sh
+            args:
+              - -c
+              - |
+                set -ue
+
+                export PASSWORD_STORE_DIR="$(pwd)/re-secrets/observe"
+                
+                # FIXME we should make this available in a better way
+                apt-get update -y
+                apt-get install -y golang 
+                go get github.com/camptocamp/terraform-provider-pass
+                GOBIN=~/.terraform.d/plugins/linux_amd64 go install github.com/camptocamp/terraform-provider-pass
+
+                echo "Authenticating with AWS against $DEPLOYMENT in account $ACCOUNT_ID"
+                arn="arn:aws:iam::${ACCOUNT_ID}:role/autom8-deployer"
+                creds="$(aws \
+                         sts assume-role \
+                         --role-arn="$arn" \
+                         --role-session-name="deploy-concourse-$(date +%s)" \
+                         --duration 1800 \
+                )"
+
+                access_key="$(echo "$creds"    | jq -r ".Credentials.AccessKeyId")"
+                secret_key="$(echo "$creds"    | jq -r ".Credentials.SecretAccessKey")"
+                session_token="$(echo "$creds" | jq -r ".Credentials.SessionToken")"
+
+                export "AWS_ACCESS_KEY_ID=$access_key"
+                export "AWS_SECRET_ACCESS_KEY=$secret_key"
+                export "AWS_SESSION_TOKEN=$session_token"
+                export "AWS_DEFAULT_REGION=eu-west-1"
+
+                aws sts get-caller-identity
+
+
+                cd prometheus-aws-configuration-beta-git/terraform/projects/app-ecs-services-$DEPLOYMENT
+
+                echo "In $(pwd)"
+                # raise a pr to do this lol
+                git grep -lF 0.11.10 | xargs sed -i 's/0.11.10/0.11.13/' # lol
+
+                # Show what command terraform is running
+                set -x
+                terraform init
+                terraform plan
       - task: wait-for-ecs
         timeout: 15m
         config:
