@@ -12,12 +12,6 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
-variable "dev_environment" {
-  type        = "string"
-  description = "Boolean flag for development environments"
-  default     = "true"
-}
-
 variable "stack_name" {
   type        = "string"
   description = "Unique name for this collection of resources"
@@ -65,7 +59,7 @@ module "vpc" {
   create_database_subnet_group = false
 
   enable_nat_gateway = true
-  single_nat_gateway = "${var.dev_environment == "true" ? true : false }"
+  single_nat_gateway = false
 
   enable_dns_hostnames = true
   enable_dns_support   = true

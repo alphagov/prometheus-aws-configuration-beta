@@ -40,7 +40,6 @@ variable "stack_name" {
 module "infra-networking" {
   source = "../../modules/infra-networking"
 
-  dev_environment      = false
   stack_name           = "${var.stack_name}"
   prometheus_subdomain = "${var.prometheus_subdomain}"
   project              = "${var.project}"

@@ -100,8 +100,4 @@ resource "aws_security_group" "permit_internet_access" {
       "0.0.0.0/0",
     ]
   }
-
-  tags {
-    Name = "Internet access & prometheus access from GDS in dev env"
-  }
 }

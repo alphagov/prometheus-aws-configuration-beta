@@ -57,72 +57,19 @@ aws-vault exec gds-prometheus-staging -- terraform plan
 
 To avoid all three instances being respun at the same time you can do one instance at a time using:
 
-```aws-vault exec aws_profile_name -- terraform apply -target=module.paas-config.aws_route53_record.prom_ec2_a_record[i] -target=module.prometheus.aws_volume_attachment.attach-prometheus-disk[i] -target=module.prometheus.aws_instance.prometheus[i] -target=module.prometheus.aws_lb_target_group_attachment.prom_target_group_attachment[i]```
-
-
+```
+aws-vault exec aws_profile_name -- terraform apply -target=module.paas-config.aws_route53_record.prom_ec2_a_record[i] -target=module.prometheus.aws_volume_attachment.attach-prometheus-disk[i] -target=module.prometheus.aws_instance.prometheus[i] -target=module.prometheus.aws_lb_target_group_attachment.prom_target_group_attachment[i]
+```
 
 where `i` is `0`, `1` or `2`.
 
-## EC2 Prometheus Development
+## EC2 Prometheus
 
 Prometheis are not deployed on Amazon ECS and are instead deployed using the prom-ec2 modules onto EC2 instances. For details of how to develop and deploy them see the [terraform/modules/prom-ec2 README](terraform/modules/prom-ec2).
 
-## ECS Development
+## ECS
 
-Alertmanager and NGINX are deployed on Amazon ECS.
-
-### Dev ECS container instances
-
-By default the EC2 instances on dev stacks will be spun down at the end of the day, typically 6pm UTC on Monday to Fridays, so during BST EC2 instances will be terminated at 7pm.
-
-The schedule will automatically spin down EC2 instances at each hour outside the core working hours of 9am - 6pm UTC, Monday to Fridays. This is to ensure that the instances will be spun down even after they have been restarted.
-
-If the EC2 dev instance has been terminated, at the start of a day or if you are working after core hours, you can easily spin up your instances by running `aws-vault exec re-prom-dev -- terraform apply` inside `terraform/projects/app-ecs-instances-dev`, changing the stackname variable to the name of your stack.
-
-You can set your own cron schedules by adding `asg_dev_scaledown_schedules` to the `tfvars` file for your stack and specifying a list of cron schedules, for example:
-
-```
-# 19:30 UTC for Monday, Wednesday, Thursday, Friday, 18:30 UTC for Tuesday
-asg_dev_scaledown_schedules = ["30 19 * * MON,WED,THU,FRI", "30 18 * * TUE"]
-```
-
-For other examples on how to set up your own cron schedule have a look at this web page: https://crontab.guru/examples.html
-
-### How to connect to your dev EC2 container instance
-
-If you are experiencing problems after creating the stack, you may want to connect to the EC2 instance using AWS Session Manager:
-
-Before starting a session:
-  - [install the session-manager-plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
-  - find the instance id of the instance you want to connect to
-
-Add a dev admin profile to your AWS config, `~/.aws/config`
-
-```
-[profile re-prom-dev]
-...
-role_arn=arn:aws:iam::931679966755:role/<first_name.last_name>-admin
-```
-
-To connect to an instance `$INSTANCE_ID`, run the command:
-```shell
-aws-vault exec re-prom-dev -- aws ssm start-session --target $INSTANCE_ID
-```
-
-## Viewing the Prometheus dashboard
-
-Once you have deployed your development stack you should be able to reach the prometheus dashboard using this URL pattern:
-
-`https://prom-1.your-test-stack.dev.gds-reliability.engineering`
-
-## Development process
-
-If you want to make a change to our Prometheus infrastructure you should:
-
-- Create a new branch
-- Create a new stack for testing purposes in the re-prom-dev AWS account by following the above set up instructions
-- Once you are happy with your code, put in a pull request and get it reviewed by another team member
-
+Alertmanager and NGINX are deployed on Amazon ECS Fargate.
 
 ## AWS Vault tips
 

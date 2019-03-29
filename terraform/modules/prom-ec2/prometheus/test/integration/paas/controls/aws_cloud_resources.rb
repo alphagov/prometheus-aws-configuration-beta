@@ -37,8 +37,6 @@ control "aws_cloud_resources" do
     it { should have_statement(Action: 'ec2:Describe*', Effect: 'Allow', Resource: '*', Sid: 'ec2Policy') }
     it { should have_statement(Resource: "arn:aws:s3:::#{environment}/*") }
     it { should have_statement(Resource: "arn:aws:s3:::#{environment}") }    
-    it { should have_statement(Resource: 'arn:aws:s3:::gds-prometheus-targets-dev') }
-    it { should have_statement(Resource: 'arn:aws:s3:::gds-prometheus-targets-dev/*') }
     its('statement_count') { should cmp 2 }
   end
 

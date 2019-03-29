@@ -9,10 +9,9 @@ module "prometheus" {
   target_vpc = "${module.vpc.vpc_id}"
   enable_ssh = true
 
-  product        = "${local.product}"
-  environment    = "${local.environment}"
-  config_bucket  = "${local.environment}"
-  targets_bucket = "gds-prometheus-targets-dev"
+  product       = "${local.product}"
+  environment   = "${local.environment}"
+  config_bucket = "${local.environment}"
 
   prometheus_public_fqdns = "${var.prometheus_public_fqdns}"
 
