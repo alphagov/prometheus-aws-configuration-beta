@@ -26,12 +26,6 @@ variable "cidr_admin_whitelist" {
   ]
 }
 
-variable "dev_environment" {
-  type        = "string"
-  description = "Boolean flag for development environments"
-  default     = "false"
-}
-
 variable "remote_state_bucket" {
   type        = "string"
   description = "S3 bucket we store our terraform state in"
@@ -42,12 +36,6 @@ variable "stack_name" {
   type        = "string"
   description = "Unique name for this collection of resources"
   default     = "ecs-monitoring"
-}
-
-variable "dev_ticket_recipient_email" {
-  type        = "string"
-  description = "Email address to send ticket alerts to"
-  default     = ""
 }
 
 variable "observe_cronitor" {

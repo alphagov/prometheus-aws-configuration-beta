@@ -75,9 +75,7 @@ data "template_file" "alertmanager_container_defn" {
 
   vars {
     alertmanager_config_base64 = "${
-      base64encode(var.dev_environment == "true"
-                   ? data.template_file.alertmanager_dev_config_file.rendered
-                   : data.template_file.alertmanager_config_file.rendered)
+      base64encode(data.template_file.alertmanager_config_file.rendered)
     }"
 
     alertmanager_url = "--web.external-url=https://${local.alertmanager_public_fqdns[count.index]}"
@@ -193,25 +191,6 @@ data "template_file" "alertmanager_config_file" {
     verify_staging_cronitor     = "${data.pass_password.verify_staging_cronitor.password}"
     verify_integration_cronitor = "${data.pass_password.verify_integration_cronitor.password}"
     verify_prod_cronitor        = "${data.pass_password.verify_prod_cronitor.password}"
-  }
-}
-
-data "template_file" "alertmanager_dev_config_file" {
-  template = "${file("${path.module}/templates/alertmanager-dev.tpl")}"
-
-  # For dev stacks, as we have not requested "AWS SES production access", by default
-  # emails will not be sent unless you verify the recipient's email address
-  # (e.g. your personal email for testing).
-  # https://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses-procedure.html
-  vars {
-    smtp_from = "alerts@${data.terraform_remote_state.infra_networking.public_subdomain}"
-
-    # Port as requested by https://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-connect.html
-    smtp_smarthost             = "email-smtp.${var.aws_region}.amazonaws.com:587"
-    smtp_username              = "${aws_iam_access_key.smtp.id}"
-    smtp_password              = "${aws_iam_access_key.smtp.ses_smtp_password}"
-    dev_ticket_recipient_email = "${var.dev_ticket_recipient_email}"
-    observe_cronitor           = "${var.observe_cronitor}"
   }
 }
 
