@@ -34,7 +34,7 @@ groups:
         dashboard_registers: https://grafana-paas.cloudapps.digital/d/sljj3z6zk/registers?orgId=1
 
   - alert: Registers_AppCrashesInLastHour
-    expr: sum(increase(crash{org="openregister"}[1h])) without (exported_instance) > 5
+    expr: sum(increase(crash{org="openregister",space="prod"}[1h])) without (exported_instance) > 5
     labels:
         product: "registers"
     annotations:
