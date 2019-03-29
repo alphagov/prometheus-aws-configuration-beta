@@ -36,6 +36,7 @@ jobs:
             ACCOUNT_ID: '027317422673'
             AWS_REGION: 'eu-west-1'
             AWS_DEFAULT_REGION: 'eu-west-1'
+            GPG_PRIVATE_KEY: ((gpg_private_key))
           run:
             path: sh
             args:
