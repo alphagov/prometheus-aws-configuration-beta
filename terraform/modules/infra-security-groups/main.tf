@@ -30,7 +30,7 @@ variable "project" {
 
 variable "allowed_cidrs" {
   type        = "list"
-  description = "List of CIDRs which are able to access the alertmanager ALB, default are GDS ips"
+  description = "List of CIDRs which are able to access the alertmanager ALB, default are GDS ips and concourse egress"
 
   default = [
     "213.86.153.212/32",
@@ -40,6 +40,8 @@ variable "allowed_cidrs" {
     "213.86.153.236/32",
     "213.86.153.237/32",
     "85.133.67.244/32",
+    "35.177.37.128/32",
+    "35.176.252.164/32",
   ]
 }
 

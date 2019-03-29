@@ -23,8 +23,8 @@ jobs:
           params:
             DEPLOYMENT: staging
             ACCOUNT_ID: '027317422673'
-            AWS_REGION: 'eu-west-2'
-            AWS_DEFAULT_REGION: 'eu-west-2'
+            AWS_REGION: 'eu-west-1'
+            AWS_DEFAULT_REGION: 'eu-west-1'
           run: &wait-for-ecs
             path: ruby
             args:
@@ -46,7 +46,7 @@ jobs:
                 ACCOUNT_ID = ENV.fetch('ACCOUNT_ID')
                 DEPLOYMENT = ENV.fetch('DEPLOYMENT')
 
-                role_arn          = "arn:aws:iam::#{ACCOUNT_ID}:role/#{DEPLOYMENT}-deployer"
+                role_arn          = "arn:aws:iam::#{ACCOUNT_ID}:role/autom8-deployer"
                 role_session_name = "deploy-concourse-#{Time.new.to_i}"
                 duration          = 1800
 
