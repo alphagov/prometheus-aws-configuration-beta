@@ -36,7 +36,7 @@ jobs:
             ACCOUNT_ID: '027317422673'
             AWS_REGION: 'eu-west-1'
             AWS_DEFAULT_REGION: 'eu-west-1'
-          run: &run-apply-terraform
+          run:
             path: sh
             args:
               - -c
@@ -96,7 +96,7 @@ jobs:
             ACCOUNT_ID: '027317422673'
             AWS_REGION: 'eu-west-1'
             AWS_DEFAULT_REGION: 'eu-west-1'
-          run: &wait-for-ecs
+          run:
             path: ruby
             args:
               - -e
