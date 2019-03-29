@@ -27,7 +27,7 @@ data "pass_password" "cronitor_production_url" {
 ## Providers
 
 terraform {
-  required_version = "= 0.11.10"
+  required_version = "= 0.11.13"
 
   backend "s3" {
     bucket = "prometheus-production"
