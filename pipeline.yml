@@ -49,7 +49,7 @@ jobs:
 
                 # FIXME we should make this available in a better way
                 apt-get update -y
-                apt-get install -y golang 
+                apt-get install -y golang
                 go get github.com/camptocamp/terraform-provider-pass
                 GOBIN=~/.terraform.d/plugins/linux_amd64 go install github.com/camptocamp/terraform-provider-pass
 
