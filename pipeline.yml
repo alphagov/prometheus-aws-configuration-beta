@@ -44,8 +44,9 @@ jobs:
               - |
                 set -ue
 
-                export PASSWORD_STORE_DIR="$(pwd)/re-secrets/observe"
-                
+                mkdir -p $HOME/.password-store
+                cp -R re-secrets $HOME/.password-store
+
                 # FIXME we should make this available in a better way
                 apt-get update -y
                 apt-get install -y golang 
