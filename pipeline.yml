@@ -71,16 +71,12 @@ jobs:
                 export "AWS_SESSION_TOKEN=$session_token"
                 export "AWS_DEFAULT_REGION=eu-west-1"
 
-                aws sts get-caller-identity
-
-
-                cd prometheus-aws-configuration-beta-git/terraform/projects/app-ecs-services-$DEPLOYMENT
-
                 export PASSWORD_STORE_DIR="$(pwd)/re-secrets/observe"
                 echo "$GPG_PRIVATE_KEY" | gpg --import
 
                 # Show what command terraform is running
                 set -x
+                cd prometheus-aws-configuration-beta-git/terraform/projects/app-ecs-services-$DEPLOYMENT
                 terraform init
                 terraform plan
       - task: wait-for-ecs
