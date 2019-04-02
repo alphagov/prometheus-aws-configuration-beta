@@ -68,6 +68,12 @@ route:
         - match:
             deployment: joint
           receiver: "verify-joint-cronitor"
+        - match:
+            deployment: gsp
+          receiver: "verify-gsp-cronitor"
+    - receiver: "gsp-alerts-slack"
+      match:
+        deployment: gsp
 
 receivers:
 - name: "re-observe-pagerduty"
@@ -102,6 +108,10 @@ receivers:
   webhook_configs:
   - send_resolved: false
     url: "${verify_joint_cronitor}"
+- name: "verify-gsp-cronitor"
+  webhook_configs:
+  - send_resolved: false
+    url: "${verify_gsp_cronitor}"
 - name: "verify-2ndline-slack"
   slack_configs: &verify-2ndline-slack-configs
   - send_resolved: true
@@ -129,6 +139,12 @@ receivers:
       value: '{{ .CommonLabels.product }}'
     - title: Deployment
       value: '{{ .CommonLabels.deployment }}'
+- name: "gsp-alerts-slack"
+  slack_configs:
+  - send_resolved: true
+    channel: '#re-gsp'
+    icon_emoji: ':verify-shield:'
+    username: alertmanager
 - name: "verify-p1"
   pagerduty_configs:
     - service_key: "${verify_p1_pagerduty_key}"

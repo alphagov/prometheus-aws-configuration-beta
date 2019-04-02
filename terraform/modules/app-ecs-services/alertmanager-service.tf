@@ -155,6 +155,10 @@ data "pass_password" "observe_zendesk" {
   path = "receivers/observe/zendesk"
 }
 
+data "pass_password" "verify_gsp_cronitor" {
+  path = "cronitor/verify-gsp-url"
+}
+
 data "pass_password" "verify_joint_cronitor" {
   path = "cronitor/verify-joint-url"
 }
@@ -189,6 +193,7 @@ data "template_file" "alertmanager_config_file" {
     smtp_password               = "${aws_iam_access_key.smtp.ses_smtp_password}"
     ticket_recipient_email      = "${data.pass_password.observe_zendesk.password}"
     observe_cronitor            = "${var.observe_cronitor}"
+    verify_gsp_cronitor         = "${data.pass_password.verify_gsp_cronitor.password}"
     verify_joint_cronitor       = "${data.pass_password.verify_joint_cronitor.password}"
     verify_staging_cronitor     = "${data.pass_password.verify_staging_cronitor.password}"
     verify_integration_cronitor = "${data.pass_password.verify_integration_cronitor.password}"
