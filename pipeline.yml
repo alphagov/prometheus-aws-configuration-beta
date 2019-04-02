@@ -37,7 +37,7 @@ jobs:
             AWS_REGION: 'eu-west-1'
             AWS_DEFAULT_REGION: 'eu-west-1'
             GPG_PRIVATE_KEY: ((gpg_private_key))
-          run:
+          run: &run-deployment
             path: sh
             args:
               - -c
@@ -79,7 +79,7 @@ jobs:
                 cd prometheus-aws-configuration-beta-git/terraform/projects/app-ecs-services-$DEPLOYMENT
                 terraform init
                 terraform apply -auto-approve
-      - task: wait-for-ecs
+      - task: wait-for-staging-ecs
         timeout: 15m
         config:
           platform: linux
@@ -93,7 +93,7 @@ jobs:
             ACCOUNT_ID: '027317422673'
             AWS_REGION: 'eu-west-1'
             AWS_DEFAULT_REGION: 'eu-west-1'
-          run:
+          run: &run-wait-for-ecs
             path: ruby
             args:
               - -e
@@ -183,3 +183,64 @@ jobs:
             <<: *smoke-test-alertmanager
             params:
               ALERTMANAGER_URL: 'https://alerts-3.monitoring-staging.gds-reliability.engineering/-/healthy'
+  - name: deploy-app-ecs-services-production
+    serial: true
+    plan:
+      - get: prometheus-aws-configuration-beta-git
+        trigger: true
+        passed: [deploy-app-ecs-services-staging]
+      - get: re-secrets
+        passed: [deploy-app-ecs-services-staging]
+      - task: apply-terraform
+        timeout: 15m
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: gdsre/aws-terraform
+              tag: 18.04-0.11.13
+          inputs:
+            - name: prometheus-aws-configuration-beta-git
+            - name: re-secrets
+          params:
+            DEPLOYMENT: production
+            ACCOUNT_ID: '455214962221'
+            AWS_REGION: 'eu-west-1'
+            AWS_DEFAULT_REGION: 'eu-west-1'
+            GPG_PRIVATE_KEY: ((gpg_private_key))
+          run: *run-deployment
+      - task: wait-for-production-ecs
+        timeout: 15m
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: gdsre/aws-ruby
+              tag: 2.6.1-3.0.1
+          params:
+            DEPLOYMENT: staging
+            ACCOUNT_ID: '027317422673'
+            AWS_REGION: 'eu-west-1'
+            AWS_DEFAULT_REGION: 'eu-west-1'
+          run: *run-wait-for-ecs          
+      - aggregate:
+        - task: smoke-test-alertmanager-1
+          timeout: 2m
+          config:
+            <<: *smoke-test-alertmanager
+            params:
+              ALERTMANAGER_URL: 'https://alerts-1.monitoring.gds-reliability.engineering/-/healthy'
+        - task: smoke-test-alertmanager-2
+          timeout: 2m
+          config:
+            <<: *smoke-test-alertmanager
+            params:
+              ALERTMANAGER_URL: 'https://alerts-2.monitoring.gds-reliability.engineering/-/healthy'
+        - task: smoke-test-alertmanager-3
+          timeout: 2m
+          config:
+            <<: *smoke-test-alertmanager
+            params:
+              ALERTMANAGER_URL: 'https://alerts-3.monitoring.gds-reliability.engineering/-/healthy'          
