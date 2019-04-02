@@ -11,7 +11,7 @@
 variable "prometheis_total" {
   type        = "string"
   description = "Desired number of prometheus servers.  Maximum 3."
-  default     = "3"
+  default     = "0"
 }
 
 ## Locals
