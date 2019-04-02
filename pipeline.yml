@@ -1,0 +1,185 @@
+resources:
+  - name: prometheus-aws-configuration-beta-git
+    type: git
+    source:
+      uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
+      branch: master
+  - name: re-secrets
+    type: git
+    source:
+      private_key: |
+        ((re-secrets-ssh-key))
+      uri: git@github.com:alphagov/re-secrets.git
+      branch: master
+
+jobs:
+  - name: deploy-app-ecs-services-staging
+    serial: true
+    plan:
+      - get: prometheus-aws-configuration-beta-git
+        trigger: true
+      - get: re-secrets
+      - task: apply-terraform
+        timeout: 15m
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: gdsre/aws-terraform
+              tag: 18.04-0.11.13
+          inputs:
+            - name: prometheus-aws-configuration-beta-git
+            - name: re-secrets
+          params:
+            DEPLOYMENT: staging
+            ACCOUNT_ID: '027317422673'
+            AWS_REGION: 'eu-west-1'
+            AWS_DEFAULT_REGION: 'eu-west-1'
+            GPG_PRIVATE_KEY: ((gpg_private_key))
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                set -ue
+
+                mkdir -p $HOME/.password-store
+                cp -R re-secrets $HOME/.password-store
+
+                # FIXME we should make this available in a better way
+                apt-get update -y
+                apt-get install -y golang
+                go get github.com/camptocamp/terraform-provider-pass
+                GOBIN=~/.terraform.d/plugins/linux_amd64 go install github.com/camptocamp/terraform-provider-pass
+
+                echo "Authenticating with AWS against $DEPLOYMENT in account $ACCOUNT_ID"
+                arn="arn:aws:iam::${ACCOUNT_ID}:role/autom8-deployer"
+                creds="$(aws \
+                         sts assume-role \
+                         --role-arn="$arn" \
+                         --role-session-name="deploy-concourse-$(date +%s)" \
+                         --duration 1800 \
+                )"
+
+                access_key="$(echo "$creds"    | jq -r ".Credentials.AccessKeyId")"
+                secret_key="$(echo "$creds"    | jq -r ".Credentials.SecretAccessKey")"
+                session_token="$(echo "$creds" | jq -r ".Credentials.SessionToken")"
+
+                export "AWS_ACCESS_KEY_ID=$access_key"
+                export "AWS_SECRET_ACCESS_KEY=$secret_key"
+                export "AWS_SESSION_TOKEN=$session_token"
+                export "AWS_DEFAULT_REGION=eu-west-1"
+
+                export PASSWORD_STORE_DIR="$(pwd)/re-secrets/observe"
+                echo "$GPG_PRIVATE_KEY" | gpg --import
+
+                # Show what command terraform is running
+                set -x
+                cd prometheus-aws-configuration-beta-git/terraform/projects/app-ecs-services-$DEPLOYMENT
+                terraform init
+                terraform apply -auto-approve
+      - task: wait-for-ecs
+        timeout: 15m
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: gdsre/aws-ruby
+              tag: 2.6.1-3.0.1
+          params:
+            DEPLOYMENT: staging
+            ACCOUNT_ID: '027317422673'
+            AWS_REGION: 'eu-west-1'
+            AWS_DEFAULT_REGION: 'eu-west-1'
+          run:
+            path: ruby
+            args:
+              - -e
+              - |
+                require 'aws-sdk'
+
+                puts <<~HELP
+                  This waits for each ECS service in each cluster to be stable
+
+                  I.e. there are no pending deployments and desired == running
+
+                  It will spend most of its time waiting for the first services
+                  This is because it waits for them serially, not in parallel
+
+                  If this task times out then you should go and look in AWS
+                HELP
+
+                ACCOUNT_ID = ENV.fetch('ACCOUNT_ID')
+                DEPLOYMENT = ENV.fetch('DEPLOYMENT')
+
+                role_arn          = "arn:aws:iam::#{ACCOUNT_ID}:role/autom8-deployer"
+                role_session_name = "deploy-concourse-#{Time.new.to_i}"
+                duration          = 1800
+
+                puts "Assuming role #{role_arn} for #{duration} with name #{role_session_name}"
+                creds = Aws::STS::Client.new.assume_role(
+                  role_arn: role_arn,
+                  role_session_name: role_session_name,
+                  duration_seconds: duration
+                )
+
+                puts "Creating ECS client"
+                ECS = Aws::ECS::Client.new(credentials: creds)
+
+                cluster_name = "#{DEPLOYMENT}-ecs-monitoring"
+                services     = [
+                  "#{DEPLOYMENT}-alertmanager-1",
+                  "#{DEPLOYMENT}-alertmanager-2",
+                  "#{DEPLOYMENT}-alertmanager-3",
+                ]
+
+                ECS.wait_until(
+                  :services_stable,
+                  { cluster: cluster_name, services: services },
+                  {
+                    max_attempts: nil, # Do timeout in Concourse, not here
+                    delay: 15,
+                    before_wait: -> (attempt, response) do
+                      puts <<~HELP
+                        Waiting for stable...
+                          Cluster:  #{cluster_name}
+                          Services: #{services.join(', ')}
+                          Attempt:  #{attempt}
+                      HELP
+                    end
+                  }
+                )
+
+                puts "Stable #{cluster_name}"
+      - aggregate:
+        - task: smoke-test-alertmanager-1
+          timeout: 2m
+          config: &smoke-test-alertmanager
+            platform: linux
+            image_resource:
+              type: docker-image
+              source:
+                repository: governmentpaas/curl-ssl
+                tag: cd404e5f6e7b96082c586e80921189769131f593
+            params:
+              ALERTMANAGER_URL: 'https://alerts-1.monitoring-staging.gds-reliability.engineering/-/healthy'
+            run:
+              path: sh
+              args:
+                - -euxc
+                - |
+                  curl --silent --fail --max-time 5 "$ALERTMANAGER_URL"
+        - task: smoke-test-alertmanager-2
+          timeout: 2m
+          config:
+            <<: *smoke-test-alertmanager
+            params:
+              ALERTMANAGER_URL: 'https://alerts-2.monitoring-staging.gds-reliability.engineering/-/healthy'
+        - task: smoke-test-alertmanager-3
+          timeout: 2m
+          config:
+            <<: *smoke-test-alertmanager
+            params:
+              ALERTMANAGER_URL: 'https://alerts-3.monitoring-staging.gds-reliability.engineering/-/healthy'
