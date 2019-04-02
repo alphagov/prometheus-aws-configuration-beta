@@ -78,7 +78,7 @@ jobs:
                 set -x
                 cd prometheus-aws-configuration-beta-git/terraform/projects/app-ecs-services-$DEPLOYMENT
                 terraform init
-                terraform plan
+                terraform apply -auto-approve
       - task: wait-for-ecs
         timeout: 15m
         config:
