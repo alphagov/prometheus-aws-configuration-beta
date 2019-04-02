@@ -102,7 +102,7 @@ resource "aws_ecs_service" "alertmanager" {
   name            = "${var.stack_name}-alertmanager-${count.index + 1}"
   cluster         = "${var.stack_name}-ecs-monitoring"
   task_definition = "${element(aws_ecs_task_definition.alertmanager.*.arn, count.index)}"
-  desired_count   = 0
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   load_balancer {
