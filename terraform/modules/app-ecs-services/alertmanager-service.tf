@@ -78,6 +78,8 @@ data "template_file" "alertmanager_container_defn" {
       base64encode(data.template_file.alertmanager_config_file.rendered)
     }"
 
+    templates_base64 = "${base64encode(file("${path.module}/templates/default.tmpl"))}"
+
     alertmanager_url = "--web.external-url=https://${local.alertmanager_public_fqdns[count.index]}"
 
     log_group = "${aws_cloudwatch_log_group.task_logs.name}"
