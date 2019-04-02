@@ -7,6 +7,9 @@ global:
   smtp_auth_password: "${smtp_password}"
   slack_api_url: "${slack_api_url}"
 
+templates:
+- '/etc/alertmanager/default.tmpl'
+
 route:
   receiver: "re-observe-pagerduty"
   routes:
@@ -111,6 +114,21 @@ receivers:
     channel: '#re-autom8-alerts'
     icon_emoji: ':verify-shield:'
     username: alertmanager
+    pretext: '{{ .CommonAnnotations.summary }}'
+    text: |-
+      {{ range .Alerts }}
+         *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
+        *Description:* {{ .Annotations.description }}
+        *Details:*
+        {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+        {{ end }}
+      {{ end }}
+    short_fields: true
+    fields:
+    - title: Product
+      value: '{{ .CommonLabels.product }}'
+    - title: Deployment
+      value: '{{ .CommonLabels.deployment }}'
 - name: "verify-p1"
   pagerduty_configs:
     - service_key: "${verify_p1_pagerduty_key}"
