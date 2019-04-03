@@ -1,9 +1,12 @@
 resources:
-  - name: prometheus-aws-configuration-beta-git
+  - name: app-ecs-services-git
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
       branch: master
+      paths:
+        - terraform/modules/app-ecs-services
+        - terraform/projects/app-ecs-services-*
   - name: re-secrets
     type: git
     source:
@@ -16,7 +19,7 @@ jobs:
   - name: deploy-app-ecs-services-staging
     serial: true
     plan:
-      - get: prometheus-aws-configuration-beta-git
+      - get: app-ecs-services-git
         trigger: true
       - get: re-secrets
       - task: apply-terraform
@@ -29,7 +32,7 @@ jobs:
               repository: gdsre/aws-terraform
               tag: 18.04-0.11.13
           inputs:
-            - name: prometheus-aws-configuration-beta-git
+            - name: app-ecs-services-git
             - name: re-secrets
           params:
             DEPLOYMENT: staging
@@ -50,7 +53,7 @@ jobs:
                 # FIXME we should make this available in a better way
                 sed -i 's/archive.ubuntu.com/eu-west-2.ec2.archive.ubuntu.com/g' /etc/apt/sources.list
                 apt-get update -y
-                apt-get install -y golang
+                apt-get install -y --no-install-recommends gpg gpg-agent golang
                 go get github.com/camptocamp/terraform-provider-pass
                 GOBIN=~/.terraform.d/plugins/linux_amd64 go install github.com/camptocamp/terraform-provider-pass
 
@@ -77,7 +80,7 @@ jobs:
 
                 # Show what command terraform is running
                 set -x
-                cd prometheus-aws-configuration-beta-git/terraform/projects/app-ecs-services-$DEPLOYMENT
+                cd app-ecs-services-git/terraform/projects/app-ecs-services-$DEPLOYMENT
                 terraform init
                 terraform apply -auto-approve
       - task: wait-for-staging-ecs
@@ -187,7 +190,7 @@ jobs:
   - name: deploy-app-ecs-services-production
     serial: true
     plan:
-      - get: prometheus-aws-configuration-beta-git
+      - get: app-ecs-services-git
         trigger: true
         passed: [deploy-app-ecs-services-staging]
       - get: re-secrets
@@ -202,7 +205,7 @@ jobs:
               repository: gdsre/aws-terraform
               tag: 18.04-0.11.13
           inputs:
-            - name: prometheus-aws-configuration-beta-git
+            - name: app-ecs-services-git
             - name: re-secrets
           params:
             DEPLOYMENT: production
