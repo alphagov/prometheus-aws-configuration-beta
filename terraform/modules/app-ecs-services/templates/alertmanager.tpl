@@ -74,6 +74,13 @@ route:
     - receiver: "gsp-alerts-slack"
       match:
         deployment: gsp
+  - receiver: "gsp-alerts-slack"
+    match:
+      deployment: gsp
+      routes:
+        - match:
+            severity: constant
+          receiver: "dev-null"
 
 receivers:
 - name: "re-observe-pagerduty"
@@ -153,3 +160,4 @@ receivers:
   pagerduty_configs:
     - service_key: "${verify_p2_pagerduty_key}"
   slack_configs: *verify-2ndline-slack-configs
+- name: "dev-null"
