@@ -74,13 +74,13 @@ route:
     - receiver: "gsp-alerts-slack"
       match:
         deployment: gsp
-  - receiver: "gsp-alerts-slack"
-    match:
+  - match:
       deployment: gsp
-      routes:
-        - match:
-            severity: constant
-          receiver: "dev-null"
+    receiver: "gsp-alerts-slack"
+    routes:
+      - match:
+          severity: constant
+        receiver: "dev-null"
 
 receivers:
 - name: "re-observe-pagerduty"
