@@ -71,11 +71,10 @@ module "prometheus" {
   target_vpc = "${data.terraform_remote_state.infra_networking.vpc_id}"
   enable_ssh = false
 
-  product        = "${local.product}"
-  environment    = "${local.environment}"
-  config_bucket  = "${local.config_bucket}"
-  targets_bucket = "gds-prometheus-targets-${local.environment}"
-  instance_size  = "m4.large"
+  product       = "${local.product}"
+  environment   = "${local.environment}"
+  config_bucket = "${local.config_bucket}"
+  instance_size = "m4.large"
 
   prometheus_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.prom_public_record_fqdns}"
 
