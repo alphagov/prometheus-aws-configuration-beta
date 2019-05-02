@@ -68,7 +68,7 @@ data "template_file" "user_data_script" {
   vars {
     config_bucket       = "${aws_s3_bucket.prometheus_config.id}"
     region              = "${var.region}"
-    targets_bucket      = "${var.targets_bucket}"
+    targets_bucket      = "${aws_s3_bucket.prometheus_targets.id}"
     alerts_bucket       = "${aws_s3_bucket.prometheus_config.id}"
     prom_external_url   = "https://${var.prometheus_public_fqdns[count.index]}"
     logstash_host       = "${var.logstash_host}"

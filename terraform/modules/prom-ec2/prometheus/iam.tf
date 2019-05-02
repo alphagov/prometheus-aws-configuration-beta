@@ -1,15 +1,3 @@
-locals {
-  s3_bucket_resources = [
-    "arn:aws:s3:::${aws_s3_bucket.prometheus_config.id}/*",
-    "arn:aws:s3:::${aws_s3_bucket.prometheus_config.id}",
-    "arn:aws:s3:::${var.targets_bucket}/*",
-    "arn:aws:s3:::${var.targets_bucket}",
-  ]
-
-  aws_iam_instance_role_policy_resources = "${slice(local.s3_bucket_resources, 0, 
-    length(var.targets_bucket) > 0 ? length(local.s3_bucket_resources) : 2 )}"
-}
-
 #Prepare to attach role to instance
 resource "aws_iam_instance_profile" "prometheus_instance_profile" {
   name = "prometheus_${var.environment}_config_reader_profile"
@@ -60,7 +48,10 @@ data "aws_iam_policy_document" "instance_role_policy" {
       "s3:ListBucket",
     ]
 
-    resources = ["${local.aws_iam_instance_role_policy_resources}"]
+    resources = [
+      "arn:aws:s3:::${aws_s3_bucket.prometheus_config.id}/*",
+      "arn:aws:s3:::${aws_s3_bucket.prometheus_config.id}",
+    ]
   }
 }
 
