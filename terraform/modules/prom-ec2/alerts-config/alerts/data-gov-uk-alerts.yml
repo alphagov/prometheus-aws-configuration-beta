@@ -35,7 +35,7 @@ groups:
         description: "The index size of Elasticsearch for {{ $labels.job }} has decreased by more than 300 documents in the last 30 minutes"
         runbook: https://docs.publishing.service.gov.uk/manual/data-gov-uk-troubleshooting.html#different-number-of-datasets-in-ckan-to-find
   - alert: DataGovUk_HighSidekiqEnqueuedJobs
-    expr: sidekiq_enqueued_jobs{org="gds-data-discovery",job="publish-data-production-queue-monitor"} > 800
+    expr: sidekiq_enqueued_jobs{org="gds-data-gov-uk",job="publish-data-production-queue-monitor"} > 800
     for: 5m
     labels:
         product: "data-gov-uk"
