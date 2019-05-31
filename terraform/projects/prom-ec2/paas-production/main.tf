@@ -78,7 +78,6 @@ module "prometheus" {
   product       = "${local.product}"
   environment   = "${local.environment}"
   config_bucket = "${local.config_bucket}"
-  instance_size = "m4.large"
   logstash_host = "${data.pass_password.logstash_endpoint.password}"
 
   prometheus_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.prom_public_record_fqdns}"

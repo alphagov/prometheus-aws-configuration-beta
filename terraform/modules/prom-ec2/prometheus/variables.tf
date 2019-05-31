@@ -19,7 +19,7 @@ variable "subnet_ids" {
 variable "instance_size" {
   type        = "string"
   description = "This is the default instance size"
-  default     = "t2.medium"
+  default     = "m5.large"
 }
 
 variable "target_vpc" {
