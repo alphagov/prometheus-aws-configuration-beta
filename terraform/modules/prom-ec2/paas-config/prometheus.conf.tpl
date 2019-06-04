@@ -51,7 +51,7 @@ scrape_configs:
         target_label: '__metrics_path__'
         replacement: '$1/_metrics'
       - source_labels: ['__metrics_path__', 'org', 'job']
-        regex: '(.*)/metrics;digitalmarketplace;.*-router'
+        regex: '(.*)/metrics;digitalmarketplace;router'
         target_label: '__metrics_path__'
         replacement: '$1/_metrics'
   - job_name: alertmanager
