@@ -50,10 +50,14 @@ scrape_configs:
         regex: '(.*)/metrics;digitalmarketplace;.*-frontend'
         target_label: '__metrics_path__'
         replacement: '$1/_metrics'
-      - source_labels: ['__metrics_path__', 'org', 'job']
-        regex: '(.*)/metrics;digitalmarketplace;router'
+      - source_labels: ['org', 'job']
+        regex: 'digitalmarketplace;router'
         target_label: '__metrics_path__'
-        replacement: '$1/_metrics'
+        replacement: '/_metrics'
+      - source_labels: ['org', 'space', 'job']
+        regex: 'digitalmarketplace;(.*);router'
+        target_label: '__address__'
+        replacement: 'dm-router-$1.cloudapps.digital'
   - job_name: alertmanager
     dns_sd_configs:
       - names:
