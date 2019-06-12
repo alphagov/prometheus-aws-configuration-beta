@@ -39,23 +39,23 @@ scrape_configs:
     # __metrics_path__ label to set the path we scrape
     relabel_configs:
       - source_labels: ['__metrics_path__', 'org', 'job']
-        regex: '(.*)/metrics;digitalmarketplace;api'
+        regex: '(.*)/metrics;digitalmarketplace;api(-release)?'
         target_label: '__metrics_path__'
         replacement: '$1/_metrics'
       - source_labels: ['__metrics_path__', 'org', 'job']
-        regex: '(.*)/metrics;digitalmarketplace;.*-api'
+        regex: '(.*)/metrics;digitalmarketplace;.*-api(-release)?'
         target_label: '__metrics_path__'
         replacement: '$1/_metrics'
       - source_labels: ['__metrics_path__', 'org', 'job']
-        regex: '(.*)/metrics;digitalmarketplace;.*-frontend'
+        regex: '(.*)/metrics;digitalmarketplace;.*-frontend(-release)?'
         target_label: '__metrics_path__'
         replacement: '$1/_metrics'
       - source_labels: ['org', 'job']
-        regex: 'digitalmarketplace;router'
+        regex: 'digitalmarketplace;router(-release)?'
         target_label: '__metrics_path__'
         replacement: '/_metrics'
       - source_labels: ['org', 'space', 'job']
-        regex: 'digitalmarketplace;(.*);router'
+        regex: 'digitalmarketplace;(.*);router(-release)?'
         target_label: '__address__'
         replacement: 'dm-router-$1.cloudapps.digital'
   - job_name: alertmanager
