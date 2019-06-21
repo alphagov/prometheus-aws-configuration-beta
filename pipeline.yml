@@ -7,6 +7,11 @@ resources:
       paths:
         - terraform/modules/app-ecs-services
         - terraform/projects/app-ecs-services-*
+  - name: cf-app-discovery-git
+    type: git
+    source:
+      uri: https://github.com/alphagov/cf_app_discovery.git
+      branch: master
   - name: re-secrets
     type: git
     source:
@@ -14,6 +19,22 @@ resources:
         ((re-secrets-ssh-key))
       uri: git@github.com:alphagov/re-secrets.git
       branch: master
+  - name: service-broker-app-staging
+    type: cf
+    source:
+      api: https://api.cloud.service.gov.uk
+      username: ((cf_user))
+      password: ((cf_password))
+      organization: gds-tech-ops
+      space: prometheus-staging
+  - name: service-broker-app-production
+    type: cf
+    source:
+      api: https://api.cloud.service.gov.uk
+      username: ((cf_user))
+      password: ((cf_password))
+      organization: gds-tech-ops
+      space: prometheus-production
 
 jobs:
   - name: deploy-app-ecs-services-staging
@@ -247,4 +268,55 @@ jobs:
           config:
             <<: *smoke-test-alertmanager
             params:
-              ALERTMANAGER_URL: 'https://alerts-3.monitoring.gds-reliability.engineering/-/healthy'          
+              ALERTMANAGER_URL: 'https://alerts-3.monitoring.gds-reliability.engineering/-/healthy'
+  - name: run-service-broker-tests
+    plan:
+      - get: cf-app-discovery-git
+        trigger: true
+      - task: run-tests
+        timeout: 15m
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ruby
+              tag: 2.5.5
+          inputs:
+            - name: cf-app-discovery-git
+              path: repo
+          run:
+            path: sh
+            dir: repo
+            args:
+            - -c
+            - |
+              apt-get update
+              # Old versions of the ruby docker set this envvar which
+              # messes things up it was fixed in
+              # docker-library/ruby#255 so we can remove this `unset`
+              # line when we upgrade to ruby 2.6
+              unset BUNDLER_VERSION
+              gem install bundler -v 2.0.1
+              bundle install --without development
+              bundle exec rake
+  - name: deploy-service-broker-staging
+    plan:
+      - get: cf-app-discovery-git
+        trigger: true
+        passed: [ run-service-broker-tests ]
+      - put: service-broker-app-staging
+        params:
+          manifest: cf-app-discovery-git/manifest-staging.yml
+          show_app_log: true
+          path: cf-app-discovery-git
+  - name: deploy-service-broker-production
+    plan:
+      - get: cf-app-discovery-git
+        trigger: true
+        passed: [ deploy-service-broker-staging ]
+      - put: service-broker-app-production
+        params:
+          manifest: cf-app-discovery-git/manifest-production.yml
+          show_app_log: true
+          path: cf-app-discovery-git
