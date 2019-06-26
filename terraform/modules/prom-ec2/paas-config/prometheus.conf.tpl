@@ -34,30 +34,6 @@ scrape_configs:
     file_sd_configs:
       - files: ['/etc/prometheus/targets/*.json']
         refresh_interval: 30s
-    # Digital marketplace's API and frontend apps listen on a
-    # different metrics path, so when we detect one we modify the
-    # __metrics_path__ label to set the path we scrape
-    relabel_configs:
-      - source_labels: ['__metrics_path__', 'org', 'job']
-        regex: '(.*)/metrics;digitalmarketplace;api(-release)?'
-        target_label: '__metrics_path__'
-        replacement: '$1/_metrics'
-      - source_labels: ['__metrics_path__', 'org', 'job']
-        regex: '(.*)/metrics;digitalmarketplace;.*-api(-release)?'
-        target_label: '__metrics_path__'
-        replacement: '$1/_metrics'
-      - source_labels: ['__metrics_path__', 'org', 'job']
-        regex: '(.*)/metrics;digitalmarketplace;.*-frontend(-release)?'
-        target_label: '__metrics_path__'
-        replacement: '$1/_metrics'
-      - source_labels: ['org', 'job']
-        regex: 'digitalmarketplace;router(-release)?'
-        target_label: '__metrics_path__'
-        replacement: '/_metrics'
-      - source_labels: ['org', 'space', 'job']
-        regex: 'digitalmarketplace;(.*);router(-release)?'
-        target_label: '__address__'
-        replacement: 'dm-router-$1.cloudapps.digital'
   - job_name: alertmanager
     dns_sd_configs:
       - names:
