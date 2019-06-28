@@ -1,3 +1,7 @@
 brew "jq"
 brew "tfenv"
-cask "aws-vault"
+if OS.mac?
+  cask "aws-vault"
+else
+  brew "linuxbrew/extra/aws-vault"
+end
