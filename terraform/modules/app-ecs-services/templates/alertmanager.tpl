@@ -66,17 +66,14 @@ route:
             deployment: staging
           receiver: "verify-staging-cronitor"
         - match:
-            deployment: joint
-          receiver: "verify-joint-cronitor"
-        - match:
             deployment: gsp
           receiver: "verify-gsp-cronitor"
-    - receiver: "gsp-alerts-slack"
+    - receiver: "autom8-alerts-slack"
       match:
         deployment: gsp
   - match:
       deployment: gsp
-    receiver: "gsp-alerts-slack"
+    receiver: "autom8-alerts-slack"
     routes:
       - match:
           severity: constant
@@ -111,10 +108,6 @@ receivers:
   webhook_configs:
   - send_resolved: false
     url: "${verify_staging_cronitor}"
-- name: "verify-joint-cronitor"
-  webhook_configs:
-  - send_resolved: false
-    url: "${verify_joint_cronitor}"
 - name: "verify-gsp-cronitor"
   webhook_configs:
   - send_resolved: false
@@ -146,12 +139,6 @@ receivers:
       value: '{{ .CommonLabels.product }}'
     - title: Deployment
       value: '{{ .CommonLabels.deployment }}'
-- name: "gsp-alerts-slack"
-  slack_configs:
-  - send_resolved: true
-    channel: '#re-gsp'
-    icon_emoji: ':verify-shield:'
-    username: alertmanager
 - name: "verify-p1"
   pagerduty_configs:
     - service_key: "${verify_p1_pagerduty_key}"
