@@ -66,9 +66,6 @@ route:
             deployment: staging
           receiver: "verify-staging-cronitor"
         - match:
-            deployment: joint
-          receiver: "verify-joint-cronitor"
-        - match:
             deployment: gsp
           receiver: "verify-gsp-cronitor"
     - receiver: "autom8-alerts-slack"
@@ -111,10 +108,6 @@ receivers:
   webhook_configs:
   - send_resolved: false
     url: "${verify_staging_cronitor}"
-- name: "verify-joint-cronitor"
-  webhook_configs:
-  - send_resolved: false
-    url: "${verify_joint_cronitor}"
 - name: "verify-gsp-cronitor"
   webhook_configs:
   - send_resolved: false
