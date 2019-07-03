@@ -128,7 +128,7 @@ receivers:
     text: |-
       {{ range .Alerts }}
          *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
-        *Description:* {{ .Annotations.description }}
+        *Description:* {{ .Annotations.message }}
         *Details:*
         {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
         {{ end }}
