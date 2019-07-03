@@ -12,6 +12,10 @@ templates:
 
 route:
   receiver: "re-observe-pagerduty"
+  group_by:
+    - alertname
+    - product
+    - deployment
   routes:
   - receiver: "re-observe-ticket-alert"
     repeat_interval: 7d
@@ -128,7 +132,7 @@ receivers:
     text: |-
       {{ range .Alerts }}
          *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
-        *Description:* {{ .Annotations.description }}
+        *Description:* {{ .Annotations.message }}
         *Details:*
         {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
         {{ end }}
@@ -139,6 +143,10 @@ receivers:
       value: '{{ .CommonLabels.product }}'
     - title: Deployment
       value: '{{ .CommonLabels.deployment }}'
+    actions:
+    - type: button
+      text: Runbook
+      url: '{{ .CommonAnnotations.runbook_url }}'
 - name: "verify-p1"
   pagerduty_configs:
     - service_key: "${verify_p1_pagerduty_key}"
