@@ -128,11 +128,10 @@ receivers:
     channel: '#re-autom8-alerts'
     icon_emoji: ':verify-shield:'
     username: alertmanager
-    pretext: '{{ .CommonAnnotations.summary }}'
+    pretext: '{{ .CommonLabels.alertname }}:{{ .CommonAnnotations.summary }}'
     text: |-
+      *Description:* {{ .CommonAnnotations.message }}
       {{ range .Alerts }}
-         *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
-        *Description:* {{ .Annotations.message }}
         *Details:*
         {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
         {{ end }}
