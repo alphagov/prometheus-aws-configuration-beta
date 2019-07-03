@@ -12,6 +12,10 @@ templates:
 
 route:
   receiver: "re-observe-pagerduty"
+  group_by:
+    - alertname
+    - product
+    - deployment
   routes:
   - receiver: "re-observe-ticket-alert"
     repeat_interval: 7d
