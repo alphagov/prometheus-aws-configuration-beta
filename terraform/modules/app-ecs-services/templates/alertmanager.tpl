@@ -128,7 +128,7 @@ receivers:
     channel: '#re-autom8-alerts'
     icon_emoji: ':verify-shield:'
     username: alertmanager
-    pretext: '{{ .CommonLabels.alertname }}:{{ .CommonAnnotations.summary }}'
+    pretext: '{{ if eq .Status "firing" }}{{ if eq .CommonLabels.severity "warning" }}:warning:{{ else }}:rotating_light:{{ end }}{{ else }}:green_tick:{{ end }} {{ .CommonLabels.alertname }}:{{ .CommonAnnotations.summary }}'
     text: |-
       *Description:* {{ .CommonAnnotations.message }}
       {{ range .Alerts }}
