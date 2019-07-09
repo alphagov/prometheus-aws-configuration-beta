@@ -40,6 +40,9 @@ scrape_configs:
     file_sd_configs:
       - files: ['/etc/prometheus/targets/london/*.json']
         refresh_interval: 30s
+    relabel_configs:
+      - target_label: region
+        replacement: london
   - job_name: alertmanager
     dns_sd_configs:
       - names:
