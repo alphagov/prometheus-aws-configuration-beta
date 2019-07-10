@@ -90,7 +90,7 @@ resource "aws_iam_role_policy" "prometheus_has_read_access_to_targets_bucket" {
       "Effect": "Allow",
       "Resource": [
         "${aws_s3_bucket.prometheus_targets.arn}/*",
-        "${aws_s3_bucket.prometheus_targets.arn}"
+        "${aws_s3_bucket.prometheus_targets.arn}",
         "${aws_s3_bucket.prometheus_london_targets.arn}/*",
         "${aws_s3_bucket.prometheus_london_targets.arn}"
       ]
