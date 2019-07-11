@@ -28,11 +28,11 @@ scrape_configs:
       - source_labels: ['__meta_ec2_instance_id']
         replacement: '$1:9090'
         target_label: instance
-  - job_name: paas-targets
+  - job_name: paas-ireland-targets
     scheme: http
     proxy_url: 'http://localhost:8080'
     file_sd_configs:
-      - files: ['/etc/prometheus/targets/*.json']
+      - files: ['/etc/prometheus/ireland-targets/*.json']
         refresh_interval: 30s
   - job_name: paas-london-targets
     scheme: http
