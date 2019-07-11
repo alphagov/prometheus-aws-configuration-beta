@@ -38,7 +38,7 @@ scrape_configs:
     scheme: http
     proxy_url: 'http://localhost:8080'
     file_sd_configs:
-      - files: ['/etc/prometheus/targets/london/*.json']
+      - files: ['/etc/prometheus/london-targets/*.json']
         refresh_interval: 30s
     relabel_configs:
       - target_label: region
