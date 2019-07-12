@@ -70,13 +70,13 @@ route:
             deployment: staging
           receiver: "verify-staging-cronitor"
         - match:
-            deployment: gsp
+            clustername: london.verify.govsvc.uk
           receiver: "verify-gsp-cronitor"
     - receiver: "autom8-alerts-slack"
       match:
-        deployment: gsp
-  - match:
-      deployment: gsp
+        clustername: london.verify.govsvc.uk
+  - match_re:
+      clustername: london[.].*[.]govsvc[.]uk
     receiver: "autom8-alerts-slack"
     routes:
       - match:
