@@ -72,7 +72,11 @@ route:
         - match:
             clustername: london.verify.govsvc.uk
           receiver: "verify-gsp-cronitor"
-    - receiver: "autom8-alerts-slack"
+    - receiver: "autom8-gsp-alerts-slack"
+      group_by:
+        - alertname
+        - product
+        - namespace
       match:
         clustername: london.verify.govsvc.uk
   - match_re:
@@ -143,6 +147,33 @@ receivers:
       value: '{{ .CommonLabels.product }}'
     - title: Deployment
       value: '{{ .CommonLabels.deployment }}'
+    actions:
+    - type: button
+      text: Runbook
+      url: '{{ .CommonAnnotations.runbook_url }}'
+- name: "autom8-gsp-alerts-slack"
+  slack_configs:
+  - send_resolved: true
+    channel: '#re-autom8-alerts'
+    icon_emoji: ':gsp:'
+    username: alertmanager
+    color: '{{ if eq .Status "firing" }}{{ if eq .CommonLabels.severity "warning" }}warning{{ else }}danger{{ end }}{{ else }}good{{ end }}'
+    pretext: '{{ if eq .Status "firing" }}{{ if eq .CommonLabels.severity "warning" }}:warning:{{ else }}:rotating_light:{{ end }}{{ else }}:green_tick:{{ end }} {{ .CommonLabels.alertname }}:{{ .CommonAnnotations.summary }}'
+    text: |-
+      *Description:* {{ .CommonAnnotations.message }}
+      {{ range .Alerts }}
+        *Details:*
+        {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+        {{ end }}
+      {{ end }}
+    short_fields: true
+    fields:
+    - title: Product
+      value: '{{ .CommonLabels.product }}'
+    - title: Namespace
+      value: '{{ .CommonLabels.namespace }}'
+    - title: Pod
+      value: '{{ .CommonLabels.pod }}'
     actions:
     - type: button
       text: Runbook
