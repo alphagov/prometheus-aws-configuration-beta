@@ -14,5 +14,5 @@ To deploy (for example to staging):
 
 ```shell
 cd terraform/projects/prom-ec2/paas-staging/prometheus
-aws-vault exec gds-prometheus-staging -- terraform plan
+gds aws re-prom-staging -- terraform plan
 ```
