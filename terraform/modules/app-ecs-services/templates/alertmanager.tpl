@@ -161,7 +161,7 @@ receivers:
       url: '{{ .CommonAnnotations.runbook_url }}'
 - name: "autom8-gsp-alerts-slack"
   slack_configs:
-  - &GSP-slack-config
+  - &gsp-slack-config
     send_resolved: true
     channel: '#re-autom8-alerts'
     icon_emoji: ':gsp:'
@@ -189,11 +189,11 @@ receivers:
       url: '{{ .CommonAnnotations.runbook_url }}'
 - name: "eidas-slack"
   slack_configs:
-    - <<: *GSP-slack-config
+    - <<: *gsp-slack-config
       channel: '#verify-eidas-alerts'
 - name: "dcs-slack"
   slack_configs:
-    - <<: *GSP-slack-config
+    - <<: *gsp-slack-config
       channel: '#verify-dcs-gsp-alerts'
 - name: "verify-p1"
   pagerduty_configs:
