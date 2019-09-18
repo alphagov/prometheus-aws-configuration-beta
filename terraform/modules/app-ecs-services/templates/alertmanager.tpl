@@ -43,6 +43,31 @@ route:
     match:
       layer: "infra"
       severity: "ticket"
+  # GSP clusters
+  - match_re:
+      clustername: london[.].*[.]govsvc[.]uk
+    receiver: "autom8-gsp-alerts-slack"
+    group_by:
+      - alertname
+      - product
+      - namespace
+    routes:
+    - match:
+        severity: constant
+        clustername: london.verify.govsvc.uk
+      group_interval: 1m
+      repeat_interval: 1m
+      receiver: "verify-gsp-cronitor"
+    - match:
+        severity: constant
+      receiver: "dev-null"
+    - match_re:
+        namespace: (sandbox|verify)-doc-checking-.*
+      receiver: dcs-slack
+    - match_re:
+        namespace: (sandbox|verify)-(proxy-node.*|metadata-controller)
+      receiver: eidas-slack
+  # Verify hub ECS
   - receiver: "verify-2ndline-slack"
     match:
       product: "verify"
@@ -69,23 +94,6 @@ route:
         - match:
             deployment: staging
           receiver: "verify-staging-cronitor"
-        - match:
-            clustername: london.verify.govsvc.uk
-          receiver: "verify-gsp-cronitor"
-    - receiver: "autom8-gsp-alerts-slack"
-      group_by:
-        - alertname
-        - product
-        - namespace
-      match:
-        clustername: london.verify.govsvc.uk
-  - match_re:
-      clustername: london[.].*[.]govsvc[.]uk
-    receiver: "autom8-alerts-slack"
-    routes:
-      - match:
-          severity: constant
-        receiver: "dev-null"
 
 receivers:
 - name: "re-observe-pagerduty"
@@ -153,7 +161,8 @@ receivers:
       url: '{{ .CommonAnnotations.runbook_url }}'
 - name: "autom8-gsp-alerts-slack"
   slack_configs:
-  - send_resolved: true
+  - &gsp-slack-config
+    send_resolved: true
     channel: '#re-autom8-alerts'
     icon_emoji: ':gsp:'
     username: alertmanager
@@ -178,6 +187,14 @@ receivers:
     - type: button
       text: Runbook
       url: '{{ .CommonAnnotations.runbook_url }}'
+- name: "eidas-slack"
+  slack_configs:
+    - <<: *gsp-slack-config
+      channel: '#verify-eidas-alerts'
+- name: "dcs-slack"
+  slack_configs:
+    - <<: *gsp-slack-config
+      channel: '#verify-dcs-gsp-alerts'
 - name: "verify-p1"
   pagerduty_configs:
     - service_key: "${verify_p1_pagerduty_key}"
