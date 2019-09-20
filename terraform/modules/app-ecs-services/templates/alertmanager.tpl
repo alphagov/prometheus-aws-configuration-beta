@@ -65,8 +65,11 @@ route:
         namespace: (sandbox|verify)-doc-checking-.*
       receiver: dcs-slack
     - match_re:
-        namespace: verify-proxy-node-(integration|prod)|verify-metadata-controller
+        namespace: verify-proxy-node-.*|verify-metadata-.*|verify-connector-.*
       receiver: eidas-slack
+    - match_re:
+        namespace: sandbox-proxy-node-.*|sandbox-metadata-.*|sandbox-connector-.*
+      receiver: "dev-null"
   # Verify hub ECS
   - receiver: "verify-2ndline-slack"
     match:
