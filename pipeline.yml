@@ -309,7 +309,6 @@ jobs:
         params:
           manifest: cf-app-discovery-git/manifest-staging.yml
           show_app_log: true
-          path: cf-app-discovery-git
   - name: deploy-service-broker-production
     plan:
       - get: cf-app-discovery-git
@@ -319,4 +318,3 @@ jobs:
         params:
           manifest: cf-app-discovery-git/manifest-production.yml
           show_app_log: true
-          path: cf-app-discovery-git
