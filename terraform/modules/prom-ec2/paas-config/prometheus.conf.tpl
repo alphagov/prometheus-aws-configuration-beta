@@ -69,4 +69,7 @@ scrape_configs:
     scheme: https
     static_configs:
       - targets: ['metrics.notify.tools']
-
+  - job_name: verify-gsp-canary
+    scheme: https
+    static_configs:
+      - targets: ['canary.london.verify.govsvc.uk']
