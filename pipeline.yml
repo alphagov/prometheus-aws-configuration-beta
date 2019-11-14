@@ -190,7 +190,7 @@ jobs:
                 )
 
                 puts "Stable #{cluster_name}"
-      - aggregate:
+      - in_parallel:
         - task: smoke-test-alertmanager-1
           timeout: 2m
           config: &smoke-test-alertmanager
@@ -262,7 +262,7 @@ jobs:
             AWS_REGION: 'eu-west-1'
             AWS_DEFAULT_REGION: 'eu-west-1'
           run: *run-wait-for-ecs          
-      - aggregate:
+      - in_parallel:
         - task: smoke-test-alertmanager-1
           timeout: 2m
           config:
