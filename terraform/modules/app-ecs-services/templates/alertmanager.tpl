@@ -46,7 +46,6 @@ route:
   # GSP clusters
   - match_re:
       clustername: london[.].*[.]govsvc[.]uk
-    receiver: "autom8-gsp-alerts-slack"
     group_by:
       - alertname
       - product
@@ -70,6 +69,9 @@ route:
     - match_re:
         namespace: sandbox-proxy-node-.*|sandbox-metadata-.*|sandbox-connector-.*
       receiver: "dev-null"
+    - match:
+        layer: "cicd"
+      receiver: "autom8-gsp-alerts-slack"
   # Verify hub ECS
   - receiver: "verify-2ndline-slack"
     match:
