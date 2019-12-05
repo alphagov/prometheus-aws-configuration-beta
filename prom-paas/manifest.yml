@@ -1,0 +1,23 @@
+---
+applications:
+  - name: prometheus
+    metadata:
+      labels:
+        prometheus: prometheus-delightful-oribi.apps.internal
+    buildpacks:
+    - https://github.com/alphagov/prometheus-buildpack.git
+    disk_quota: 4G
+    env:
+      PROMETHEUS_FLAGS: |
+        --storage.tsdb.retention.size=3GB --web.external-url=https://prometheus-delightful-oribi.cloudapps.digital
+    instances: 1
+    memory: 512M
+    routes:
+    - route: prometheus-delightful-oribi.cloudapps.digital
+    - route: prometheus-delightful-oribi.apps.internal
+    services:
+    - prom-influx
+    # sidecars:
+    # - name: updater
+    #   command: check-for-new-targets.sh
+    #   process_types: [web]

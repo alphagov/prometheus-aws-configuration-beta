@@ -1,0 +1,5 @@
+groups:
+- name: example
+  rules:
+  - record: job:http_200s:rate
+    expr: sum without(instance,path,method)(rate(http_server_requests_total{code="200"}[1m]))

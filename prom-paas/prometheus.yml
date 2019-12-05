@@ -1,0 +1,54 @@
+---
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+  external_labels:
+    org: gds-tech-ops
+rule_files:
+- rules/*.yaml
+
+# alerting:
+#   alertmanagers:
+#   - scheme: http
+#     dns_sd_configs:
+#       - names:
+#           - 'alertmanager.local.gds-reliability.engineering'
+#         type: 'A'
+#         port: 9093
+# rule_files:
+#   - "/etc/prometheus/alerts/*"
+scrape_configs:
+  - job_name: prometheus
+    dns_sd_configs:
+    - names:
+      - prometheus-delightful-oribi.apps.internal
+      type: A
+      port: 8080
+    relabel_configs:
+    - target_label: space
+      replacement: prometheus-staging
+  - job_name: rotas
+    dns_sd_configs:
+    - names:
+      - rotas.apps.internal
+      type: A
+      port: 8080
+    relabel_configs:
+    - target_label: space
+      replacement: re-internal-apps
+  - job_name: observe-paas-prometheus-exporter-staging
+    static_configs:
+    - targets:
+      - observe-paas-prometheus-exporter-staging.apps.internal:8080
+      labels:
+        space: prometheus-staging
+  # - job_name: alertmanager
+  #   dns_sd_configs:
+  #     - names:
+  #         - 'alertmanager.local.gds-reliability.engineering'
+  #       type: 'A'
+  #       port: 9093
+  # - job_name: notify-statsd-exporter
+  #   scheme: https
+  #   static_configs:
+  #     - targets: ['metrics.notify.tools']
