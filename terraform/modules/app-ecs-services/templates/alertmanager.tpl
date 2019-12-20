@@ -187,8 +187,16 @@ receivers:
       value: '{{ .CommonLabels.product }}'
     - title: Namespace
       value: '{{ .CommonLabels.namespace }}'
+{{ if .CommonLabels.job_name }}
+    - title: Job
+      value: '{{ .CommonLabels.job_name }}'
+{{ else if .CommonLabels.deployment }}
+    - title: Deployment
+      value: '{{ .CommonLabels.deployment }}'
+{{ else if eq .CommonLabels.alertname "KubePodCrashLooping" }}
     - title: Pod
       value: '{{ .CommonLabels.pod }}'
+{{ end }}
     actions:
     - type: button
       text: Runbook
