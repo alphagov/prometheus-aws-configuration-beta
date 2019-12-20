@@ -187,16 +187,22 @@ receivers:
       value: '{{ .CommonLabels.product }}'
     - title: Namespace
       value: '{{ .CommonLabels.namespace }}'
-{{ if .CommonLabels.job_name }}
-    - title: Job
-      value: '{{ .CommonLabels.job_name }}'
-{{ else if .CommonLabels.deployment }}
-    - title: Deployment
-      value: '{{ .CommonLabels.deployment }}'
-{{ else if match "^KubePod" .CommonLabels.alertname }}
-    - title: Pod
-      value: '{{ .CommonLabels.pod }}'
-{{ end }}
+    - title: |
+        {{- if .CommonLabels.job_name -}}
+        Job
+        {{- else if .CommonLabels.deployment -}}
+        Deployment
+        {{- else if match "^KubePod" .CommonLabels.alertname -}}
+        Pod
+        {{-end-}}
+      value: |
+        {{- if .CommonLabels.job_name -}}
+          {{ .CommonLabels.job_name }}
+        {{- else if .CommonLabels.deployment -}}
+          {{ .CommonLabels.deployment }}
+        {{- else if match "^KubePod" .CommonLabels.alertname -}}
+          {{ .CommonLabels.pod }}
+        {{-end-}}
     actions:
     - type: button
       text: Runbook
