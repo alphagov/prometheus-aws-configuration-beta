@@ -193,7 +193,7 @@ receivers:
 {{ else if .CommonLabels.deployment }}
     - title: Deployment
       value: '{{ .CommonLabels.deployment }}'
-{{ else if eq .CommonLabels.alertname "KubePodCrashLooping" }}
+{{ else if match "^KubePod" .CommonLabels.alertname }}
     - title: Pod
       value: '{{ .CommonLabels.pod }}'
 {{ end }}
