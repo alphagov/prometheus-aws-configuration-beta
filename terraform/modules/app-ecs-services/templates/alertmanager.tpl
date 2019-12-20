@@ -194,7 +194,7 @@ receivers:
         Deployment
         {{- else if match "^KubePod" .CommonLabels.alertname -}}
         Pod
-        {{-end-}}
+        {{- end -}}
       value: |
         {{- if .CommonLabels.job_name -}}
           {{ .CommonLabels.job_name }}
@@ -202,7 +202,7 @@ receivers:
           {{ .CommonLabels.deployment }}
         {{- else if match "^KubePod" .CommonLabels.alertname -}}
           {{ .CommonLabels.pod }}
-        {{-end-}}
+        {{- end -}}
     actions:
     - type: button
       text: Runbook
