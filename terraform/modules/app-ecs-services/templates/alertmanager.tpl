@@ -62,7 +62,7 @@ route:
         severity: constant
       receiver: "dev-null"
     - match_re:
-        namespace: verify-doc-checking-*
+        namespace: verify-doc-checking-.*
       receiver: dcs-slack
     - match_re:
         namespace: verify-proxy-node-.*|verify-metadata-.*|verify-connector-.*
