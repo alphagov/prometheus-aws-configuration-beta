@@ -61,16 +61,9 @@ route:
     - match:
         severity: constant
       receiver: "dev-null"
-    - match_re:
-          namespace: verify-doc-checking-.*
-        receiver: dev-null
-        routes:
-        - receiver: dcs-slack
-          match: 
-            type: pipeline-alert
-        - receiver: dcs-slack
-          match:
-            namespace: verify-doc-checking-prod
+    - match:
+        namespace: verify-doc-checking-prod
+      receiver: dcs-slack
     - match_re:
         namespace: verify-proxy-node-.*|verify-metadata-.*|verify-connector-.*
       receiver: eidas-slack
