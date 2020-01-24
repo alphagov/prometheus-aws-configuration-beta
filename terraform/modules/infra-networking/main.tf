@@ -12,10 +12,9 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
-variable "stack_name" {
+variable "environment" {
   type        = string
   description = "Unique name for this collection of resources"
-  default     = "ecs-monitoring"
 }
 
 variable "prometheus_subdomain" {
@@ -24,19 +23,19 @@ variable "prometheus_subdomain" {
   default     = "monitoring"
 }
 
-variable "project" {}
-
 # locals
 # --------------------------------------------------------------
 
 locals {
   default_tags = {
-    Terraform = "true"
-    Project   = var.project
+    Terraform   = "true"
+    Project     = "infra-networking"
+    Source      = "github.com/alphagov/prometheus-aws-configuration-beta"
+    Environment = var.environment
   }
 
   subdomain_name         = "${var.prometheus_subdomain}.gds-reliability.engineering"
-  private_subdomain_name = "${var.stack_name}.monitoring.private"
+  private_subdomain_name = "${var.environment}.monitoring.private"
 }
 
 ## Data sources
@@ -48,7 +47,7 @@ data "aws_availability_zones" "available" {}
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
-  name = "${var.stack_name}-vpc"
+  name = "observe-${var.environment}"
   cidr = "10.0.0.0/16"
 
   # subnets assumes 3 AZs although 3AZs are not implemented elsewhere
@@ -68,12 +67,7 @@ module "vpc" {
   dhcp_options_domain_name = local.private_subdomain_name
 
   # no `Name` tag unlike other resources as this is taken care of by the vpc module `name` property
-  tags = merge(
-    local.default_tags,
-    {
-      "Stackname" = var.stack_name
-    },
-  )
+  tags = local.default_tags
 }
 
 resource "aws_route53_zone" "subdomain" {

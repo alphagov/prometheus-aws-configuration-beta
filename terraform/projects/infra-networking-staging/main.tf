@@ -19,30 +19,17 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
-variable "stack_name" {
-  type        = string
-  description = "Unique name for this collection of resources"
-  default     = "staging"
-}
-
 variable "prometheus_subdomain" {
   type        = string
   description = "Subdomain for prometheus"
   default     = "monitoring-staging"
 }
 
-variable "project" {
-  type        = string
-  description = "Which project, in which environment, we're running"
-  default     = "infra-networking-staging"
-}
-
 module "infra-networking" {
   source = "../../modules/infra-networking"
 
-  stack_name           = var.stack_name
+  environment          = "staging"
   prometheus_subdomain = var.prometheus_subdomain
-  project              = var.project
 }
 
 output "vpc_id" {
