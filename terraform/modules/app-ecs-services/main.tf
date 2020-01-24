@@ -85,22 +85,4 @@ resource "aws_cloudwatch_log_group" "task_logs" {
   retention_in_days = 7
 }
 
-# TODO: delete this when we're confident we don't need it
-resource "aws_s3_bucket" "config_bucket" {
-  bucket_prefix = "ecs-monitoring-${var.stack_name}-config"
-  acl           = "private"
-
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
-    }
-  }
-
-  versioning {
-    enabled = true
-  }
-}
-
 ## Outputs
