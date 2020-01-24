@@ -1,5 +1,5 @@
 terraform {
-  required_version = "= 0.11.13"
+  required_version = "~> 0.12.19"
 
   backend "s3" {
     bucket = "prometheus-production"
@@ -9,30 +9,30 @@ terraform {
 }
 
 provider "aws" {
-  version = "~> 1.14.1"
-  region  = "${var.aws_region}"
+  version = "~> 2.45"
+  region  = var.aws_region
 }
 
 variable "aws_region" {
-  type        = "string"
+  type        = string
   description = "AWS region"
   default     = "eu-west-1"
 }
 
 variable "remote_state_bucket" {
-  type        = "string"
+  type        = string
   description = "S3 bucket we store our terraform state in"
   default     = "prometheus-production"
 }
 
 variable "stack_name" {
-  type        = "string"
+  type        = string
   description = "Unique name for this collection of resources"
   default     = "production"
 }
 
 variable "project" {
-  type        = "string"
+  type        = string
   description = "Project name for tag"
   default     = "infra-security-groups-production"
 }
@@ -40,10 +40,10 @@ variable "project" {
 module "infra-security-groups" {
   source = "../../modules/infra-security-groups/"
 
-  aws_region          = "${var.aws_region}"
+  aws_region          = var.aws_region
   stack_name          = "production"
   remote_state_bucket = "prometheus-production"
-  project             = "${var.project}"
+  project             = var.project
 
   allowed_cidrs = [
     # Office IPs
@@ -102,21 +102,22 @@ module "infra-security-groups" {
 ## Outputs
 
 output "prometheus_ec2_sg_id" {
-  value       = "${module.infra-security-groups.prometheus_ec2_sg_id}"
+  value       = module.infra-security-groups.prometheus_ec2_sg_id
   description = "security group prometheus_ec2 ID"
 }
 
 output "prometheus_alb_sg_id" {
-  value       = "${module.infra-security-groups.prometheus_alb_sg_id}"
+  value       = module.infra-security-groups.prometheus_alb_sg_id
   description = "security group prometheus_alb ID"
 }
 
 output "alertmanager_ec2_sg_id" {
-  value       = "${module.infra-security-groups.alertmanager_ec2_sg_id}"
+  value       = module.infra-security-groups.alertmanager_ec2_sg_id
   description = "security group alertmanager_ec2 ID"
 }
 
 output "alertmanager_alb_sg_id" {
-  value       = "${module.infra-security-groups.alertmanager_alb_sg_id}"
+  value       = module.infra-security-groups.alertmanager_alb_sg_id
   description = "security group alertmanager_alb ID"
 }
+

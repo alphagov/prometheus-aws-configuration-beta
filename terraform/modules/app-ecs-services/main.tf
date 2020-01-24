@@ -6,14 +6,14 @@
 */
 
 variable "aws_region" {
-  type        = "string"
+  type        = string
   description = "AWS region"
   default     = "eu-west-1"
 }
 
 variable "cidr_admin_whitelist" {
   description = "CIDR ranges permitted to communicate with administrative endpoints"
-  type        = "list"
+  type        = list(string)
 
   default = [
     "213.86.153.212/32",
@@ -27,19 +27,19 @@ variable "cidr_admin_whitelist" {
 }
 
 variable "remote_state_bucket" {
-  type        = "string"
+  type        = string
   description = "S3 bucket we store our terraform state in"
   default     = "ecs-monitoring"
 }
 
 variable "stack_name" {
-  type        = "string"
+  type        = string
   description = "Unique name for this collection of resources"
   default     = "ecs-monitoring"
 }
 
 variable "observe_cronitor" {
-  type        = "string"
+  type        = string
   description = "URL to send Observe heartbeats to"
   default     = ""
 }
@@ -51,37 +51,37 @@ variable "observe_cronitor" {
 data "terraform_remote_state" "infra_networking" {
   backend = "s3"
 
-  config {
-    bucket = "${var.remote_state_bucket}"
+  config = {
+    bucket = var.remote_state_bucket
     key    = "infra-networking-modular.tfstate"
-    region = "${var.aws_region}"
+    region = var.aws_region
   }
 }
 
 data "terraform_remote_state" "infra_security_groups" {
   backend = "s3"
 
-  config {
-    bucket = "${var.remote_state_bucket}"
+  config = {
+    bucket = var.remote_state_bucket
     key    = "infra-security-groups-modular.tfstate"
-    region = "${var.aws_region}"
+    region = var.aws_region
   }
 }
 
 data "terraform_remote_state" "app_ecs_albs" {
   backend = "s3"
 
-  config {
-    bucket = "${var.remote_state_bucket}"
+  config = {
+    bucket = var.remote_state_bucket
     key    = "app-ecs-albs-modular.tfstate"
-    region = "${var.aws_region}"
+    region = var.aws_region
   }
 }
 
 ## Resources
 
 resource "aws_cloudwatch_log_group" "task_logs" {
-  name              = "${var.stack_name}"
+  name              = var.stack_name
   retention_in_days = 7
 }
 
@@ -104,4 +104,3 @@ resource "aws_s3_bucket" "config_bucket" {
 }
 
 ## Outputs
-

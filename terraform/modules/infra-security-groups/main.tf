@@ -9,27 +9,27 @@
 */
 
 variable "aws_region" {
-  type        = "string"
+  type        = string
   description = "The AWS region to use."
 }
 
 variable "remote_state_bucket" {
-  type        = "string"
+  type        = string
   description = "S3 bucket we store our terraform state in"
 }
 
 variable "stack_name" {
-  type        = "string"
+  type        = string
   description = "Unique name for this collection of resources"
 }
 
 variable "project" {
-  type        = "string"
+  type        = string
   description = "Which project, in which environment, we're running"
 }
 
 variable "allowed_cidrs" {
-  type        = "list"
+  type        = list(string)
   description = "List of CIDRs which are able to access the alertmanager ALB, default are GDS ips and concourse egress"
 
   default = [
@@ -51,7 +51,7 @@ variable "allowed_cidrs" {
 locals {
   default_tags = {
     Terraform = "true"
-    Project   = "${var.project}"
+    Project   = var.project
   }
 }
 
@@ -63,28 +63,30 @@ locals {
 data "terraform_remote_state" "infra_networking" {
   backend = "s3"
 
-  config {
-    bucket = "${var.remote_state_bucket}"
+  config = {
+    bucket = var.remote_state_bucket
     key    = "infra-networking-modular.tfstate"
-    region = "${var.aws_region}"
+    region = var.aws_region
   }
 }
 
 resource "aws_security_group" "prometheus_alb" {
   name        = "${var.stack_name}-prometheus-alb"
-  vpc_id      = "${data.terraform_remote_state.infra_networking.vpc_id}"
+  vpc_id      = data.terraform_remote_state.infra_networking.outputs.vpc_id
   description = "Controls ingress and egress for prometheus ALB"
 
-  tags = "${merge(
+  tags = merge(
     local.default_tags,
-    map("Stackname", "${var.stack_name}"),
-  )}"
+    {
+      "Stackname" = var.stack_name
+    },
+  )
 }
 
 # We allow all IPs to access the ALB as Prometheus is fronted by an nginx which controls access to either approved IP
 # addresses, or users with basic auth creds
 resource "aws_security_group_rule" "ingress_from_public_http_to_prometheus_alb" {
-  security_group_id = "${aws_security_group.prometheus_alb.id}"
+  security_group_id = aws_security_group.prometheus_alb.id
   type              = "ingress"
   from_port         = 80
   to_port           = 80
@@ -93,7 +95,7 @@ resource "aws_security_group_rule" "ingress_from_public_http_to_prometheus_alb" 
 }
 
 resource "aws_security_group_rule" "ingress_from_public_https_to_prometheus_alb" {
-  security_group_id = "${aws_security_group.prometheus_alb.id}"
+  security_group_id = aws_security_group.prometheus_alb.id
   type              = "ingress"
   from_port         = 443
   to_port           = 443
@@ -102,50 +104,52 @@ resource "aws_security_group_rule" "ingress_from_public_https_to_prometheus_alb"
 }
 
 resource "aws_security_group_rule" "egress_from_prometheus_alb_to_prometheus_ec2" {
-  security_group_id        = "${aws_security_group.prometheus_alb.id}"
+  security_group_id        = aws_security_group.prometheus_alb.id
   type                     = "egress"
   to_port                  = 80
   from_port                = 80
   protocol                 = "tcp"
-  source_security_group_id = "${aws_security_group.prometheus_ec2.id}"
+  source_security_group_id = aws_security_group.prometheus_ec2.id
 }
 
 resource "aws_security_group" "prometheus_ec2" {
   name        = "${var.stack_name}-prometheus-ec2"
-  vpc_id      = "${data.terraform_remote_state.infra_networking.vpc_id}"
+  vpc_id      = data.terraform_remote_state.infra_networking.outputs.vpc_id
   description = "Controls ingress and egress for prometheus EC2 instances"
 
-  tags = "${merge(
+  tags = merge(
     local.default_tags,
-    map("Stackname", "${var.stack_name}"),
-  )}"
+    {
+      "Stackname" = var.stack_name
+    },
+  )
 }
 
 resource "aws_security_group_rule" "ingress_from_prometheus_alb_to_prometheus_ec2" {
-  security_group_id        = "${aws_security_group.prometheus_ec2.id}"
+  security_group_id        = aws_security_group.prometheus_ec2.id
   type                     = "ingress"
   to_port                  = 80
   from_port                = 80
   protocol                 = "tcp"
-  source_security_group_id = "${aws_security_group.prometheus_alb.id}"
+  source_security_group_id = aws_security_group.prometheus_alb.id
 }
 
 resource "aws_security_group_rule" "ingress_from_prometheus_ec2_to_prometheus_ec2" {
-  security_group_id        = "${aws_security_group.prometheus_ec2.id}"
+  security_group_id        = aws_security_group.prometheus_ec2.id
   type                     = "ingress"
   to_port                  = 9090
   from_port                = 9090
   protocol                 = "tcp"
-  source_security_group_id = "${aws_security_group.prometheus_ec2.id}"
+  source_security_group_id = aws_security_group.prometheus_ec2.id
 }
 
 resource "aws_security_group_rule" "ingress_from_prometheus_to_prometheus_node_exporter" {
-  security_group_id        = "${aws_security_group.prometheus_ec2.id}"
+  security_group_id        = aws_security_group.prometheus_ec2.id
   type                     = "ingress"
   to_port                  = 9100
   from_port                = 9100
   protocol                 = "tcp"
-  source_security_group_id = "${aws_security_group.prometheus_ec2.id}"
+  source_security_group_id = aws_security_group.prometheus_ec2.id
 }
 
 # This rule allows all egress out of prometheus_ec2. This is for the following purposes:
@@ -157,7 +161,7 @@ resource "aws_security_group_rule" "ingress_from_prometheus_to_prometheus_node_e
 # - scraping itself and other promethis on port 9090
 # - scraping node exporters on port 9100
 resource "aws_security_group_rule" "egress_from_prometheus_ec2_to_all" {
-  security_group_id = "${aws_security_group.prometheus_ec2.id}"
+  security_group_id = aws_security_group.prometheus_ec2.id
   type              = "egress"
   to_port           = 0
   from_port         = 0
@@ -167,78 +171,82 @@ resource "aws_security_group_rule" "egress_from_prometheus_ec2_to_all" {
 
 resource "aws_security_group" "alertmanager_alb" {
   name        = "${var.stack_name}-alertmanager-alb"
-  vpc_id      = "${data.terraform_remote_state.infra_networking.vpc_id}"
+  vpc_id      = data.terraform_remote_state.infra_networking.outputs.vpc_id
   description = "Controls ingress and egress for the alertmanager alb"
 
-  tags = "${merge(
+  tags = merge(
     local.default_tags,
-    map("Stackname", "${var.stack_name}"),
-  )}"
+    {
+      "Stackname" = var.stack_name
+    },
+  )
 }
 
 resource "aws_security_group_rule" "ingress_from_office_http_to_alertmanager_alb" {
-  security_group_id = "${aws_security_group.alertmanager_alb.id}"
+  security_group_id = aws_security_group.alertmanager_alb.id
   type              = "ingress"
   from_port         = 80
   to_port           = 80
   protocol          = "tcp"
-  cidr_blocks       = ["${var.allowed_cidrs}"]
+  cidr_blocks       = var.allowed_cidrs
 }
 
 resource "aws_security_group_rule" "ingress_from_office_https_to_alertmanager_alb" {
-  security_group_id = "${aws_security_group.alertmanager_alb.id}"
+  security_group_id = aws_security_group.alertmanager_alb.id
   type              = "ingress"
   from_port         = 443
   to_port           = 443
   protocol          = "tcp"
-  cidr_blocks       = ["${var.allowed_cidrs}"]
+  cidr_blocks       = var.allowed_cidrs
 }
 
 resource "aws_security_group_rule" "egress_from_alertmanager_alb_to_alertmanager_ec2" {
-  security_group_id        = "${aws_security_group.alertmanager_alb.id}"
+  security_group_id        = aws_security_group.alertmanager_alb.id
   type                     = "egress"
   to_port                  = 9093
   from_port                = 9093
   protocol                 = "tcp"
-  source_security_group_id = "${aws_security_group.alertmanager_ec2.id}"
+  source_security_group_id = aws_security_group.alertmanager_ec2.id
 }
 
 resource "aws_security_group" "alertmanager_ec2" {
   name        = "${var.stack_name}-alertmanager-ec2"
-  vpc_id      = "${data.terraform_remote_state.infra_networking.vpc_id}"
+  vpc_id      = data.terraform_remote_state.infra_networking.outputs.vpc_id
   description = "Controls ingress and egress for alertmanager ec2 instances"
 
-  tags = "${merge(
+  tags = merge(
     local.default_tags,
-    map("Stackname", "${var.stack_name}"),
-  )}"
+    {
+      "Stackname" = var.stack_name
+    },
+  )
 }
 
 resource "aws_security_group_rule" "ingress_from_alertmanager_alb_to_alertmanager_ec2" {
-  security_group_id        = "${aws_security_group.alertmanager_ec2.id}"
+  security_group_id        = aws_security_group.alertmanager_ec2.id
   type                     = "ingress"
   from_port                = 9093
   to_port                  = 9093
   protocol                 = "tcp"
-  source_security_group_id = "${aws_security_group.alertmanager_alb.id}"
+  source_security_group_id = aws_security_group.alertmanager_alb.id
 }
 
 resource "aws_security_group_rule" "ingress_from_prometheus_ec2_to_alertmanager_ec2" {
-  security_group_id        = "${aws_security_group.alertmanager_ec2.id}"
+  security_group_id        = aws_security_group.alertmanager_ec2.id
   type                     = "ingress"
   from_port                = 9093
   to_port                  = 9093
   protocol                 = "tcp"
-  source_security_group_id = "${aws_security_group.prometheus_ec2.id}"
+  source_security_group_id = aws_security_group.prometheus_ec2.id
 }
 
 resource "aws_security_group_rule" "ingress_from_alertmanager_ec2_to_alertmanager_ec2" {
-  security_group_id        = "${aws_security_group.alertmanager_ec2.id}"
+  security_group_id        = aws_security_group.alertmanager_ec2.id
   type                     = "ingress"
   from_port                = 9094
   to_port                  = 9094
   protocol                 = "tcp"
-  source_security_group_id = "${aws_security_group.alertmanager_ec2.id}"
+  source_security_group_id = aws_security_group.alertmanager_ec2.id
 }
 
 # This rule allows all egress out of alertmanager_ec2. This is for the following purposes:
@@ -248,7 +256,7 @@ resource "aws_security_group_rule" "ingress_from_alertmanager_ec2_to_alertmanage
 # - sending emails via AWS API
 # - communicate with other alertmanagers to mesh
 resource "aws_security_group_rule" "egress_from_alertmanager_ec2_to_all" {
-  security_group_id = "${aws_security_group.alertmanager_ec2.id}"
+  security_group_id = aws_security_group.alertmanager_ec2.id
   type              = "egress"
   from_port         = 0
   to_port           = 0
@@ -259,21 +267,22 @@ resource "aws_security_group_rule" "egress_from_alertmanager_ec2_to_all" {
 ## Outputs
 
 output "prometheus_ec2_sg_id" {
-  value       = "${aws_security_group.prometheus_ec2.id}"
+  value       = aws_security_group.prometheus_ec2.id
   description = "security group prometheus_ec2 ID"
 }
 
 output "prometheus_alb_sg_id" {
-  value       = "${aws_security_group.prometheus_alb.id}"
+  value       = aws_security_group.prometheus_alb.id
   description = "security group prometheus_alb ID"
 }
 
 output "alertmanager_ec2_sg_id" {
-  value       = "${aws_security_group.alertmanager_ec2.id}"
+  value       = aws_security_group.alertmanager_ec2.id
   description = "security group alertmanager_ec2 ID"
 }
 
 output "alertmanager_alb_sg_id" {
-  value       = "${aws_security_group.alertmanager_alb.id}"
+  value       = aws_security_group.alertmanager_alb.id
   description = "security group alertmanager_alb ID"
 }
+

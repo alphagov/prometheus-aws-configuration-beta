@@ -9,14 +9,14 @@
 
 ## Variables
 variable "prometheis_total" {
-  type        = "string"
+  type        = string
   description = "Desired number of prometheus servers.  Maximum 3."
   default     = "3"
 }
 
 ## Locals
 locals {
-  alertmanager_public_fqdns = "${data.terraform_remote_state.app_ecs_albs.alerts_public_record_fqdns}"
+  alertmanager_public_fqdns = data.terraform_remote_state.app_ecs_albs.outputs.alerts_public_record_fqdns
 }
 
 ### container, task, service definitions
@@ -41,7 +41,8 @@ resource "aws_iam_role" "execution" {
       }
     ]
   }
-  EOF
+EOF
+
 }
 
 resource "aws_iam_policy" "execution" {
@@ -61,68 +62,64 @@ resource "aws_iam_policy" "execution" {
       }
     ]
   }
-  EOF
+EOF
+
 }
 
 resource "aws_iam_role_policy_attachment" "execution_execution" {
-  role       = "${aws_iam_role.execution.name}"
-  policy_arn = "${aws_iam_policy.execution.arn}"
+  role       = aws_iam_role.execution.name
+  policy_arn = aws_iam_policy.execution.arn
 }
 
 data "template_file" "alertmanager_container_defn" {
-  count    = "${length(local.alertmanager_public_fqdns)}"
-  template = "${file("${path.module}/task-definitions/alertmanager.json")}"
+  count    = length(local.alertmanager_public_fqdns)
+  template = file("${path.module}/task-definitions/alertmanager.json")
 
-  vars {
-    alertmanager_config_base64 = "${
-      base64encode(data.template_file.alertmanager_config_file.rendered)
-    }"
-
-    templates_base64 = "${base64encode(file("${path.module}/templates/default.tmpl"))}"
-
-    alertmanager_url = "--web.external-url=https://${local.alertmanager_public_fqdns[count.index]}"
-
-    log_group = "${aws_cloudwatch_log_group.task_logs.name}"
-    region    = "${var.aws_region}"
+  vars = {
+    alertmanager_config_base64 = base64encode(data.template_file.alertmanager_config_file.rendered)
+    templates_base64           = base64encode(file("${path.module}/templates/default.tmpl"))
+    alertmanager_url           = "--web.external-url=https://${local.alertmanager_public_fqdns[count.index]}"
+    log_group                  = aws_cloudwatch_log_group.task_logs.name
+    region                     = var.aws_region
   }
 }
 
 resource "aws_ecs_task_definition" "alertmanager" {
-  count                    = "${length(local.alertmanager_public_fqdns)}"
+  count                    = length(local.alertmanager_public_fqdns)
   family                   = "${var.stack_name}-alertmanager-${count.index + 1}"
-  container_definitions    = "${element(data.template_file.alertmanager_container_defn.*.rendered, count.index)}"
+  container_definitions    = data.template_file.alertmanager_container_defn[count.index].rendered
   network_mode             = "awsvpc"
-  execution_role_arn       = "${aws_iam_role.execution.arn}"
+  execution_role_arn       = aws_iam_role.execution.arn
   requires_compatibilities = ["FARGATE"]
   cpu                      = 256
   memory                   = 512
 }
 
 resource "aws_ecs_service" "alertmanager" {
-  count = "${var.prometheis_total}"
+  count = var.prometheis_total
 
   name            = "${var.stack_name}-alertmanager-${count.index + 1}"
   cluster         = "${var.stack_name}-ecs-monitoring"
-  task_definition = "${element(aws_ecs_task_definition.alertmanager.*.arn, count.index)}"
+  task_definition = aws_ecs_task_definition.alertmanager[count.index].arn
   desired_count   = 1
   launch_type     = "FARGATE"
 
   load_balancer {
-    target_group_arn = "${element(data.terraform_remote_state.app_ecs_albs.alertmanager_ip_target_group_arns, count.index)}"
+    target_group_arn = data.terraform_remote_state.app_ecs_albs.outputs.alertmanager_ip_target_group_arns[count.index]
     container_name   = "alertmanager"
     container_port   = 9093
   }
 
   network_configuration {
-    subnets         = ["${data.terraform_remote_state.infra_networking.private_subnets[count.index]}"]
-    security_groups = ["${data.terraform_remote_state.infra_security_groups.alertmanager_ec2_sg_id}"]
+    subnets         = [data.terraform_remote_state.infra_networking.outputs.private_subnets[count.index]]
+    security_groups = [data.terraform_remote_state.infra_security_groups.outputs.alertmanager_ec2_sg_id]
   }
 
   service_registries {
-    registry_arn = "${aws_service_discovery_service.alertmanager.arn}"
+    registry_arn = aws_service_discovery_service.alertmanager.arn
   }
 
-  depends_on = ["aws_ecs_task_definition.alertmanager"]
+  depends_on = [aws_ecs_task_definition.alertmanager]
 }
 
 #### alertmanager
@@ -176,74 +173,73 @@ data "pass_password" "verify_prod_cronitor" {
 }
 
 data "template_file" "alertmanager_config_file" {
-  template = "${file("${path.module}/templates/alertmanager.tpl")}"
+  template = file("${path.module}/templates/alertmanager.tpl")
 
-  vars {
-    observe_pagerduty_key   = "${data.pass_password.observe_pagerduty_key.password}"
-    dgu_pagerduty_key       = "${data.pass_password.dgu_pagerduty_key.password}"
-    verify_p1_pagerduty_key = "${data.pass_password.verify_p1_pagerduty_key.password}"
-    verify_p2_pagerduty_key = "${data.pass_password.verify_p2_pagerduty_key.password}"
-    slack_api_url           = "${data.pass_password.slack_api_url.password}"
-    registers_zendesk       = "${data.pass_password.registers_zendesk.password}"
-    smtp_from               = "alerts@${data.terraform_remote_state.infra_networking.public_subdomain}"
-
+  vars = {
+    observe_pagerduty_key   = data.pass_password.observe_pagerduty_key.password
+    dgu_pagerduty_key       = data.pass_password.dgu_pagerduty_key.password
+    verify_p1_pagerduty_key = data.pass_password.verify_p1_pagerduty_key.password
+    verify_p2_pagerduty_key = data.pass_password.verify_p2_pagerduty_key.password
+    slack_api_url           = data.pass_password.slack_api_url.password
+    registers_zendesk       = data.pass_password.registers_zendesk.password
+    smtp_from               = "alerts@${data.terraform_remote_state.infra_networking.outputs.public_subdomain}"
     # Port as requested by https://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-connect.html
     smtp_smarthost              = "email-smtp.${var.aws_region}.amazonaws.com:587"
-    smtp_username               = "${aws_iam_access_key.smtp.id}"
-    smtp_password               = "${aws_iam_access_key.smtp.ses_smtp_password}"
-    ticket_recipient_email      = "${data.pass_password.observe_zendesk.password}"
-    observe_cronitor            = "${var.observe_cronitor}"
-    verify_gsp_cronitor         = "${data.pass_password.verify_gsp_cronitor.password}"
-    verify_joint_cronitor       = "${data.pass_password.verify_joint_cronitor.password}"
-    verify_staging_cronitor     = "${data.pass_password.verify_staging_cronitor.password}"
-    verify_integration_cronitor = "${data.pass_password.verify_integration_cronitor.password}"
-    verify_prod_cronitor        = "${data.pass_password.verify_prod_cronitor.password}"
+    smtp_username               = aws_iam_access_key.smtp.id
+    smtp_password               = aws_iam_access_key.smtp.ses_smtp_password
+    ticket_recipient_email      = data.pass_password.observe_zendesk.password
+    observe_cronitor            = var.observe_cronitor
+    verify_gsp_cronitor         = data.pass_password.verify_gsp_cronitor.password
+    verify_joint_cronitor       = data.pass_password.verify_joint_cronitor.password
+    verify_staging_cronitor     = data.pass_password.verify_staging_cronitor.password
+    verify_integration_cronitor = data.pass_password.verify_integration_cronitor.password
+    verify_prod_cronitor        = data.pass_password.verify_prod_cronitor.password
   }
 }
 
 ## AWS SES
 
 resource "aws_ses_domain_identity" "main" {
-  domain = "${data.terraform_remote_state.infra_networking.public_subdomain}"
+  domain = data.terraform_remote_state.infra_networking.outputs.public_subdomain
 }
 
 resource "aws_route53_record" "txt_amazonses_verification_record" {
-  zone_id = "${data.terraform_remote_state.infra_networking.public_zone_id}"
-  name    = "_amazonses.${data.terraform_remote_state.infra_networking.public_subdomain}"
+  zone_id = data.terraform_remote_state.infra_networking.outputs.public_zone_id
+  name    = "_amazonses.${data.terraform_remote_state.infra_networking.outputs.public_subdomain}"
   type    = "TXT"
   ttl     = "600"
-  records = ["${aws_ses_domain_identity.main.verification_token}"]
+  records = [aws_ses_domain_identity.main.verification_token]
 }
 
 resource "aws_ses_domain_dkim" "main" {
-  domain = "${aws_ses_domain_identity.main.domain}"
+  domain = aws_ses_domain_identity.main.domain
 }
 
 resource "aws_route53_record" "dkim_amazonses_verification_record" {
   count   = 3
-  zone_id = "${data.terraform_remote_state.infra_networking.public_zone_id}"
-  name    = "${element(aws_ses_domain_dkim.main.dkim_tokens, count.index)}._domainkey.${data.terraform_remote_state.infra_networking.public_subdomain}"
+  zone_id = data.terraform_remote_state.infra_networking.outputs.public_zone_id
+  name    = "${element(aws_ses_domain_dkim.main.dkim_tokens, count.index)}._domainkey.${data.terraform_remote_state.infra_networking.outputs.public_subdomain}"
   type    = "CNAME"
   ttl     = "600"
   records = ["${element(aws_ses_domain_dkim.main.dkim_tokens, count.index)}.dkim.amazonses.com"]
 }
 
 resource "aws_ses_domain_mail_from" "alerts" {
-  domain           = "${aws_ses_domain_identity.main.domain}"
+  domain           = aws_ses_domain_identity.main.domain
   mail_from_domain = "mail.${aws_ses_domain_identity.main.domain}"
 }
 
 resource "aws_route53_record" "alerts_ses_domain_mail_from_mx" {
-  zone_id = "${data.terraform_remote_state.infra_networking.public_zone_id}"
-  name    = "${aws_ses_domain_mail_from.alerts.mail_from_domain}"
+  zone_id = data.terraform_remote_state.infra_networking.outputs.public_zone_id
+  name    = aws_ses_domain_mail_from.alerts.mail_from_domain
   type    = "MX"
   ttl     = "600"
   records = ["10 feedback-smtp.${var.aws_region}.amazonses.com"]
 }
 
 resource "aws_route53_record" "alerts_ses_domain_mail_from_txt" {
-  zone_id = "${data.terraform_remote_state.infra_networking.public_zone_id}"
-  name    = "${aws_ses_domain_mail_from.alerts.mail_from_domain}"
+  zone_id = data.terraform_remote_state.infra_networking.outputs.public_zone_id
+  name    = aws_ses_domain_mail_from.alerts.mail_from_domain
   type    = "TXT"
   ttl     = "600"
   records = ["v=spf1 include:amazonses.com -all"]
@@ -257,12 +253,12 @@ resource "aws_iam_user" "smtp" {
 }
 
 resource "aws_iam_access_key" "smtp" {
-  user = "${aws_iam_user.smtp.name}"
+  user = aws_iam_user.smtp.name
 }
 
 resource "aws_iam_user_policy" "smtp_ro" {
   name = "${var.stack_name}.smtp"
-  user = "${aws_iam_user.smtp.name}"
+  user = aws_iam_user.smtp.name
 
   policy = <<EOF
 {
@@ -276,4 +272,6 @@ resource "aws_iam_user_policy" "smtp_ro" {
   ]
 }
 EOF
+
 }
+

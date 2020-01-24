@@ -5,5 +5,6 @@ variable "private_zone_id" {}
 variable "private_subdomain" {}
 
 variable "prom_private_ips" {
-  type = "list"
+  type = list(string)
 }
+

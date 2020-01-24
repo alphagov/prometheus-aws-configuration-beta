@@ -40,15 +40,16 @@ data "aws_ami" "ubuntu_bionic" {
     values = ["hvm"]
   }
 
-  owners = ["${local.canonical_account_id}"]
+  owners = [local.canonical_account_id]
 }
 
 ## Outputs
 
 output "ecs_optimized_ami_id" {
-  value = "${data.aws_ami.ecs_optimized.id}"
+  value = data.aws_ami.ecs_optimized.id
 }
 
 output "ubuntu_bionic_ami_id" {
-  value = "${data.aws_ami.ubuntu_bionic.id}"
+  value = data.aws_ami.ubuntu_bionic.id
 }
+
