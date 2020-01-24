@@ -32,7 +32,7 @@ variable "remote_state_bucket" {
   default     = "ecs-monitoring"
 }
 
-variable "stack_name" {
+variable "environment" {
   type        = string
   description = "Unique name for this collection of resources"
   default     = "ecs-monitoring"
@@ -42,6 +42,16 @@ variable "observe_cronitor" {
   type        = string
   description = "URL to send Observe heartbeats to"
   default     = ""
+}
+
+locals {
+  default_tags = {
+    Terraform   = "true"
+    Project     = "app-ecs-services"
+    Source      = "github.com/alphagov/prometheus-aws-configuration-beta"
+    Environment = var.environment
+    Service     = "alertmanager"
+  }
 }
 
 # Resources
@@ -81,8 +91,12 @@ data "terraform_remote_state" "app_ecs_albs" {
 ## Resources
 
 resource "aws_cloudwatch_log_group" "task_logs" {
-  name              = var.stack_name
+  name              = var.environment
   retention_in_days = 7
+
+  tags = merge(local.default_tags, {
+    Name = "${var.environment}-alertmanager-task-logs"
+  })
 }
 
 ## Outputs

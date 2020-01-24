@@ -11,12 +11,6 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
-variable "stack_name" {
-  type        = string
-  description = "Unique name for this collection of resources"
-  default     = "production"
-}
-
 data "pass_password" "cronitor_production_url" {
   path = "cronitor/cronitor-production-url"
 }
@@ -60,7 +54,7 @@ module "app-ecs-services" {
   source = "../../modules/app-ecs-services"
 
   remote_state_bucket = var.remote_state_bucket
-  stack_name          = var.stack_name
+  environment         = "production"
   observe_cronitor    = data.pass_password.cronitor_production_url.password
 }
 
