@@ -1,7 +1,7 @@
 resource "aws_service_discovery_private_dns_namespace" "observe" {
   name        = "local.gds-reliability.engineering"
   description = "Observe instances"
-  vpc         = "${data.terraform_remote_state.infra_networking.vpc_id}"
+  vpc         = data.terraform_remote_state.infra_networking.outputs.vpc_id
 }
 
 resource "aws_service_discovery_service" "alertmanager" {
@@ -10,7 +10,7 @@ resource "aws_service_discovery_service" "alertmanager" {
   description = "A service to allow alertmanager peers to discover each other"
 
   dns_config {
-    namespace_id = "${aws_service_discovery_private_dns_namespace.observe.id}"
+    namespace_id = aws_service_discovery_private_dns_namespace.observe.id
 
     dns_records {
       ttl  = 10
@@ -24,3 +24,4 @@ resource "aws_service_discovery_service" "alertmanager" {
     failure_threshold = 2
   }
 }
+
