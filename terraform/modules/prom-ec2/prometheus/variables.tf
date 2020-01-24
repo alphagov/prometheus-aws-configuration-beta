@@ -26,8 +26,6 @@ variable "target_vpc" {
   description = "The VPC in which the system will be deployed"
 }
 
-variable "product" {}
-
 variable "environment" {}
 
 variable "vpc_security_groups" {

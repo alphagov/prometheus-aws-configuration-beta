@@ -9,6 +9,10 @@ resource "aws_iam_role" "prometheus_role" {
   name = "prometheus_profile_${var.environment}"
 
   assume_role_policy = data.aws_iam_policy_document.prometheus_assume_role_policy.json
+
+  tags = merge(local.default_tags, {
+    Name = "${var.environment}-prometheus"
+  })
 }
 
 #Create permission to assume role

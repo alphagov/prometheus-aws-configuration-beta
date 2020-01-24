@@ -6,11 +6,19 @@ resource "aws_s3_bucket" "prometheus_targets" {
   versioning {
     enabled = true
   }
+
+  tags = merge(local.default_tags, {
+    Name = "${var.environment}-ireland-targets"
+  })
 }
 
 resource "aws_iam_user" "targets_writer" {
   name = "targets-writer"
   path = "/${var.environment}/"
+
+  tags = merge(local.default_tags, {
+    Name = "${var.environment}-ireland-targets-writer"
+  })
 }
 
 resource "aws_iam_user_policy" "writer_has_full_access_to_targets_bucket" {
@@ -44,11 +52,19 @@ resource "aws_s3_bucket" "prometheus_london_targets" {
   versioning {
     enabled = true
   }
+
+  tags = merge(local.default_tags, {
+    Name = "${var.environment}-london-targets"
+  })
 }
 
 resource "aws_iam_user" "london_targets_writer" {
   name = "london-targets-writer"
   path = "/${var.environment}/"
+
+  tags = merge(local.default_tags, {
+    Name = "${var.environment}-london-targets-writer"
+  })
 }
 
 resource "aws_iam_user_policy" "london_writer_has_full_access_to_london_targets_bucket" {
