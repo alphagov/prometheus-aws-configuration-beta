@@ -63,7 +63,7 @@ jobs:
             type: docker-image
             source:
               repository: gdsre/aws-terraform
-              tag: 18.04-0.11.13
+              tag: 18.04-0.12.19
           inputs:
             - name: app-ecs-services-git
             - name: re-secrets
@@ -236,7 +236,7 @@ jobs:
             type: docker-image
             source:
               repository: gdsre/aws-terraform
-              tag: 18.04-0.11.13
+              tag: 18.04-0.12.19
           inputs:
             - name: app-ecs-services-git
             - name: re-secrets
