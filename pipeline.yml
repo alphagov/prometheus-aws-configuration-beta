@@ -86,7 +86,7 @@ jobs:
                 # FIXME we should make this available in a better way
                 sed -i 's/archive.ubuntu.com/eu-west-2.ec2.archive.ubuntu.com/g' /etc/apt/sources.list
                 apt-get update -y
-                apt-get install -y --no-install-recommends gpg gpg-agent golang
+                apt-get install -y --no-install-recommends gpg gpg-agent golang git
                 go get github.com/camptocamp/terraform-provider-pass
                 GOBIN=~/.terraform.d/plugins/linux_amd64 go install github.com/camptocamp/terraform-provider-pass
 
