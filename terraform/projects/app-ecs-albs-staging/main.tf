@@ -27,18 +27,6 @@ variable "remote_state_bucket" {
   default     = "prometheus-staging"
 }
 
-variable "stack_name" {
-  type        = string
-  description = "Unique name for this collection of resources"
-  default     = "staging"
-}
-
-variable "project" {
-  type        = string
-  description = "Project name for tag"
-  default     = "app-ecs-albs-staging"
-}
-
 data "terraform_remote_state" "infra_networking" {
   backend = "s3"
 
@@ -53,9 +41,8 @@ module "app-ecs-albs" {
   source = "../../modules/app-ecs-albs/"
 
   aws_region          = var.aws_region
-  stack_name          = var.stack_name
+  environment         = "staging"
   remote_state_bucket = var.remote_state_bucket
-  project             = var.project
   zone_id             = data.terraform_remote_state.infra_networking.outputs.public_zone_id
   subnets             = data.terraform_remote_state.infra_networking.outputs.public_subnets
 }
