@@ -19,31 +19,12 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
-variable "remote_state_bucket" {
-  type        = string
-  description = "S3 bucket we store our terraform state in"
-  default     = "prometheus-production"
-}
-
-variable "stack_name" {
-  type        = string
-  description = "Unique name for this collection of resources"
-  default     = "production"
-}
-
-variable "project" {
-  type        = string
-  description = "Project name for tag"
-  default     = "infra-security-groups-production"
-}
-
 module "infra-security-groups" {
   source = "../../modules/infra-security-groups/"
 
   aws_region          = var.aws_region
-  stack_name          = "production"
+  environment         = "production"
   remote_state_bucket = "prometheus-production"
-  project             = var.project
 
   allowed_cidrs = [
     # Office IPs
