@@ -15,7 +15,7 @@ resource "aws_iam_user" "targets_writer" {
 
 resource "aws_iam_user_policy" "writer_has_full_access_to_targets_bucket" {
   name = "targets_bucket_full_access"
-  user = "${aws_iam_user.targets_writer.name}"
+  user = aws_iam_user.targets_writer.name
 
   policy = <<EOF
 {
@@ -53,7 +53,7 @@ resource "aws_iam_user" "london_targets_writer" {
 
 resource "aws_iam_user_policy" "london_writer_has_full_access_to_london_targets_bucket" {
   name = "london_targets_bucket_full_access"
-  user = "${aws_iam_user.london_targets_writer.name}"
+  user = aws_iam_user.london_targets_writer.name
 
   policy = <<EOF
 {
@@ -76,7 +76,7 @@ EOF
 
 resource "aws_iam_role_policy" "prometheus_has_read_access_to_targets_bucket" {
   name = "targets_bucket_read_access"
-  role = "${aws_iam_role.prometheus_role.name}"
+  role = aws_iam_role.prometheus_role.name
 
   policy = <<EOF
 {

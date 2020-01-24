@@ -1,14 +1,14 @@
 #Prepare to attach role to instance
 resource "aws_iam_instance_profile" "prometheus_instance_profile" {
   name = "prometheus_${var.environment}_config_reader_profile"
-  role = "${aws_iam_role.prometheus_role.name}"
+  role = aws_iam_role.prometheus_role.name
 }
 
 #Create role
 resource "aws_iam_role" "prometheus_role" {
   name = "prometheus_profile_${var.environment}"
 
-  assume_role_policy = "${data.aws_iam_policy_document.prometheus_assume_role_policy.json}"
+  assume_role_policy = data.aws_iam_policy_document.prometheus_assume_role_policy.json
 }
 
 #Create permission to assume role
@@ -29,7 +29,7 @@ resource "aws_iam_policy" "prometheus_instance_profile" {
   path        = "/"
   description = "This is the main profile, that has bucket permission and decribe permissions"
 
-  policy = "${data.aws_iam_policy_document.instance_role_policy.json}"
+  policy = data.aws_iam_policy_document.instance_role_policy.json
 }
 
 #define IAM policy documention
@@ -57,11 +57,12 @@ data "aws_iam_policy_document" "instance_role_policy" {
 
 #Attach policy to role
 resource "aws_iam_role_policy_attachment" "iam_policy" {
-  role       = "${aws_iam_role.prometheus_role.name}"
-  policy_arn = "${aws_iam_policy.prometheus_instance_profile.arn}"
+  role       = aws_iam_role.prometheus_role.name
+  policy_arn = aws_iam_policy.prometheus_instance_profile.arn
 }
 
 resource "aws_iam_role_policy_attachment" "session_manager_access" {
-  role       = "${aws_iam_role.prometheus_role.name}"
+  role       = aws_iam_role.prometheus_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
 }
+

@@ -8,16 +8,16 @@ variable "device_mount_path" {
 variable "availability_zones" {
   description = "A map of availability zones to subnets"
 
-  type    = "map"
+  type    = map(string)
   default = {}
 }
 
 variable "subnet_ids" {
-  type = "list"
+  type = list(string)
 }
 
 variable "instance_size" {
-  type        = "string"
+  type        = string
   description = "This is the default instance size"
   default     = "m5.large"
 }
@@ -31,7 +31,7 @@ variable "product" {}
 variable "environment" {}
 
 variable "vpc_security_groups" {
-  type        = "list"
+  type        = list(string)
   default     = []
   description = "Security groups to attach to the prometheus instances"
 }
@@ -45,7 +45,7 @@ variable "region" {
 }
 
 variable "allowed_cidrs" {
-  type        = "list"
+  type        = list(string)
   description = "List of CIDRs which are able to access the prometheus instance, default are GDS ips"
 
   default = [
@@ -62,7 +62,7 @@ variable "allowed_cidrs" {
 variable "config_bucket" {}
 
 variable "prometheus_public_fqdns" {
-  type = "list"
+  type = list(string)
 }
 
 variable "logstash_host" {
@@ -75,6 +75,6 @@ variable "prometheus_htpasswd" {
 }
 
 variable "prometheus_target_group_arns" {
-  type    = "list"
+  type    = list(string)
   default = []
 }
