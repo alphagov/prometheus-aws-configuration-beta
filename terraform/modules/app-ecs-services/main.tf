@@ -29,6 +29,23 @@ variable "observe_cronitor" {
   default     = ""
 }
 
+variable "allowed_cidrs" {
+  type        = list(string)
+  description = "List of CIDRs which are able to access alertmanager, default are GDS ips and concourse egress"
+
+  default = [
+    "213.86.153.212/32",
+    "213.86.153.213/32",
+    "213.86.153.214/32",
+    "213.86.153.235/32",
+    "213.86.153.236/32",
+    "213.86.153.237/32",
+    "85.133.67.244/32",
+    "35.177.37.128/32",
+    "35.176.252.164/32",
+  ]
+}
+
 locals {
   default_tags = {
     Terraform   = "true"
@@ -37,6 +54,9 @@ locals {
     Environment = var.environment
     Service     = "alertmanager"
   }
+  vpc_id    = data.terraform_remote_state.infra_networking.outputs.vpc_id
+  zone_id   = data.terraform_remote_state.infra_networking.outputs.public_zone_id
+  subdomain = replace(data.aws_route53_zone.public_zone.name, "/\\.$/", "")
 }
 
 # Resources
@@ -71,6 +91,10 @@ data "terraform_remote_state" "app_ecs_albs" {
     key    = "app-ecs-albs-modular.tfstate"
     region = var.aws_region
   }
+}
+
+data "aws_route53_zone" "public_zone" {
+  zone_id = local.zone_id
 }
 
 ## Resources

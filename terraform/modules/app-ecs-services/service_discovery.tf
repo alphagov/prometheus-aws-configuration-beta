@@ -1,7 +1,7 @@
 resource "aws_service_discovery_private_dns_namespace" "observe" {
   name        = "local.gds-reliability.engineering"
   description = "Observe instances"
-  vpc         = data.terraform_remote_state.infra_networking.outputs.vpc_id
+  vpc         = local.vpc_id
 }
 
 resource "aws_service_discovery_service" "alertmanager" {

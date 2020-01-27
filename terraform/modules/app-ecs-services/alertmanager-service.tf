@@ -78,6 +78,10 @@ resource "aws_iam_role_policy_attachment" "execution_execution" {
   policy_arn = aws_iam_policy.execution.arn
 }
 
+# These are the old alertmanager services and task definitions, one
+# per AZ.  Once we're sure everyone's using the new alertmanager, we
+# can phase these out.
+
 data "template_file" "alertmanager_container_defn" {
   count    = length(local.alertmanager_public_fqdns)
   template = file("${path.module}/task-definitions/alertmanager.json")
@@ -131,6 +135,57 @@ resource "aws_ecs_service" "alertmanager" {
   }
 
   depends_on = [aws_ecs_task_definition.alertmanager]
+}
+
+# This is the new alertmanager service, to replace the above
+
+data "template_file" "alertmanager_nlb_container_defn" {
+  template = file("${path.module}/task-definitions/alertmanager.json")
+
+  vars = {
+    alertmanager_config_base64 = base64encode(data.template_file.alertmanager_config_file.rendered)
+    templates_base64           = base64encode(file("${path.module}/templates/default.tmpl"))
+    alertmanager_url           = "--web.external-url=https://${aws_route53_record.alerts_alias.fqdn}"
+    log_group                  = aws_cloudwatch_log_group.task_logs.name
+    region                     = var.aws_region
+  }
+}
+
+resource "aws_ecs_task_definition" "alertmanager_nlb" {
+  family                   = "${var.environment}-alertmanager"
+  container_definitions    = data.template_file.alertmanager_nlb_container_defn.rendered
+  network_mode             = "awsvpc"
+  execution_role_arn       = aws_iam_role.execution.arn
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = 256
+  memory                   = 512
+
+  tags = merge(local.default_tags, {
+    Name = "${var.environment}-alertmanager"
+  })
+}
+
+resource "aws_ecs_service" "alertmanager_nlb" {
+  name            = "${var.environment}-alertmanager"
+  cluster         = "${var.environment}-ecs-monitoring"
+  task_definition = aws_ecs_task_definition.alertmanager_nlb.arn
+  desired_count   = var.prometheis_total
+  launch_type     = "FARGATE"
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.alertmanager.arn
+    container_name   = "alertmanager"
+    container_port   = 9093
+  }
+
+  network_configuration {
+    subnets         = data.terraform_remote_state.infra_networking.outputs.private_subnets
+    security_groups = [aws_security_group.alertmanager_task.id]
+  }
+
+  service_registries {
+    registry_arn = aws_service_discovery_service.alertmanager.arn
+  }
 }
 
 #### alertmanager
