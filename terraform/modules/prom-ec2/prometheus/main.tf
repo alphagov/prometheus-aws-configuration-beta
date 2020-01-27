@@ -1,5 +1,11 @@
 locals {
   filebeat_count = var.logstash_host != "" ? 1 : 0
+  default_tags = {
+    ManagedBy   = "terraform"
+    Source      = "github.com/alphagov/prometheus-aws-configuration-beta"
+    Environment = var.environment
+    Service     = "observe-prometheus"
+  }
 }
 
 resource "aws_key_pair" "ssh_key" {
@@ -23,13 +29,9 @@ resource "aws_instance" "prometheus" {
 
   vpc_security_group_ids = var.vpc_security_groups
 
-  tags = {
-    Name        = "${var.product}-${var.environment}-prometheus-${element(keys(var.availability_zones), count.index)}"
-    Environment = var.environment
-    Product     = var.product
-    ManagedBy   = "terraform"
-    Job         = "prometheus"
-  }
+  tags = merge(local.default_tags, {
+    Name = "paas-${var.environment}-prometheus-${element(keys(var.availability_zones), count.index)}"
+  })
 }
 
 resource "aws_volume_attachment" "attach-prometheus-disk" {
@@ -50,9 +52,9 @@ resource "aws_ebs_volume" "prometheus-disk" {
   availability_zone = element(keys(var.availability_zones), count.index)
   size              = "50"
 
-  tags = {
+  tags = merge(local.default_tags, {
     Name = "prometheus-disk"
-  }
+  })
 }
 
 data "template_file" "user_data_script" {
@@ -81,6 +83,10 @@ resource "aws_s3_bucket" "prometheus_config" {
   versioning {
     enabled = true
   }
+
+  tags = merge(local.default_tags, {
+    Name = "${var.environment}-prometheus-config"
+  })
 }
 
 data "template_file" "filebeat_conf" {

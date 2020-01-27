@@ -1,7 +1,6 @@
 locals {
-  product       = "paas"
   environment   = "staging"
-  config_bucket = "gdsobserve-${local.product}-${local.environment}-config-store"
+  config_bucket = "gdsobserve-paas-${local.environment}-config-store"
 }
 
 terraform {
@@ -73,7 +72,6 @@ module "prometheus" {
   target_vpc = data.terraform_remote_state.infra_networking.outputs.vpc_id
   enable_ssh = false
 
-  product       = local.product
   environment   = local.environment
   config_bucket = local.config_bucket
 

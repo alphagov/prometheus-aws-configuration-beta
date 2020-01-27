@@ -22,11 +22,15 @@ locals {
 ### container, task, service definitions
 
 resource "aws_ecs_cluster" "prometheus_cluster" {
-  name = "${var.stack_name}-ecs-monitoring"
+  name = "${var.environment}-ecs-monitoring"
+
+  tags = merge(local.default_tags, {
+    Name = "${var.environment}-alertmanager"
+  })
 }
 
 resource "aws_iam_role" "execution" {
-  name = "${var.stack_name}-alertmanager-execution"
+  name = "${var.environment}-alertmanager-execution"
 
   assume_role_policy = <<-EOF
   {
@@ -43,10 +47,13 @@ resource "aws_iam_role" "execution" {
   }
 EOF
 
+  tags = merge(local.default_tags, {
+    Name = "${var.environment}-alertmanager-execution"
+  })
 }
 
 resource "aws_iam_policy" "execution" {
-  name = "${var.stack_name}-alertmanager-execution"
+  name = "${var.environment}-alertmanager-execution"
 
   policy = <<-EOF
   {
@@ -86,20 +93,24 @@ data "template_file" "alertmanager_container_defn" {
 
 resource "aws_ecs_task_definition" "alertmanager" {
   count                    = length(local.alertmanager_public_fqdns)
-  family                   = "${var.stack_name}-alertmanager-${count.index + 1}"
+  family                   = "${var.environment}-alertmanager-${count.index + 1}"
   container_definitions    = data.template_file.alertmanager_container_defn[count.index].rendered
   network_mode             = "awsvpc"
   execution_role_arn       = aws_iam_role.execution.arn
   requires_compatibilities = ["FARGATE"]
   cpu                      = 256
   memory                   = 512
+
+  tags = merge(local.default_tags, {
+    Name = "${var.environment}-alertmanager-${count.index + 1}"
+  })
 }
 
 resource "aws_ecs_service" "alertmanager" {
   count = var.prometheis_total
 
-  name            = "${var.stack_name}-alertmanager-${count.index + 1}"
-  cluster         = "${var.stack_name}-ecs-monitoring"
+  name            = "${var.environment}-alertmanager-${count.index + 1}"
+  cluster         = "${var.environment}-ecs-monitoring"
   task_definition = aws_ecs_task_definition.alertmanager[count.index].arn
   desired_count   = 1
   launch_type     = "FARGATE"
@@ -248,8 +259,12 @@ resource "aws_route53_record" "alerts_ses_domain_mail_from_txt" {
 # IAM for SMTP
 
 resource "aws_iam_user" "smtp" {
-  name = "${var.stack_name}.smtp"
+  name = "${var.environment}.smtp"
   path = "/system/"
+
+  tags = merge(local.default_tags, {
+    Name = "${var.environment}-alertmanager-smtp"
+  })
 }
 
 resource "aws_iam_access_key" "smtp" {
@@ -257,7 +272,7 @@ resource "aws_iam_access_key" "smtp" {
 }
 
 resource "aws_iam_user_policy" "smtp_ro" {
-  name = "${var.stack_name}.smtp"
+  name = "${var.environment}.smtp"
   user = aws_iam_user.smtp.name
 
   policy = <<EOF

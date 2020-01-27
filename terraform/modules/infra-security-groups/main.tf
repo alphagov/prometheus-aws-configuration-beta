@@ -18,14 +18,9 @@ variable "remote_state_bucket" {
   description = "S3 bucket we store our terraform state in"
 }
 
-variable "stack_name" {
+variable "environment" {
   type        = string
   description = "Unique name for this collection of resources"
-}
-
-variable "project" {
-  type        = string
-  description = "Which project, in which environment, we're running"
 }
 
 variable "allowed_cidrs" {
@@ -50,8 +45,10 @@ variable "allowed_cidrs" {
 
 locals {
   default_tags = {
-    Terraform = "true"
-    Project   = var.project
+    Terraform   = "true"
+    Project     = "infra-security-groups"
+    Source      = "github.com/alphagov/prometheus-aws-configuration-beta"
+    Environment = var.environment
   }
 }
 
@@ -71,14 +68,15 @@ data "terraform_remote_state" "infra_networking" {
 }
 
 resource "aws_security_group" "prometheus_alb" {
-  name        = "${var.stack_name}-prometheus-alb"
+  name        = "${var.environment}-prometheus-alb"
   vpc_id      = data.terraform_remote_state.infra_networking.outputs.vpc_id
   description = "Controls ingress and egress for prometheus ALB"
 
   tags = merge(
     local.default_tags,
     {
-      "Stackname" = var.stack_name
+      Name    = "prometheus-alb",
+      Service = "observe-prometheus",
     },
   )
 }
@@ -113,14 +111,15 @@ resource "aws_security_group_rule" "egress_from_prometheus_alb_to_prometheus_ec2
 }
 
 resource "aws_security_group" "prometheus_ec2" {
-  name        = "${var.stack_name}-prometheus-ec2"
+  name        = "${var.environment}-prometheus-ec2"
   vpc_id      = data.terraform_remote_state.infra_networking.outputs.vpc_id
   description = "Controls ingress and egress for prometheus EC2 instances"
 
   tags = merge(
     local.default_tags,
     {
-      "Stackname" = var.stack_name
+      Name    = "prometheus-ec2",
+      Service = "observe-prometheus",
     },
   )
 }
@@ -170,14 +169,15 @@ resource "aws_security_group_rule" "egress_from_prometheus_ec2_to_all" {
 }
 
 resource "aws_security_group" "alertmanager_alb" {
-  name        = "${var.stack_name}-alertmanager-alb"
+  name        = "${var.environment}-alertmanager-alb"
   vpc_id      = data.terraform_remote_state.infra_networking.outputs.vpc_id
   description = "Controls ingress and egress for the alertmanager alb"
 
   tags = merge(
     local.default_tags,
     {
-      "Stackname" = var.stack_name
+      Name    = "alertmanager-alb",
+      Service = "alertmanager",
     },
   )
 }
@@ -210,14 +210,15 @@ resource "aws_security_group_rule" "egress_from_alertmanager_alb_to_alertmanager
 }
 
 resource "aws_security_group" "alertmanager_ec2" {
-  name        = "${var.stack_name}-alertmanager-ec2"
+  name        = "${var.environment}-alertmanager-ec2"
   vpc_id      = data.terraform_remote_state.infra_networking.outputs.vpc_id
   description = "Controls ingress and egress for alertmanager ec2 instances"
 
   tags = merge(
     local.default_tags,
     {
-      "Stackname" = var.stack_name
+      Name    = "alertmanager-ec2",
+      Service = "alertmanager",
     },
   )
 }

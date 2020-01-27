@@ -15,14 +15,9 @@ variable "remote_state_bucket" {
   description = "S3 bucket we store our terraform state in"
 }
 
-variable "stack_name" {
+variable "environment" {
   type        = string
   description = "Unique name for this collection of resources"
-}
-
-variable "project" {
-  type        = string
-  description = "Which project, in which environment, we're running"
 }
 
 variable "zone_id" {
@@ -52,8 +47,10 @@ variable "alertmanager_count" {
 
 locals {
   default_tags = {
-    Terraform = "true"
-    Project   = var.project
+    Terraform   = "true"
+    Project     = "app-ecs-albs"
+    Source      = "github.com/alphagov/prometheus-aws-configuration-beta"
+    Environment = var.environment
   }
 
   alerts_records_count = var.alertmanager_count
@@ -147,7 +144,7 @@ resource "aws_route53_record" "prom_alias" {
 }
 
 resource "aws_lb" "prometheus_alb" {
-  name               = "${var.stack_name}-prometheus-alb"
+  name               = "${var.environment}-prometheus-alb"
   internal           = false
   load_balancer_type = "application"
 
@@ -158,8 +155,8 @@ resource "aws_lb" "prometheus_alb" {
   tags = merge(
     local.default_tags,
     {
-      "Stackname" = var.stack_name,
-      "Name"      = "${var.stack_name}-prometheus-alb"
+      Name    = "${var.environment}-prometheus-alb"
+      Service = "observe-prometheus"
     },
   )
 }
@@ -219,7 +216,7 @@ resource "aws_lb_listener_rule" "prom_listener_https" {
 resource "aws_lb_target_group" "prometheus_tg" {
   count = var.prometheus_count
 
-  name                 = "${var.stack_name}-prom-${count.index + 1}-tg"
+  name                 = "${var.environment}-prom-${count.index + 1}-tg"
   port                 = 80
   protocol             = "HTTP"
   vpc_id               = local.vpc_id
@@ -289,7 +286,7 @@ resource "aws_route53_record" "alerts_alias" {
 }
 
 resource "aws_lb" "alertmanager_alb" {
-  name               = "${var.stack_name}-alertmanager-alb"
+  name               = "${var.environment}-alertmanager-alb"
   internal           = false
   load_balancer_type = "application"
 
@@ -300,8 +297,8 @@ resource "aws_lb" "alertmanager_alb" {
   tags = merge(
     local.default_tags,
     {
-      "Stackname" = var.stack_name
-      "Name"      = "${var.stack_name}-alertmanager-alb"
+      Name    = "${var.environment}-alertmanager-alb"
+      Service = "alertmanager"
     },
   )
 }
@@ -361,7 +358,7 @@ resource "aws_lb_listener_rule" "alerts_listener_https" {
 resource "aws_lb_target_group" "alertmanager_fargate" {
   count = var.alertmanager_count
 
-  name                 = "${var.stack_name}-alerts-${count.index + 1}-fargate"
+  name                 = "${var.environment}-alerts-${count.index + 1}-fargate"
   port                 = 9093
   protocol             = "HTTP"
   vpc_id               = local.vpc_id
