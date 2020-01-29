@@ -68,4 +68,4 @@ scrape_configs:
   - job_name: verify-gsp-canary
     scheme: https
     static_configs:
-      - targets: ['canary.london.verify.govsvc.uk']
+      - targets: ['canary.verify-main.london.verify.govsvc.uk']
