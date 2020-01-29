@@ -241,7 +241,7 @@ resource "aws_lb_target_group" "prometheus_tg" {
 # https://docs.aws.amazon.com/acm/latest/userguide/managed-renewal.html
 # If this fails, AWS will email associated with the AWS account
 resource "aws_acm_certificate" "alertmanager_cert" {
-  domain_name       = "alerts.${local.subdomain}"
+  domain_name       = "foo.${local.subdomain}"
   validation_method = "DNS"
 
   subject_alternative_names = aws_route53_record.alerts_alias.*.fqdn
