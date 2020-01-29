@@ -99,12 +99,9 @@ resource "aws_lb_target_group" "alertmanager" {
 
   health_check {
     interval            = 10
-    path                = "/"
-    matcher             = "200"
-    protocol            = "HTTP"
+    protocol            = "TCP"
     healthy_threshold   = 2
     unhealthy_threshold = 2
-    timeout             = 5
   }
 }
 
