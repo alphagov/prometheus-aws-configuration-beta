@@ -199,7 +199,7 @@ jobs:
               type: docker-image
               source:
                 repository: governmentpaas/curl-ssl
-                tag: cd404e5f6e7b96082c586e80921189769131f593
+                tag: fe3e384e81ccb50842509d7237e3828b293de694
             params:
               ALERTMANAGER_URL: 'https://alerts-1.monitoring-staging.gds-reliability.engineering/-/healthy'
             run:
@@ -220,6 +220,24 @@ jobs:
             <<: *smoke-test-alertmanager
             params:
               ALERTMANAGER_URL: 'https://alerts-3.monitoring-staging.gds-reliability.engineering/-/healthy'
+        - task: smoke-test-alertmanager
+          timeout: 2m
+          config: &smoke-test-alertmanager-domain
+            platform: linux
+            image_resource:
+              type: docker-image
+              source:
+                repository: governmentpaas/curl-ssl
+                tag: fe3e384e81ccb50842509d7237e3828b293de694
+            params:
+              ALERTMANAGER_DOMAIN: 'alerts.monitoring-staging.gds-reliability.engineering'
+            run:
+              path: sh
+              args:
+                - -euxc
+                - |
+                  getent ahosts ${ALERTMANAGER_DOMAIN} | cut -d ' ' -f1 | sort | uniq | xargs -n1 -I {} curl --resolve ${ALERTMANAGER_DOMAIN}:443:{} --silent --fail --max-time 5 "https://${ALERTMANAGER_DOMAIN}/-/healthy"
+
   - name: deploy-app-ecs-services-production
     serial: true
     plan:
@@ -281,6 +299,12 @@ jobs:
             <<: *smoke-test-alertmanager
             params:
               ALERTMANAGER_URL: 'https://alerts-3.monitoring.gds-reliability.engineering/-/healthy'
+        - task: smoke-test-alertmanager
+          timeout: 2m
+          config:
+            <<: *smoke-test-alertmanager-domain
+            params:
+              ALERTMANAGER_DOMAIN: 'alerts.monitoring.gds-reliability.engineering'
   - name: run-service-broker-tests
     plan:
       - get: cf-app-discovery-git
