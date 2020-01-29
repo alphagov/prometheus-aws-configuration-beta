@@ -22,6 +22,16 @@ resource "aws_security_group_rule" "ingress_from_allowed_cidrs_to_alertmanager_9
   cidr_blocks       = var.allowed_cidrs
 }
 
+# NLB health checks come from the public subnet IP range
+resource "aws_security_group_rule" "ingress_from_public_subnets_to_alertmanager_9093" {
+  security_group_id = aws_security_group.alertmanager_task.id
+  type              = "ingress"
+  from_port         = 9093
+  to_port           = 9093
+  protocol          = "tcp"
+  cidr_blocks       = data.aws_subnet.public_subnets.*.cidr_block
+}
+
 # TODO: could we make observe prometheus more consistent with external
 # prometheis and go via public NLB IPs?
 resource "aws_security_group_rule" "ingress_from_prometheus_ec2_to_alertmanager_task" {

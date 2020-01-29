@@ -97,6 +97,11 @@ data "aws_route53_zone" "public_zone" {
   zone_id = local.zone_id
 }
 
+data "aws_subnet" "public_subnets" {
+  count = length(data.terraform_remote_state.infra_networking.outputs.public_subnets)
+  id    = data.terraform_remote_state.infra_networking.outputs.public_subnets[count.index]
+}
+
 ## Resources
 
 resource "aws_cloudwatch_log_group" "task_logs" {
