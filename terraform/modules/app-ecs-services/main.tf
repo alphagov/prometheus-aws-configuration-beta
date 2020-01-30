@@ -83,16 +83,6 @@ data "terraform_remote_state" "infra_security_groups" {
   }
 }
 
-data "terraform_remote_state" "app_ecs_albs" {
-  backend = "s3"
-
-  config = {
-    bucket = var.remote_state_bucket
-    key    = "app-ecs-albs-modular.tfstate"
-    region = var.aws_region
-  }
-}
-
 data "aws_route53_zone" "public_zone" {
   zone_id = local.zone_id
 }

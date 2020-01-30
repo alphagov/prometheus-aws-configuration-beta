@@ -10,11 +10,6 @@ variable "prometheis_total" {
   default     = "3"
 }
 
-## Locals
-locals {
-  alertmanager_public_fqdns = data.terraform_remote_state.app_ecs_albs.outputs.alerts_public_record_fqdns
-}
-
 ### container, task, service definitions
 
 resource "aws_ecs_cluster" "prometheus_cluster" {
@@ -73,67 +68,6 @@ resource "aws_iam_role_policy_attachment" "execution_execution" {
   role       = aws_iam_role.execution.name
   policy_arn = aws_iam_policy.execution.arn
 }
-
-# These are the old alertmanager services and task definitions, one
-# per AZ.  Once we're sure everyone's using the new alertmanager, we
-# can phase these out.
-
-data "template_file" "alertmanager_container_defn" {
-  count    = length(local.alertmanager_public_fqdns)
-  template = file("${path.module}/task-definitions/alertmanager.json")
-
-  vars = {
-    alertmanager_config_base64 = base64encode(data.template_file.alertmanager_config_file.rendered)
-    templates_base64           = base64encode(file("${path.module}/templates/default.tmpl"))
-    alertmanager_url           = "--web.external-url=https://${local.alertmanager_public_fqdns[count.index]}"
-    log_group                  = aws_cloudwatch_log_group.task_logs.name
-    region                     = var.aws_region
-  }
-}
-
-resource "aws_ecs_task_definition" "alertmanager" {
-  count                    = length(local.alertmanager_public_fqdns)
-  family                   = "${var.environment}-alertmanager-${count.index + 1}"
-  container_definitions    = data.template_file.alertmanager_container_defn[count.index].rendered
-  network_mode             = "awsvpc"
-  execution_role_arn       = aws_iam_role.execution.arn
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = 256
-  memory                   = 512
-
-  tags = merge(local.default_tags, {
-    Name = "${var.environment}-alertmanager-${count.index + 1}"
-  })
-}
-
-resource "aws_ecs_service" "alertmanager" {
-  count = var.prometheis_total
-
-  name            = "${var.environment}-alertmanager-${count.index + 1}"
-  cluster         = "${var.environment}-ecs-monitoring"
-  task_definition = aws_ecs_task_definition.alertmanager[count.index].arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
-
-  load_balancer {
-    target_group_arn = data.terraform_remote_state.app_ecs_albs.outputs.alertmanager_ip_target_group_arns[count.index]
-    container_name   = "alertmanager"
-    container_port   = 9093
-  }
-
-  network_configuration {
-    subnets         = [data.terraform_remote_state.infra_networking.outputs.private_subnets[count.index]]
-    security_groups = [data.terraform_remote_state.infra_security_groups.outputs.alertmanager_ec2_sg_id]
-  }
-
-  service_registries {
-    registry_arn = aws_service_discovery_service.alertmanager.arn
-  }
-
-  depends_on = [aws_ecs_task_definition.alertmanager]
-}
-
-# This is the new alertmanager service, to replace the above
 
 data "template_file" "alertmanager_nlb_container_defn" {
   template = file("${path.module}/task-definitions/alertmanager.json")
@@ -340,4 +274,3 @@ resource "aws_iam_user_policy" "smtp_ro" {
 EOF
 
 }
-
