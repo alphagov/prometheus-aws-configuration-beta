@@ -38,14 +38,3 @@ output "prometheus_alb_sg_id" {
   value       = module.infra-security-groups.prometheus_alb_sg_id
   description = "security group prometheus_alb ID"
 }
-
-output "alertmanager_ec2_sg_id" {
-  value       = module.infra-security-groups.alertmanager_ec2_sg_id
-  description = "security group alertmanager_ec2 ID"
-}
-
-output "alertmanager_alb_sg_id" {
-  value       = module.infra-security-groups.alertmanager_alb_sg_id
-  description = "security group alertmanager_alb ID"
-}
-
