@@ -167,9 +167,7 @@ jobs:
 
                 cluster_name = "#{DEPLOYMENT}-ecs-monitoring"
                 services     = [
-                  "#{DEPLOYMENT}-alertmanager-1",
-                  "#{DEPLOYMENT}-alertmanager-2",
-                  "#{DEPLOYMENT}-alertmanager-3",
+                  "#{DEPLOYMENT}-alertmanager",
                 ]
 
                 ECS.wait_until(
