@@ -1,10 +1,6 @@
 /**
 * ECS service that runs alertmanager
 *
-* This service consists of two containers.  The first, `s3-config-grabber`, fetches alertmanager configuration from our config S3 bucket, and stores it on a shared volume.  Then `alertmanager` runs and consumes that config.
-*
-* There is a known race condition between the two tasks - there is no guarantee that `s3-config-grabber` will grab the config before `alertmanager` starts.
-*
 */
 
 ## Variables
