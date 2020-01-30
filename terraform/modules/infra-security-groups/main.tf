@@ -23,23 +23,6 @@ variable "environment" {
   description = "Unique name for this collection of resources"
 }
 
-variable "allowed_cidrs" {
-  type        = list(string)
-  description = "List of CIDRs which are able to access the alertmanager ALB, default are GDS ips and concourse egress"
-
-  default = [
-    "213.86.153.212/32",
-    "213.86.153.213/32",
-    "213.86.153.214/32",
-    "213.86.153.235/32",
-    "213.86.153.236/32",
-    "213.86.153.237/32",
-    "85.133.67.244/32",
-    "35.177.37.128/32",
-    "35.176.252.164/32",
-  ]
-}
-
 # locals
 # --------------------------------------------------------------
 
@@ -168,103 +151,6 @@ resource "aws_security_group_rule" "egress_from_prometheus_ec2_to_all" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-resource "aws_security_group" "alertmanager_alb" {
-  name        = "${var.environment}-alertmanager-alb"
-  vpc_id      = data.terraform_remote_state.infra_networking.outputs.vpc_id
-  description = "Controls ingress and egress for the alertmanager alb"
-
-  tags = merge(
-    local.default_tags,
-    {
-      Name    = "alertmanager-alb",
-      Service = "alertmanager",
-    },
-  )
-}
-
-resource "aws_security_group_rule" "ingress_from_office_http_to_alertmanager_alb" {
-  security_group_id = aws_security_group.alertmanager_alb.id
-  type              = "ingress"
-  from_port         = 80
-  to_port           = 80
-  protocol          = "tcp"
-  cidr_blocks       = var.allowed_cidrs
-}
-
-resource "aws_security_group_rule" "ingress_from_office_https_to_alertmanager_alb" {
-  security_group_id = aws_security_group.alertmanager_alb.id
-  type              = "ingress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  cidr_blocks       = var.allowed_cidrs
-}
-
-resource "aws_security_group_rule" "egress_from_alertmanager_alb_to_alertmanager_ec2" {
-  security_group_id        = aws_security_group.alertmanager_alb.id
-  type                     = "egress"
-  to_port                  = 9093
-  from_port                = 9093
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.alertmanager_ec2.id
-}
-
-resource "aws_security_group" "alertmanager_ec2" {
-  name        = "${var.environment}-alertmanager-ec2"
-  vpc_id      = data.terraform_remote_state.infra_networking.outputs.vpc_id
-  description = "Controls ingress and egress for alertmanager ec2 instances"
-
-  tags = merge(
-    local.default_tags,
-    {
-      Name    = "alertmanager-ec2",
-      Service = "alertmanager",
-    },
-  )
-}
-
-resource "aws_security_group_rule" "ingress_from_alertmanager_alb_to_alertmanager_ec2" {
-  security_group_id        = aws_security_group.alertmanager_ec2.id
-  type                     = "ingress"
-  from_port                = 9093
-  to_port                  = 9093
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.alertmanager_alb.id
-}
-
-resource "aws_security_group_rule" "ingress_from_prometheus_ec2_to_alertmanager_ec2" {
-  security_group_id        = aws_security_group.alertmanager_ec2.id
-  type                     = "ingress"
-  from_port                = 9093
-  to_port                  = 9093
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.prometheus_ec2.id
-}
-
-resource "aws_security_group_rule" "ingress_from_alertmanager_ec2_to_alertmanager_ec2" {
-  security_group_id        = aws_security_group.alertmanager_ec2.id
-  type                     = "ingress"
-  from_port                = 9094
-  to_port                  = 9094
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.alertmanager_ec2.id
-}
-
-# This rule allows all egress out of alertmanager_ec2. This is for the following purposes:
-# - downloading packages from package repos
-# - calling AWS APIs such as SSM, S3 and EC2
-# - raising alerts with receivers such as pagerduty and cronitor
-# - sending emails via AWS API
-# - communicate with other alertmanagers to mesh
-resource "aws_security_group_rule" "egress_from_alertmanager_ec2_to_all" {
-  security_group_id = aws_security_group.alertmanager_ec2.id
-  type              = "egress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
-  cidr_blocks       = ["0.0.0.0/0"]
-}
-
 ## Outputs
 
 output "prometheus_ec2_sg_id" {
@@ -276,14 +162,3 @@ output "prometheus_alb_sg_id" {
   value       = aws_security_group.prometheus_alb.id
   description = "security group prometheus_alb ID"
 }
-
-output "alertmanager_ec2_sg_id" {
-  value       = aws_security_group.alertmanager_ec2.id
-  description = "security group alertmanager_ec2 ID"
-}
-
-output "alertmanager_alb_sg_id" {
-  value       = aws_security_group.alertmanager_alb.id
-  description = "security group alertmanager_alb ID"
-}
-
