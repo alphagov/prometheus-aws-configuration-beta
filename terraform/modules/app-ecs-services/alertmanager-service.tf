@@ -3,13 +3,6 @@
 *
 */
 
-## Variables
-variable "prometheis_total" {
-  type        = string
-  description = "Desired number of prometheus servers.  Maximum 3."
-  default     = "3"
-}
-
 ### container, task, service definitions
 
 resource "aws_ecs_cluster" "prometheus_cluster" {
@@ -99,7 +92,7 @@ resource "aws_ecs_service" "alertmanager_nlb" {
   name            = "${var.environment}-alertmanager"
   cluster         = "${var.environment}-ecs-monitoring"
   task_definition = aws_ecs_task_definition.alertmanager_nlb.arn
-  desired_count   = var.prometheis_total
+  desired_count   = length(data.terraform_remote_state.infra_networking.outputs.private_subnets)
   launch_type     = "FARGATE"
 
   load_balancer {
