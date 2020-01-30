@@ -20,11 +20,12 @@ alerting:
   # Here is an example configuration for sending to a specific alertmanager:
   # it is commented out by default to avoid annoying the support person
   - scheme: https
-    static_configs:
-    - targets:
-      - 'alerts-1.monitoring-staging.gds-reliability.engineering'
-      - 'alerts-2.monitoring-staging.gds-reliability.engineering'
-      - 'alerts-3.monitoring-staging.gds-reliability.engineering'
+    tls_config:
+      server_name: alerts.monitoring-staging.gds-reliability.engineering
+    dns_sd_configs:
+    - names: [ alerts.monitoring-staging.gds-reliability.engineering ]
+      type: A
+      port: 443
 
 scrape_configs:
   - job_name: prometheus
