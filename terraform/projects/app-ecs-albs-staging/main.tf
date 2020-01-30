@@ -52,16 +52,6 @@ output "prom_public_record_fqdns" {
   description = "Prometheus public DNS FQDNs"
 }
 
-output "alerts_public_record_fqdns" {
-  value       = module.app-ecs-albs.alerts_public_record_fqdns
-  description = "Alertmanagers public DNS FQDNs"
-}
-
 output "prometheus_target_group_arns" {
   value = module.app-ecs-albs.prometheus_target_group_ids
 }
-
-output "alertmanager_ip_target_group_arns" {
-  value = module.app-ecs-albs.alertmanager_ip_target_group_ids
-}
-
