@@ -1,5 +1,5 @@
 /**
-* ## Project: app-ecs-services
+* ## Project: alertmanager
 *
 * Create services and task definitions for the ECS cluster
 *
@@ -50,8 +50,8 @@ variable "remote_state_bucket" {
   default     = "prometheus-staging"
 }
 
-module "app-ecs-services" {
-  source = "../../modules/app-ecs-services"
+module "alertmanager" {
+  source = "../../modules/alertmanager"
 
   remote_state_bucket = var.remote_state_bucket
   environment         = "staging"
