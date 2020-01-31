@@ -92,6 +92,11 @@ data "aws_subnet" "public_subnets" {
   id    = data.terraform_remote_state.infra_networking.outputs.public_subnets[count.index]
 }
 
+data "aws_subnet" "private_subnets" {
+  count = length(data.terraform_remote_state.infra_networking.outputs.private_subnets)
+  id    = data.terraform_remote_state.infra_networking.outputs.private_subnets[count.index]
+}
+
 ## Resources
 
 resource "aws_cloudwatch_log_group" "task_logs" {
