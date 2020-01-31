@@ -89,10 +89,11 @@ resource "aws_ecs_task_definition" "alertmanager_nlb" {
 }
 
 resource "aws_ecs_service" "alertmanager_nlb" {
-  name            = "${var.environment}-alertmanager"
+  count           = length(data.aws_subnet.private_subnets)
+  name            = "${var.environment}-alertmanager-${data.aws_subnet.private_subnets[count.index].availability_zone}"
   cluster         = "${var.environment}-ecs-monitoring"
   task_definition = aws_ecs_task_definition.alertmanager_nlb.arn
-  desired_count   = length(data.terraform_remote_state.infra_networking.outputs.private_subnets)
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   load_balancer {
@@ -102,7 +103,7 @@ resource "aws_ecs_service" "alertmanager_nlb" {
   }
 
   network_configuration {
-    subnets         = data.terraform_remote_state.infra_networking.outputs.private_subnets
+    subnets         = [data.aws_subnet.private_subnets[count.index].id]
     security_groups = [aws_security_group.alertmanager_task.id]
   }
 
