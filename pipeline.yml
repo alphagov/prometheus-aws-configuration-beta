@@ -11,14 +11,14 @@ resource_types:
     tag: "1.6"
 
 resources:
-  - name: app-ecs-services-git
+  - name: alertmanager-git
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
       branch: master
       paths:
-        - terraform/modules/app-ecs-services
-        - terraform/projects/app-ecs-services-*
+        - terraform/modules/alertmanager
+        - terraform/projects/alertmanager-*
   - name: cf-app-discovery-git
     type: git
     source:
@@ -49,10 +49,10 @@ resources:
       space: prometheus-production
 
 jobs:
-  - name: deploy-app-ecs-services-staging
+  - name: deploy-alertmanager-staging
     serial: true
     plan:
-      - get: app-ecs-services-git
+      - get: alertmanager-git
         trigger: true
       - get: re-secrets
       - task: apply-terraform
@@ -65,7 +65,7 @@ jobs:
               repository: gdsre/aws-terraform
               tag: 18.04-0.12.19
           inputs:
-            - name: app-ecs-services-git
+            - name: alertmanager-git
             - name: re-secrets
           params:
             DEPLOYMENT: staging
@@ -113,7 +113,7 @@ jobs:
 
                 # Show what command terraform is running
                 set -x
-                cd app-ecs-services-git/terraform/projects/app-ecs-services-$DEPLOYMENT
+                cd alertmanager-git/terraform/projects/alertmanager-$DEPLOYMENT
                 terraform init
                 terraform apply -auto-approve
       - task: wait-for-staging-ecs
@@ -206,14 +206,14 @@ jobs:
               - |
                 getent ahosts ${ALERTMANAGER_DOMAIN} | cut -d ' ' -f1 | sort | uniq | xargs -n1 -I {} curl --resolve ${ALERTMANAGER_DOMAIN}:443:{} --silent --fail --max-time 5 "https://${ALERTMANAGER_DOMAIN}/-/healthy"
 
-  - name: deploy-app-ecs-services-production
+  - name: deploy-alertmanager-production
     serial: true
     plan:
-      - get: app-ecs-services-git
+      - get: alertmanager-git
         trigger: true
-        passed: [deploy-app-ecs-services-staging]
+        passed: [deploy-alertmanager-staging]
       - get: re-secrets
-        passed: [deploy-app-ecs-services-staging]
+        passed: [deploy-alertmanager-staging]
       - task: apply-terraform
         timeout: 15m
         config:
@@ -224,7 +224,7 @@ jobs:
               repository: gdsre/aws-terraform
               tag: 18.04-0.12.19
           inputs:
-            - name: app-ecs-services-git
+            - name: alertmanager-git
             - name: re-secrets
           params:
             DEPLOYMENT: production

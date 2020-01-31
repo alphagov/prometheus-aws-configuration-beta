@@ -1,5 +1,5 @@
 /**
-* ## Module: app-ecs-services
+* ## Module: alertmanager
 *
 * Create services and task definitions for the ECS cluster
 *
@@ -49,7 +49,7 @@ variable "allowed_cidrs" {
 locals {
   default_tags = {
     Terraform   = "true"
-    Project     = "app-ecs-services"
+    Project     = "alertmanager"
     Source      = "github.com/alphagov/prometheus-aws-configuration-beta"
     Environment = var.environment
     Service     = "alertmanager"
