@@ -19,6 +19,8 @@ resource "aws_acm_certificate" "alertmanager_cert" {
   domain_name       = "alerts.${local.subdomain}"
   validation_method = "DNS"
 
+  subject_alternative_names = formatlist("alerts-%s.${local.subdomain}", data.aws_availability_zones.available.names)
+
   lifecycle {
     # We can't destroy a certificate that's in use, and we can't stop
     # using it until the new one is ready.  Hence
@@ -28,10 +30,11 @@ resource "aws_acm_certificate" "alertmanager_cert" {
 }
 
 resource "aws_route53_record" "alertmanager_cert_validation" {
-  name       = aws_acm_certificate.alertmanager_cert.domain_validation_options[0]["resource_record_name"]
-  type       = aws_acm_certificate.alertmanager_cert.domain_validation_options[0]["resource_record_type"]
+  count      = 1 + length(data.aws_availability_zones.available.names)
+  name       = aws_acm_certificate.alertmanager_cert.domain_validation_options[count.index]["resource_record_name"]
+  type       = aws_acm_certificate.alertmanager_cert.domain_validation_options[count.index]["resource_record_type"]
   zone_id    = local.zone_id
-  records    = [aws_acm_certificate.alertmanager_cert.domain_validation_options[0]["resource_record_value"]]
+  records    = [aws_acm_certificate.alertmanager_cert.domain_validation_options[count.index]["resource_record_value"]]
   ttl        = 60
   depends_on = [aws_acm_certificate.alertmanager_cert]
 }
