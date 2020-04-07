@@ -5,6 +5,11 @@ variable "device_mount_path" {
   default     = "/dev/sdh"
 }
 
+variable "data_volume_size" {
+  description = "The size of the volume that will contain the prometheus data"
+  default     = 50
+}
+
 variable "availability_zones" {
   description = "A map of availability zones to subnets"
 

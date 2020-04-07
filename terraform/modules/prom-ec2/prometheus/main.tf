@@ -50,7 +50,7 @@ resource "aws_ebs_volume" "prometheus-disk" {
   count = length(keys(var.availability_zones))
 
   availability_zone = element(keys(var.availability_zones), count.index)
-  size              = "50"
+  size              = var.data_volume_size
 
   tags = merge(local.default_tags, {
     Name = "prometheus-disk"
@@ -72,6 +72,7 @@ data "template_file" "user_data_script" {
     logstash_host          = var.logstash_host
     prometheus_htpasswd    = var.prometheus_htpasswd
     allowed_cidrs          = join("\n        ", formatlist("allow %s;", var.allowed_cidrs))
+    data_volume_size       = var.data_volume_size
   }
 }
 
