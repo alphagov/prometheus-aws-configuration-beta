@@ -25,6 +25,9 @@ route:
   - receiver: "dgu-pagerduty"
     match:
       product: "data-gov-uk"
+  - receiver: "govuk-pagerduty"
+    match:
+      product: "govuk-coronavirus-services"
   - receiver: "registers-zendesk"
     repeat_interval: 7d
     match:
@@ -111,6 +114,9 @@ receivers:
 - name: "dgu-pagerduty"
   pagerduty_configs:
     - service_key: "${dgu_pagerduty_key}"
+- name: "govuk-pagerduty"
+  pagerduty_configs:
+    - service_key: "${govuk_pagerduty_key}"
 - name: "registers-zendesk"
   email_configs:
   - to: "${registers_zendesk}"

@@ -122,6 +122,10 @@ data "pass_password" "dgu_pagerduty_key" {
   path = "pagerduty/integration-keys/dgu"
 }
 
+data "pass_password" "govuk_pagerduty_key" {
+  path = "pagerduty/integration-keys/govuk"
+}
+
 data "pass_password" "verify_p1_pagerduty_key" {
   path = "pagerduty/integration-keys/verify-p1"
 }
@@ -168,6 +172,7 @@ data "template_file" "alertmanager_config_file" {
   vars = {
     observe_pagerduty_key   = data.pass_password.observe_pagerduty_key.password
     dgu_pagerduty_key       = data.pass_password.dgu_pagerduty_key.password
+    govuk_pagerduty_key     = data.pass_password.govuk_pagerduty_key.password
     verify_p1_pagerduty_key = data.pass_password.verify_p1_pagerduty_key.password
     verify_p2_pagerduty_key = data.pass_password.verify_p2_pagerduty_key.password
     slack_api_url           = data.pass_password.slack_api_url.password
