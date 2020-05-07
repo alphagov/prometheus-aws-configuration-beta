@@ -12,3 +12,20 @@ groups:
       dashboard_url: https://grafana-paas.cloudapps.digital/d/N7NZbVrZz/coronavirus-form-services?refresh=1m&orgId=1
       runbook: "https://docs.publishing.service.gov.uk/manual/covid-19-services.html#monitoring"
       logs: "https://kibana.logit.io/s/04b46992-f653-4c14-965c-236e9a6c2777/app/kibana#/discover"
+  - alert: GOVUK_CORONAVIRUS_SERVICES_HighCpuUsage
+    expr: avg(cpu{org="govuk_development", app=~"govuk-coronavirus-.*", space="production"}) without (exported_instance) >= 80
+    for: 5m
+    labels:
+        product: "govuk-coronavirus-services"
+    annotations:
+        summary: "App {{ $labels.app }} has high CPU usage"
+        message: "Application {{ $labels.app }} has been using over 80% CPU (averaged over all instances) for 5 minutes or more"
+        dashboard_url: https://grafana-paas.cloudapps.digital/d/N7NZbVrZz/coronavirus-form-services?refresh=1m&orgId=1
+  - alert: GOVUK_CORONAVIRUS_SERVICES_HighDiskUsage
+    expr: max(disk_utilization{org="govuk_development", app=~"govuk-coronavirus-.*", space="production"}) without (exported_instance) >= 80
+    labels:
+        product: "govuk-coronavirus-services"
+    annotations:
+        summary: "App {{ $labels.app }} has high disk usage"
+        message: "Application {{ $labels.app }} has an instance which is using over 80% disk."
+        dashboard_url: https://grafana-paas.cloudapps.digital/d/N7NZbVrZz/coronavirus-form-services?refresh=1m&orgId=1
