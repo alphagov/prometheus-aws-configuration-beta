@@ -17,31 +17,29 @@ resources:
     source:
       repository: ((readonly_private_ecr_repo_url))
       tag: prometheus-task-image
-  - name: task-image-git
+  - name: ci-git
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: master
+      branch: cd-pipeline
       paths:
-        - ci/images/task
+        - ci
   - name: alertmanager-git
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: master
+      branch: cd-pipeline
       paths:
         - terraform/modules/alertmanager
         - terraform/projects/alertmanager-*
-        - ci/tasks
   - name: prometheus-git
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: master
+      branch: cd-pipeline
       paths:
         - terraform/modules/prom-ec2
         - terraform/projects/prom-ec2
-        - ci/tasks
   - name: cf-app-discovery-git
     type: git
     source:
@@ -75,13 +73,15 @@ resources:
 
 jobs:
 
-  - name: build-task-image
+  - name: configure-pipeline
     serial: true
     plan:
-    - get: task-image-git
+    - get: ci-git
       trigger: true
+    - set_pipeline: prometheus
+      file: ci-git/ci/deploy.yml
     - put: task-image
-      params: {build: task-image-git/ci/images/task}
+      params: {build: ci-git/ci/images/task}
       get_params: {skip_download: true}
 
   - name: deploy-prometheus-staging
@@ -92,12 +92,16 @@ jobs:
           trigger: true
         - get: re-secrets
           trigger: true
+        - get: ci-git
+          passed: [configure-pipeline]
+          trigger: true
         - get: task-image
-          passed: [build-task-image]
+          passed: [configure-pipeline]
+          trigger: true
       - task: apply-terraform
         image: task-image
         timeout: 15m
-        file: prometheus-git/ci/tasks/deploy-project.yml
+        file: ci-git/ci/tasks/deploy-project.yml
         input_mapping: {src: prometheus-git}
         params:
           PROJECT: prom-ec2/paas-staging
@@ -106,17 +110,17 @@ jobs:
       - in_parallel:
         - task: smoke-test-prom-1
           timeout: 2m
-          file: prometheus-git/ci/tasks/http-ping.yml
+          file: ci-git/ci/tasks/http-ping.yml
           params:
             URL: https://prom-1.monitoring-staging.gds-reliability.engineering/healthz
         - task: smoke-test-prom-2
           timeout: 2m
-          file: prometheus-git/ci/tasks/http-ping.yml
+          file: ci-git/ci/tasks/http-ping.yml
           params:
             URL: https://prom-2.monitoring-staging.gds-reliability.engineering/healthz
         - task: smoke-test-prom-3
           timeout: 2m
-          file: prometheus-git/ci/tasks/http-ping.yml
+          file: ci-git/ci/tasks/http-ping.yml
           params:
             URL: https://prom-3.monitoring-staging.gds-reliability.engineering/healthz
 
@@ -130,12 +134,16 @@ jobs:
         - get: re-secrets
           passed: [deploy-prometheus-staging]
           trigger: true
+        - get: ci-git
+          passed: [deploy-prometheus-staging]
+          trigger: true
         - get: task-image
           passed: [deploy-prometheus-staging]
+          trigger: true
       - task: apply-terraform
         image: task-image
         timeout: 15m
-        file: prometheus-git/ci/tasks/deploy-project.yml
+        file: ci-git/ci/tasks/deploy-project.yml
         input_mapping: {src: prometheus-git}
         params:
           PROJECT: prom-ec2/paas-production
@@ -144,17 +152,17 @@ jobs:
       - in_parallel:
         - task: smoke-test-prom-1
           timeout: 2m
-          file: prometheus-git/ci/tasks/http-ping.yml
+          file: ci-git/ci/tasks/http-ping.yml
           params:
             URL: https://prom-1.monitoring.gds-reliability.engineering/healthz
         - task: smoke-test-prom-2
           timeout: 2m
-          file: prometheus-git/ci/tasks/http-ping.yml
+          file: ci-git/ci/tasks/http-ping.yml
           params:
             URL: https://prom-2.monitoring.gds-reliability.engineering/healthz
         - task: smoke-test-prom-3
           timeout: 2m
-          file: prometheus-git/ci/tasks/http-ping.yml
+          file: ci-git/ci/tasks/http-ping.yml
           params:
             URL: https://prom-3.monitoring.gds-reliability.engineering/healthz
 
@@ -165,12 +173,17 @@ jobs:
         - get: alertmanager-git
           trigger: true
         - get: re-secrets
+          trigger: true
+        - get: ci-git
+          passed: [configure-pipeline]
+          trigger: true
         - get: task-image
-          passed: [build-task-image]
+          passed: [configure-pipeline]
+          trigger: true
       - task: apply-terraform
         image: task-image
         timeout: 15m
-        file: alertmanager-git/ci/tasks/deploy-project.yml
+        file: ci-git/ci/tasks/deploy-project.yml
         input_mapping: {src: alertmanager-git}
         params:
           PROJECT: alertmanager-staging
@@ -253,22 +266,22 @@ jobs:
       - in_parallel:
         - task: smoke-test-alertmanager
           timeout: 2m
-          file: alertmanager-git/ci/tasks/http-ping.yml
+          file: ci-git/ci/tasks/http-ping.yml
           params:
             URL: https://alerts.monitoring-staging.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1a
           timeout: 2m
-          file: alertmanager-git/ci/tasks/http-ping.yml
+          file: ci-git/ci/tasks/http-ping.yml
           params:
             URL: https://alerts-eu-west-1a.monitoring-staging.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1b
           timeout: 2m
-          file: alertmanager-git/ci/tasks/http-ping.yml
+          file: ci-git/ci/tasks/http-ping.yml
           params:
             URL: https://alerts-eu-west-1b.monitoring-staging.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1c
           timeout: 2m
-          file: alertmanager-git/ci/tasks/http-ping.yml
+          file: ci-git/ci/tasks/http-ping.yml
           params:
             URL: https://alerts-eu-west-1c.monitoring-staging.gds-reliability.engineering/-/healthy
 
@@ -280,6 +293,9 @@ jobs:
           passed: [deploy-alertmanager-staging]
           trigger: true
         - get: re-secrets
+          passed: [deploy-alertmanager-staging]
+          trigger: true
+        - get: ci-git
           passed: [deploy-alertmanager-staging]
           trigger: true
         - get: task-image
@@ -311,22 +327,22 @@ jobs:
       - in_parallel:
         - task: smoke-test-alertmanager
           timeout: 2m
-          file: alertmanager-git/ci/tasks/http-ping.yml
+          file: ci-git/ci/tasks/http-ping.yml
           params:
             URL: https://alerts.monitoring.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1a
           timeout: 2m
-          file: alertmanager-git/ci/tasks/http-ping.yml
+          file: ci-git/ci/tasks/http-ping.yml
           params:
             URL: https://alerts-eu-west-1a.monitoring.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1b
           timeout: 2m
-          file: alertmanager-git/ci/tasks/http-ping.yml
+          file: ci-git/ci/tasks/http-ping.yml
           params:
             URL: https://alerts-eu-west-1b.monitoring.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1c
           timeout: 2m
-          file: alertmanager-git/ci/tasks/http-ping.yml
+          file: ci-git/ci/tasks/http-ping.yml
           params:
             URL: https://alerts-eu-west-1c.monitoring.gds-reliability.engineering/-/healthy
 
