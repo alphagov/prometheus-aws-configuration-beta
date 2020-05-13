@@ -303,7 +303,7 @@ jobs:
       - task: apply-terraform
         image: task-image
         timeout: 15m
-        file: alertmanager-git/ci/tasks/deploy-project.yml
+        file: ci-git/ci/tasks/deploy-project.yml
         input_mapping: {src: alertmanager-git}
         params:
           PROJECT: alertmanager-production
