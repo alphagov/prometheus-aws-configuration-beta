@@ -1,0 +1,30 @@
+  platform: linux
+  inputs:
+    - name: src
+    - name: re-secrets
+  params:
+    PROJECT:
+    DEPLOYER_ARN:
+    GPG_PRIVATE_KEY:
+    AWS_REGION: 'eu-west-1'
+    AWS_DEFAULT_REGION: 'eu-west-1'
+    PASSWORD_STORE_DIR: "re-secrets/observe"
+  run:
+    path: bash
+    args:
+      - -eu
+      - -c
+      - |
+
+        echo "configuring aws client..."
+        eval $(assume-role "${DEPLOYER_ARN}")
+
+        echo "configuring re-secrets store..."
+        echo "${GPG_PRIVATE_KEY}" | gpg --import
+        mkdir -p $HOME/.password-store
+        cp -R re-secrets $HOME/.password-store
+
+        echo "terraforming..."
+        cd "src/terraform/projects/${PROJECT}"
+        terraform init
+        terraform apply -auto-approve

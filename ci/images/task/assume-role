@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -eu
+
+arn="$1"
+creds="$(aws \
+		 sts assume-role \
+		 --role-arn="$arn" \
+		 --role-session-name="deploy-concourse-$(date +%s)" \
+		 --duration 1800 \
+)"
+
+access_key="$(echo "$creds"    | jq -r ".Credentials.AccessKeyId")"
+secret_key="$(echo "$creds"    | jq -r ".Credentials.SecretAccessKey")"
+session_token="$(echo "$creds" | jq -r ".Credentials.SessionToken")"
+
+echo "export AWS_ACCESS_KEY_ID=\"$access_key\""
+echo "export AWS_SECRET_ACCESS_KEY=\"$secret_key\""
+echo "export AWS_SESSION_TOKEN=\"$session_token\""
+echo "export AWS_DEFAULT_REGION=\"eu-west-1\""
+
