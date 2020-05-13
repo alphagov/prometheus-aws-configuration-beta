@@ -54,6 +54,8 @@ resources:
         ((re-secrets-ssh-key))
       uri: git@github.com:alphagov/re-secrets.git
       branch: master
+      paths:
+        - observe
   - name: service-broker-app-staging
     type: cf
     source:
