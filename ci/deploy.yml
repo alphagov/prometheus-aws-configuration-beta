@@ -21,14 +21,14 @@ resources:
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: cd-pipeline
+      branch: master
       paths:
         - ci
   - name: alertmanager-git
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: cd-pipeline
+      branch: master
       paths:
         - terraform/modules/alertmanager
         - terraform/projects/alertmanager-*
@@ -36,7 +36,7 @@ resources:
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: cd-pipeline
+      branch: master
       paths:
         - terraform/modules/prom-ec2
         - terraform/projects/prom-ec2
