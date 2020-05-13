@@ -1,0 +1,19 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: governmentpaas/curl-ssl
+    tag: fe3e384e81ccb50842509d7237e3828b293de694
+params:
+  URL:
+run:
+  path: sh
+  args:
+    - -euxc
+    - |
+      DOMAIN=$(echo "${URL}" | awk -F/ '{print $3}')
+      getent ahosts ${DOMAIN} | cut -d ' ' -f1 | sort | uniq | xargs -n1 -I {} curl \
+        --resolve ${DOMAIN}:443:{} \
+        --silent \
+        --fail \
+        --max-time 5 "${URL}"

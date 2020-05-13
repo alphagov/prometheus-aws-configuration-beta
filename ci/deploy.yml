@@ -32,7 +32,7 @@ resources:
       paths:
         - terraform/modules/alertmanager
         - terraform/projects/alertmanager-*
-        - ci/tasks/deploy-project.yml
+        - ci/tasks
   - name: prometheus-git
     type: git
     source:
@@ -41,7 +41,7 @@ resources:
       paths:
         - terraform/modules/prom-ec2
         - terraform/projects/prom-ec2
-        - ci/tasks/deploy-project.yml
+        - ci/tasks
   - name: cf-app-discovery-git
     type: git
     source:
@@ -101,6 +101,22 @@ jobs:
           PROJECT: prom-ec2/paas-staging
           DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
           GPG_PRIVATE_KEY: ((gpg_private_key))
+      - in_parallel:
+        - task: smoke-test-prom-1
+          timeout: 2m
+          file: prometheus-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://prom-1.monitoring-staging.gds-reliability.engineering/healthz
+        - task: smoke-test-prom-2
+          timeout: 2m
+          file: prometheus-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://prom-2.monitoring-staging.gds-reliability.engineering/healthz
+        - task: smoke-test-prom-3
+          timeout: 2m
+          file: prometheus-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://prom-3.monitoring-staging.gds-reliability.engineering/healthz
 
   - name: deploy-prometheus-production
     serial: true
@@ -123,6 +139,22 @@ jobs:
           PROJECT: prom-ec2/paas-production
           DEPLOYER_ARN: arn:aws:iam::455214962221:role/autom8-deployer
           GPG_PRIVATE_KEY: ((gpg_private_key))
+      - in_parallel:
+        - task: smoke-test-prom-1
+          timeout: 2m
+          file: prometheus-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://prom-1.monitoring.gds-reliability.engineering/healthz
+        - task: smoke-test-prom-2
+          timeout: 2m
+          file: prometheus-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://prom-2.monitoring.gds-reliability.engineering/healthz
+        - task: smoke-test-prom-3
+          timeout: 2m
+          file: prometheus-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://prom-3.monitoring.gds-reliability.engineering/healthz
 
   - name: deploy-alertmanager-staging
     serial: true
@@ -219,39 +251,24 @@ jobs:
       - in_parallel:
         - task: smoke-test-alertmanager
           timeout: 2m
-          config: &smoke-test-alertmanager
-            platform: linux
-            image_resource:
-              type: docker-image
-              source:
-                repository: governmentpaas/curl-ssl
-                tag: fe3e384e81ccb50842509d7237e3828b293de694
-            params:
-              ALERTMANAGER_DOMAIN: 'alerts.monitoring-staging.gds-reliability.engineering'
-            run:
-              path: sh
-              args:
-                - -euxc
-                - |
-                  getent ahosts ${ALERTMANAGER_DOMAIN} | cut -d ' ' -f1 | sort | uniq | xargs -n1 -I {} curl --resolve ${ALERTMANAGER_DOMAIN}:443:{} --silent --fail --max-time 5 "https://${ALERTMANAGER_DOMAIN}/-/healthy"
+          file: alertmanager-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://alerts.monitoring-staging.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1a
           timeout: 2m
-          config:
-            <<: *smoke-test-alertmanager
-            params:
-              ALERTMANAGER_DOMAIN: 'alerts-eu-west-1a.monitoring-staging.gds-reliability.engineering'
+          file: alertmanager-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://alerts-eu-west-1a.monitoring-staging.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1b
           timeout: 2m
-          config:
-            <<: *smoke-test-alertmanager
-            params:
-              ALERTMANAGER_DOMAIN: 'alerts-eu-west-1b.monitoring-staging.gds-reliability.engineering'
+          file: alertmanager-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://alerts-eu-west-1b.monitoring-staging.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1c
           timeout: 2m
-          config:
-            <<: *smoke-test-alertmanager
-            params:
-              ALERTMANAGER_DOMAIN: 'alerts-eu-west-1c.monitoring-staging.gds-reliability.engineering'
+          file: alertmanager-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://alerts-eu-west-1c.monitoring-staging.gds-reliability.engineering/-/healthy
 
   - name: deploy-alertmanager-production
     serial: true
@@ -292,28 +309,24 @@ jobs:
       - in_parallel:
         - task: smoke-test-alertmanager
           timeout: 2m
-          config:
-            <<: *smoke-test-alertmanager
-            params:
-              ALERTMANAGER_DOMAIN: 'alerts.monitoring.gds-reliability.engineering'
+          file: alertmanager-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://alerts.monitoring.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1a
           timeout: 2m
-          config:
-            <<: *smoke-test-alertmanager
-            params:
-              ALERTMANAGER_DOMAIN: 'alerts-eu-west-1a.monitoring.gds-reliability.engineering'
+          file: alertmanager-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://alerts-eu-west-1a.monitoring.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1b
           timeout: 2m
-          config:
-            <<: *smoke-test-alertmanager
-            params:
-              ALERTMANAGER_DOMAIN: 'alerts-eu-west-1b.monitoring.gds-reliability.engineering'
+          file: alertmanager-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://alerts-eu-west-1b.monitoring.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1c
           timeout: 2m
-          config:
-            <<: *smoke-test-alertmanager
-            params:
-              ALERTMANAGER_DOMAIN: 'alerts-eu-west-1c.monitoring.gds-reliability.engineering'
+          file: alertmanager-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://alerts-eu-west-1c.monitoring.gds-reliability.engineering/-/healthy
 
   - name: run-service-broker-tests
     plan:
