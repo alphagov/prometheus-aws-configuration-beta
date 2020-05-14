@@ -29,3 +29,14 @@ groups:
         summary: "App {{ $labels.app }} has high disk usage"
         message: "Application {{ $labels.app }} has an instance which is using over 80% disk."
         dashboard_url: https://grafana-paas.cloudapps.digital/d/N7NZbVrZz/coronavirus-form-services?refresh=1m&orgId=1
+  - alert: GOVUK_CORONAVIRUS_SERVICES_AlertDrill
+    annotations:
+      summary: Prometheus alert drill in progress...
+      message: |
+        This is an alert meant to ensure that the entire alerting pipeline is functional.
+        This alert is always firing, therefore it should always be firing in Alertmanager
+        and always fire against a receiver.
+    expr: vector(1)
+    labels:
+        product: "govuk-coronavirus-services"
+        severity: "warning"
