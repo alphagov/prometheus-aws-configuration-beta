@@ -11,6 +11,19 @@ resource_types:
     tag: "1.6"
 
 resources:
+  - name: task-image
+    type: docker-image
+    icon: layers
+    source:
+      repository: ((readonly_private_ecr_repo_url))
+      tag: prometheus-task-image
+  - name: ci-git
+    type: git
+    source:
+      uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
+      branch: master
+      paths:
+        - ci
   - name: alertmanager-git
     type: git
     source:
@@ -19,6 +32,14 @@ resources:
       paths:
         - terraform/modules/alertmanager
         - terraform/projects/alertmanager-*
+  - name: prometheus-git
+    type: git
+    source:
+      uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
+      branch: master
+      paths:
+        - terraform/modules/prom-ec2
+        - terraform/projects/prom-ec2
   - name: cf-app-discovery-git
     type: git
     source:
@@ -31,6 +52,8 @@ resources:
         ((re-secrets-ssh-key))
       uri: git@github.com:alphagov/re-secrets.git
       branch: master
+      paths:
+        - observe
   - name: service-broker-app-staging
     type: cf
     source:
@@ -49,73 +72,123 @@ resources:
       space: prometheus-production
 
 jobs:
+
+  - name: configure-pipeline
+    serial: true
+    plan:
+    - get: ci-git
+      trigger: true
+    - set_pipeline: prometheus
+      file: ci-git/ci/deploy.yml
+    - put: task-image
+      params: {build: ci-git/ci/images/task}
+      get_params: {skip_download: true}
+
+  - name: deploy-prometheus-staging
+    serial: true
+    plan:
+      - in_parallel:
+        - get: prometheus-git
+          trigger: true
+        - get: re-secrets
+          trigger: true
+        - get: ci-git
+          passed: [configure-pipeline]
+          trigger: true
+        - get: task-image
+          passed: [configure-pipeline]
+          trigger: true
+      - task: apply-terraform
+        image: task-image
+        timeout: 15m
+        file: ci-git/ci/tasks/deploy-project.yml
+        input_mapping: {src: prometheus-git}
+        params:
+          PROJECT: prom-ec2/paas-staging
+          DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
+          GPG_PRIVATE_KEY: ((gpg_private_key))
+      - in_parallel:
+        - task: smoke-test-prom-1
+          timeout: 2m
+          file: ci-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://prom-1.monitoring-staging.gds-reliability.engineering/healthz
+        - task: smoke-test-prom-2
+          timeout: 2m
+          file: ci-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://prom-2.monitoring-staging.gds-reliability.engineering/healthz
+        - task: smoke-test-prom-3
+          timeout: 2m
+          file: ci-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://prom-3.monitoring-staging.gds-reliability.engineering/healthz
+
+  - name: deploy-prometheus-production
+    serial: true
+    plan:
+      - in_parallel:
+        - get: prometheus-git
+          passed: [deploy-prometheus-staging]
+          trigger: true
+        - get: re-secrets
+          passed: [deploy-prometheus-staging]
+          trigger: true
+        - get: ci-git
+          passed: [deploy-prometheus-staging]
+          trigger: true
+        - get: task-image
+          passed: [deploy-prometheus-staging]
+          trigger: true
+      - task: apply-terraform
+        image: task-image
+        timeout: 15m
+        file: ci-git/ci/tasks/deploy-project.yml
+        input_mapping: {src: prometheus-git}
+        params:
+          PROJECT: prom-ec2/paas-production
+          DEPLOYER_ARN: arn:aws:iam::455214962221:role/autom8-deployer
+          GPG_PRIVATE_KEY: ((gpg_private_key))
+      - in_parallel:
+        - task: smoke-test-prom-1
+          timeout: 2m
+          file: ci-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://prom-1.monitoring.gds-reliability.engineering/healthz
+        - task: smoke-test-prom-2
+          timeout: 2m
+          file: ci-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://prom-2.monitoring.gds-reliability.engineering/healthz
+        - task: smoke-test-prom-3
+          timeout: 2m
+          file: ci-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://prom-3.monitoring.gds-reliability.engineering/healthz
+
   - name: deploy-alertmanager-staging
     serial: true
     plan:
-      - get: alertmanager-git
-        trigger: true
-      - get: re-secrets
+      - in_parallel:
+        - get: alertmanager-git
+          trigger: true
+        - get: re-secrets
+          trigger: true
+        - get: ci-git
+          passed: [configure-pipeline]
+          trigger: true
+        - get: task-image
+          passed: [configure-pipeline]
+          trigger: true
       - task: apply-terraform
+        image: task-image
         timeout: 15m
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: gdsre/aws-terraform
-              tag: 18.04-0.12.19
-          inputs:
-            - name: alertmanager-git
-            - name: re-secrets
-          params:
-            DEPLOYMENT: staging
-            ACCOUNT_ID: '027317422673'
-            AWS_REGION: 'eu-west-1'
-            AWS_DEFAULT_REGION: 'eu-west-1'
-            GPG_PRIVATE_KEY: ((gpg_private_key))
-          run: &run-deployment
-            path: sh
-            args:
-              - -c
-              - |
-                set -ue
-
-                mkdir -p $HOME/.password-store
-                cp -R re-secrets $HOME/.password-store
-
-                # FIXME we should make this available in a better way
-                sed -i 's/archive.ubuntu.com/eu-west-2.ec2.archive.ubuntu.com/g' /etc/apt/sources.list
-                apt-get update -y
-                apt-get install -y --no-install-recommends gpg gpg-agent golang git
-                go get github.com/camptocamp/terraform-provider-pass
-                GOBIN=~/.terraform.d/plugins/linux_amd64 go install github.com/camptocamp/terraform-provider-pass
-
-                echo "Authenticating with AWS against $DEPLOYMENT in account $ACCOUNT_ID"
-                arn="arn:aws:iam::${ACCOUNT_ID}:role/autom8-deployer"
-                creds="$(aws \
-                         sts assume-role \
-                         --role-arn="$arn" \
-                         --role-session-name="deploy-concourse-$(date +%s)" \
-                         --duration 1800 \
-                )"
-
-                access_key="$(echo "$creds"    | jq -r ".Credentials.AccessKeyId")"
-                secret_key="$(echo "$creds"    | jq -r ".Credentials.SecretAccessKey")"
-                session_token="$(echo "$creds" | jq -r ".Credentials.SessionToken")"
-
-                export "AWS_ACCESS_KEY_ID=$access_key"
-                export "AWS_SECRET_ACCESS_KEY=$secret_key"
-                export "AWS_SESSION_TOKEN=$session_token"
-                export "AWS_DEFAULT_REGION=eu-west-1"
-
-                export PASSWORD_STORE_DIR="$(pwd)/re-secrets/observe"
-                echo "$GPG_PRIVATE_KEY" | gpg --import
-
-                # Show what command terraform is running
-                set -x
-                cd alertmanager-git/terraform/projects/alertmanager-$DEPLOYMENT
-                terraform init
-                terraform apply -auto-approve
+        file: ci-git/ci/tasks/deploy-project.yml
+        input_mapping: {src: alertmanager-git}
+        params:
+          PROJECT: alertmanager-staging
+          DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
+          GPG_PRIVATE_KEY: ((gpg_private_key))
       - task: wait-for-staging-ecs
         timeout: 15m
         config:
@@ -193,67 +266,49 @@ jobs:
       - in_parallel:
         - task: smoke-test-alertmanager
           timeout: 2m
-          config: &smoke-test-alertmanager
-            platform: linux
-            image_resource:
-              type: docker-image
-              source:
-                repository: governmentpaas/curl-ssl
-                tag: fe3e384e81ccb50842509d7237e3828b293de694
-            params:
-              ALERTMANAGER_DOMAIN: 'alerts.monitoring-staging.gds-reliability.engineering'
-            run:
-              path: sh
-              args:
-                - -euxc
-                - |
-                  getent ahosts ${ALERTMANAGER_DOMAIN} | cut -d ' ' -f1 | sort | uniq | xargs -n1 -I {} curl --resolve ${ALERTMANAGER_DOMAIN}:443:{} --silent --fail --max-time 5 "https://${ALERTMANAGER_DOMAIN}/-/healthy"
+          file: ci-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://alerts.monitoring-staging.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1a
           timeout: 2m
-          config:
-            <<: *smoke-test-alertmanager
-            params:
-              ALERTMANAGER_DOMAIN: 'alerts-eu-west-1a.monitoring-staging.gds-reliability.engineering'
+          file: ci-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://alerts-eu-west-1a.monitoring-staging.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1b
           timeout: 2m
-          config:
-            <<: *smoke-test-alertmanager
-            params:
-              ALERTMANAGER_DOMAIN: 'alerts-eu-west-1b.monitoring-staging.gds-reliability.engineering'
+          file: ci-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://alerts-eu-west-1b.monitoring-staging.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1c
           timeout: 2m
-          config:
-            <<: *smoke-test-alertmanager
-            params:
-              ALERTMANAGER_DOMAIN: 'alerts-eu-west-1c.monitoring-staging.gds-reliability.engineering'
+          file: ci-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://alerts-eu-west-1c.monitoring-staging.gds-reliability.engineering/-/healthy
 
   - name: deploy-alertmanager-production
     serial: true
     plan:
-      - get: alertmanager-git
-        trigger: true
-        passed: [deploy-alertmanager-staging]
-      - get: re-secrets
-        passed: [deploy-alertmanager-staging]
+      - in_parallel:
+        - get: alertmanager-git
+          passed: [deploy-alertmanager-staging]
+          trigger: true
+        - get: re-secrets
+          passed: [deploy-alertmanager-staging]
+          trigger: true
+        - get: ci-git
+          passed: [deploy-alertmanager-staging]
+          trigger: true
+        - get: task-image
+          passed: [deploy-alertmanager-staging]
       - task: apply-terraform
+        image: task-image
         timeout: 15m
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: gdsre/aws-terraform
-              tag: 18.04-0.12.19
-          inputs:
-            - name: alertmanager-git
-            - name: re-secrets
-          params:
-            DEPLOYMENT: production
-            ACCOUNT_ID: '455214962221'
-            AWS_REGION: 'eu-west-1'
-            AWS_DEFAULT_REGION: 'eu-west-1'
-            GPG_PRIVATE_KEY: ((gpg_private_key))
-          run: *run-deployment
+        file: ci-git/ci/tasks/deploy-project.yml
+        input_mapping: {src: alertmanager-git}
+        params:
+          PROJECT: alertmanager-production
+          DEPLOYER_ARN: arn:aws:iam::455214962221:role/autom8-deployer
+          GPG_PRIVATE_KEY: ((gpg_private_key))
       - task: wait-for-production-ecs
         timeout: 15m
         config:
@@ -268,32 +323,28 @@ jobs:
             ACCOUNT_ID: '027317422673'
             AWS_REGION: 'eu-west-1'
             AWS_DEFAULT_REGION: 'eu-west-1'
-          run: *run-wait-for-ecs          
+          run: *run-wait-for-ecs
       - in_parallel:
         - task: smoke-test-alertmanager
           timeout: 2m
-          config:
-            <<: *smoke-test-alertmanager
-            params:
-              ALERTMANAGER_DOMAIN: 'alerts.monitoring.gds-reliability.engineering'
+          file: ci-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://alerts.monitoring.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1a
           timeout: 2m
-          config:
-            <<: *smoke-test-alertmanager
-            params:
-              ALERTMANAGER_DOMAIN: 'alerts-eu-west-1a.monitoring.gds-reliability.engineering'
+          file: ci-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://alerts-eu-west-1a.monitoring.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1b
           timeout: 2m
-          config:
-            <<: *smoke-test-alertmanager
-            params:
-              ALERTMANAGER_DOMAIN: 'alerts-eu-west-1b.monitoring.gds-reliability.engineering'
+          file: ci-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://alerts-eu-west-1b.monitoring.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1c
           timeout: 2m
-          config:
-            <<: *smoke-test-alertmanager
-            params:
-              ALERTMANAGER_DOMAIN: 'alerts-eu-west-1c.monitoring.gds-reliability.engineering'
+          file: ci-git/ci/tasks/http-ping.yml
+          params:
+            URL: https://alerts-eu-west-1c.monitoring.gds-reliability.engineering/-/healthy
 
   - name: run-service-broker-tests
     plan:
