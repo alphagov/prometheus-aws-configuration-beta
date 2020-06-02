@@ -40,3 +40,15 @@ groups:
     labels:
         product: "govuk-coronavirus-services"
         severity: "warning"
+  - alert: GOVUK_CORONAVIRUS_SERVICES_MailersQueueLatency
+    # We alert if it takes over 30 minutes for an email or SMS to go out.
+    expr: sum by (job) (increase( sidekiq_mailers_queue_latency{org="govuk_development", space="production"}[5m] ) ) > 1800
+    for: 5m
+    labels:
+        product: "govuk-coronavirus-services"
+        severity: "warning"
+    annotations:
+        summary: "Emails and texts are sending slowly."
+        message: "It is taking over 30 minutes to send messages to users from {{ $labels.job }}."
+        dashboard_url: https://grafana-paas.cloudapps.digital/d/N7NZbVrZz/coronavirus-form-services?refresh=1m&orgId=1
+        runbook: https://docs.publishing.service.gov.uk/manual/covid-19-services.html#monitoring
