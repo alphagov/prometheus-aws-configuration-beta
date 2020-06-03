@@ -358,7 +358,7 @@ jobs:
             type: docker-image
             source:
               repository: ruby
-              tag: 2.5.5
+              tag: 2.6.6
           inputs:
             - name: cf-app-discovery-git
               path: repo
@@ -369,11 +369,6 @@ jobs:
             - -c
             - |
               apt-get update
-              # Old versions of the ruby docker set this envvar which
-              # messes things up it was fixed in
-              # docker-library/ruby#255 so we can remove this `unset`
-              # line when we upgrade to ruby 2.6
-              unset BUNDLER_VERSION
               gem install bundler -v 2.0.1
               bundle install --without development
               bundle exec rake
