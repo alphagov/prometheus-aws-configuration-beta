@@ -2,7 +2,7 @@ groups:
 - name: GOVUK
   rules:
   - alert: GOVUK_CORONAVIRUS_SERVICES_RequestsExcess5xx
-    expr: sum by(app) (rate(requests{org="govuk_development", space="production", status_range="5xx"}[5m])) / sum by(app) (rate(requests{org="govuk_development", space="production"}[5m])) >= 0.1
+    expr: sum by(app) (rate(requests{org="govuk_development", space="production", status_range="5xx"}[5m])) / sum by(app) (rate(requests{org="govuk_development", space="production"}[5m])) >= 0.01
     for: 2m
     labels:
       product: "govuk-coronavirus-services"
