@@ -22,27 +22,6 @@ data "aws_ami" "ecs_optimized" {
   owners = ["amazon"]
 }
 
-data "aws_ami" "ubuntu_bionic" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = [local.canonical_account_id]
-}
-
 data "aws_ami" "ubuntu_focal" {
   most_recent = true
 
@@ -68,10 +47,6 @@ data "aws_ami" "ubuntu_focal" {
 
 output "ecs_optimized_ami_id" {
   value = data.aws_ami.ecs_optimized.id
-}
-
-output "ubuntu_bionic_ami_id" {
-  value = data.aws_ami.ubuntu_bionic.id
 }
 
 output "ubuntu_focal_ami_id" {

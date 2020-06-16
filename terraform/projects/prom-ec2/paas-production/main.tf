@@ -71,7 +71,7 @@ module "ami" {
 module "prometheus" {
   source = "../../../modules/prom-ec2/prometheus"
 
-  ami_id = module.ami.ubuntu_bionic_ami_id
+  ami_id = module.ami.ubuntu_focal_ami_id
 
   target_vpc = data.terraform_remote_state.infra_networking.outputs.vpc_id
   enable_ssh = false
