@@ -2,7 +2,7 @@ groups:
 - name: GOVUK
   rules:
   - alert: GOVUK_CORONAVIRUS_SERVICES_RequestsExcess5xx
-    expr: sum by(app) (rate(requests{org="govuk_development", space="production", status_range="5xx"}[5m])) / sum by(app) (rate(requests{org="govuk_development", space="production"}[5m])) >= 0.01
+    expr: sum by(app) (rate(requests{org="govuk_development", app=~"govuk-coronavirus-.*", space="production", status_range="5xx"}[5m])) / sum by(app) (rate(requests{org="govuk_development", space="production"}[5m])) >= 0.01
     for: 2m
     labels:
       product: "govuk-coronavirus-services"
@@ -42,7 +42,7 @@ groups:
         severity: "warning"
   - alert: GOVUK_CORONAVIRUS_SERVICES_MailersQueueLatency
     # We alert if it takes over 30 minutes for an email or SMS to go out.
-    expr: sum by (job) (increase( sidekiq_mailers_queue_latency{org="govuk_development", space="production"}[5m] ) ) > 1800
+    expr: sum by (job) (increase( sidekiq_mailers_queue_latency{org="govuk_development", app=~"govuk-coronavirus-.*", space="production"}[5m] ) ) > 1800
     for: 5m
     labels:
         product: "govuk-coronavirus-services"
