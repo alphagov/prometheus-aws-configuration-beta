@@ -84,6 +84,7 @@ module "prometheus" {
 
   prometheus_htpasswd          = data.pass_password.prometheus_htpasswd.password
   prometheus_target_group_arns = data.terraform_remote_state.app_ecs_albs.outputs.prometheus_target_group_arns
+  data_volume_size             = 100
 }
 
 module "paas-config" {
