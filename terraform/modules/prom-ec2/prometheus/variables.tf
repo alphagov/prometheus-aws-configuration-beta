@@ -7,7 +7,7 @@ variable "device_mount_path" {
 
 variable "data_volume_size" {
   description = "The size of the volume that will contain the prometheus data"
-  default     = 50
+  default     = 250
 }
 
 variable "availability_zones" {
