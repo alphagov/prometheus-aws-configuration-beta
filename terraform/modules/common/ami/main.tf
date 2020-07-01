@@ -43,6 +43,51 @@ data "aws_ami" "ubuntu_focal" {
   owners = [local.canonical_account_id]
 }
 
+# 2020-07-01 focal arm64 has a broken snapd installation, so we can't
+# get ssm agent and other things
+# https://bugs.launchpad.net/ubuntu/+source/snapd/+bug/1881350
+data "aws_ami" "ubuntu_focal_arm" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["arm64"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = [local.canonical_account_id]
+}
+
+data "aws_ami" "ubuntu_groovy_daily_arm" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images-testing/hvm-ssd/ubuntu-groovy-daily-arm64-server-*"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["arm64"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = [local.canonical_account_id]
+}
+
 ## Outputs
 
 output "ecs_optimized_ami_id" {
@@ -51,5 +96,13 @@ output "ecs_optimized_ami_id" {
 
 output "ubuntu_focal_ami_id" {
   value = data.aws_ami.ubuntu_focal.id
+}
+
+output "ubuntu_focal_arm_ami_id" {
+  value = data.aws_ami.ubuntu_focal_arm.id
+}
+
+output "ubuntu_groovy_arm_ami_id" {
+  value = data.aws_ami.ubuntu_groovy_daily_arm.id
 }
 

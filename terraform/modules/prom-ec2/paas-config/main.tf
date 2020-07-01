@@ -7,7 +7,7 @@ data "template_file" "prometheus_config_template" {
 }
 
 resource "aws_route53_record" "prom_ec2_a_record" {
-  count = 3
+  count = length(var.prom_private_ips)
 
   zone_id = var.private_zone_id
   name    = "prom-ec2-${count.index + 1}"
