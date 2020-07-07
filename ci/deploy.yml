@@ -54,7 +54,7 @@ resources:
       branch: master
       paths:
         - observe
-  - name: service-broker-app-staging
+  - name: service-broker-ireland-staging
     type: cf
     source:
       api: https://api.cloud.service.gov.uk
@@ -62,12 +62,20 @@ resources:
       password: ((cf_password))
       organization: gds-tech-ops
       space: prometheus-staging
-  - name: service-broker-app-production
+  - name: service-broker-ireland-production
     type: cf
     source:
       api: https://api.cloud.service.gov.uk
       username: ((cf_user))
       password: ((cf_password))
+      organization: gds-tech-ops
+      space: prometheus-production
+  - name: service-broker-london-production
+    type: cf
+    source:
+      api: https://api.london.cloud.service.gov.uk
+      username: ((cf_london_user))
+      password: ((cf_london_password))
       organization: gds-tech-ops
       space: prometheus-production
 
@@ -386,21 +394,30 @@ jobs:
               gem install bundler -v 2.0.1
               bundle install --without development
               bundle exec rake
-  - name: deploy-service-broker-staging
+  - name: deploy-service-broker-ireland-staging
     plan:
       - get: cf-app-discovery-git
         trigger: true
         passed: [ run-service-broker-tests ]
-      - put: service-broker-app-staging
+      - put: service-broker-ireland-staging
         params:
-          manifest: cf-app-discovery-git/manifest-staging.yml
+          manifest: cf-app-discovery-git/manifest-ireland-staging.yml
           show_app_log: true
-  - name: deploy-service-broker-production
+  - name: deploy-service-broker-ireland-production
     plan:
       - get: cf-app-discovery-git
         trigger: true
-        passed: [ deploy-service-broker-staging ]
-      - put: service-broker-app-production
+        passed: [ deploy-service-broker-ireland-staging ]
+      - put: service-broker-ireland-production
         params:
-          manifest: cf-app-discovery-git/manifest-production.yml
+          manifest: cf-app-discovery-git/manifest-ireland-production.yml
+          show_app_log: true
+  - name: deploy-service-broker-london-production
+    plan:
+      - get: cf-app-discovery-git
+        trigger: true
+        passed: [ deploy-service-broker-ireland-staging ]
+      - put: service-broker-london-production
+        params:
+          manifest: cf-app-discovery-git/manifest-london-production.yml
           show_app_log: true
