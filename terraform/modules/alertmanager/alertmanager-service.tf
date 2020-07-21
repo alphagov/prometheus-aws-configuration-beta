@@ -134,6 +134,10 @@ data "pass_password" "verify_p2_pagerduty_key" {
   path = "pagerduty/integration-keys/verify-p2"
 }
 
+data "pass_password" "dcs_p2_pagerduty_key" {
+  path = "pagerduty/integration-keys/dcs-p2"
+}
+
 data "pass_password" "slack_api_url" {
   path = "slack-api-url"
 }
@@ -175,6 +179,7 @@ data "template_file" "alertmanager_config_file" {
     govuk_pagerduty_key     = data.pass_password.govuk_pagerduty_key.password
     verify_p1_pagerduty_key = data.pass_password.verify_p1_pagerduty_key.password
     verify_p2_pagerduty_key = data.pass_password.verify_p2_pagerduty_key.password
+    dcs_p2_pagerduty_key    = data.pass_password.dcs_p2_pagerduty_key.password
     slack_api_url           = data.pass_password.slack_api_url.password
     registers_zendesk       = data.pass_password.registers_zendesk.password
     smtp_from               = "alerts@${data.terraform_remote_state.infra_networking.outputs.public_subdomain}"

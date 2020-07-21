@@ -67,6 +67,10 @@ route:
     - match_re:
         namespace: verify-doc-checking-prod|verify-dcs-integration
       receiver: dcs-slack
+    - match:
+        namespace: verify-doc-checking-prod
+        severity: p2
+      receiver: "dcs-p2"
     - match_re:
         namespace: verify-proxy-node-.*|verify-metadata-.*|verify-connector-.*
       receiver: eidas-slack
@@ -221,6 +225,9 @@ receivers:
   slack_configs:
     - <<: *gsp-slack-config
       channel: '#verify-dcs-gsp-alerts'
+- name: "dcs-p2"
+  pagerduty_configs:
+    - service_key: "${dcs_p2_pagerduty_key}"
 - name: "verify-p1"
   pagerduty_configs:
     - service_key: "${verify_p1_pagerduty_key}"
