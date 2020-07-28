@@ -3,6 +3,8 @@ data "template_file" "prometheus_config_template" {
 
   vars = {
     environment = var.environment
+
+    dm_elasticsearch_metrics_password = var.dm_elasticsearch_metrics_password
   }
 }
 

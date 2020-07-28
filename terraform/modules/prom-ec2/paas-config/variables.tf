@@ -8,3 +8,7 @@ variable "prom_private_ips" {
   type = list(string)
 }
 
+variable "dm_elasticsearch_metrics_password" {
+  default     = ""
+  description = "Password for PaaS's Elasticsearch metric exporter for Digital Marketplace"
+}
