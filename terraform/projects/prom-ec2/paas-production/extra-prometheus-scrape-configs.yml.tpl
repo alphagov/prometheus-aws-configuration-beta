@@ -9,7 +9,7 @@
     - "{job='aiven'}"
   static_configs:
   - targets:
-    - digitalmarketplace-es-metrics.london.cloudapps.digital
+    - digitalmarketplace-es-metrics.cloudapps.digital
   metric_relabel_configs:
   # Prepend `paas_es_` so the metrics are easier to find
   - action: replace
