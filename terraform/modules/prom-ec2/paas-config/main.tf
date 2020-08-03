@@ -9,7 +9,7 @@ data "template_file" "prometheus_config_template" {
 locals {
   prometheus_config = yamldecode(data.template_file.prometheus_config_template.rendered)
   final_scrape_configs = concat(local.prometheus_config["scrape_configs"], var.extra_scrape_configs)
-  final_prometheus_config = merge(local.prometheus_config, {"scrape_configs" = final_scrape_configs})
+  final_prometheus_config = merge(local.prometheus_config, {"scrape_configs" = local.final_scrape_configs})
   final_prometheus_config_yaml = yamlencode(final_prometheus_config)
 }
 
