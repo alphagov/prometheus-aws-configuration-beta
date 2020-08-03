@@ -107,7 +107,9 @@ module "paas-config" {
   private_zone_id   = data.terraform_remote_state.infra_networking.outputs.private_zone_id
   private_subdomain = data.terraform_remote_state.infra_networking.outputs.private_subdomain
 
-  extra_scrape_configs = yamldecode(template_file.extra_prometheus_scrape_configs_yaml.rendered)
+  extra_scrape_configs = yamldecode(templatefile("${path.module}/extra-prometheus-scrape-configs.yml.tpl", {
+    dm_elasticsearch_metrics_password = data.pass_password.dm_elasticsearch_metrics_password.password
+  }))
 }
 
 output "instance_ids" {
