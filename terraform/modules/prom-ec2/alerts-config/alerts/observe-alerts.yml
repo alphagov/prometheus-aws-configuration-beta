@@ -51,7 +51,7 @@ groups:
 
   - alert: RE_Observe_No_Paas_Targets
     expr: prometheus_sd_discovered_targets{config=~"paas-(london|ireland)-targets"} == 0
-    for: 10s
+    for: 10m
     labels:
         product: "prometheus"
         severity: "page"
