@@ -8,3 +8,7 @@ variable "prom_private_ips" {
   type = list(string)
 }
 
+variable "extra_scrape_configs" {
+  default     = []
+  description = "List of scrape configs to append to the Prometheus config"
+}

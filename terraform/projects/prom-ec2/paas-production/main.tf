@@ -64,6 +64,10 @@ data "pass_password" "prometheus_htpasswd" {
   path = "prometheus-basic-auth-htpasswd"
 }
 
+data "pass_password" "dm_elasticsearch_metrics_password" {
+  path = "dm-elasticsearch-metrics-password"
+}
+
 module "ami" {
   source = "../../../modules/common/ami"
 }
@@ -102,6 +106,10 @@ module "paas-config" {
   prom_private_ips  = module.prometheus.private_ip_addresses
   private_zone_id   = data.terraform_remote_state.infra_networking.outputs.private_zone_id
   private_subdomain = data.terraform_remote_state.infra_networking.outputs.private_subdomain
+
+  extra_scrape_configs = yamldecode(templatefile("${path.module}/extra-prometheus-scrape-configs.yml.tpl", {
+    dm_elasticsearch_metrics_password = data.pass_password.dm_elasticsearch_metrics_password.password
+  }))
 }
 
 output "instance_ids" {

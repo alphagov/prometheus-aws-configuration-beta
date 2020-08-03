@@ -6,6 +6,13 @@ data "template_file" "prometheus_config_template" {
   }
 }
 
+locals {
+  prometheus_config = yamldecode(data.template_file.prometheus_config_template.rendered)
+  final_scrape_configs = concat(local.prometheus_config["scrape_configs"], var.extra_scrape_configs)
+  final_prometheus_config = merge(local.prometheus_config, {"scrape_configs" = local.final_scrape_configs})
+  final_prometheus_config_yaml = yamlencode(local.final_prometheus_config)
+}
+
 resource "aws_route53_record" "prom_ec2_a_record" {
   count = 3
 
@@ -20,8 +27,8 @@ resource "aws_route53_record" "prom_ec2_a_record" {
 resource "aws_s3_bucket_object" "prometheus_config" {
   bucket  = var.prometheus_config_bucket
   key     = "prometheus/prometheus.yml"
-  content = data.template_file.prometheus_config_template.rendered
-  etag    = md5(data.template_file.prometheus_config_template.rendered)
+  content = local.final_prometheus_config_yaml
+  etag    = md5(local.final_prometheus_config_yaml)
 }
 
 resource "aws_s3_bucket_object" "alerts-config" {
