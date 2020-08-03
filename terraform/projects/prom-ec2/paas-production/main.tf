@@ -68,14 +68,6 @@ data "pass_password" "dm_elasticsearch_metrics_password" {
   path = "dm-elasticsearch-metrics-password"
 }
 
-data "template_file" "extra_prometheus_scrape_configs_yaml" {
-  template = file("${path.module}/extra-prometheus-scrape-configs.yml.tpl")
-
-  vars = {
-    dm_elasticsearch_metrics_password = data.pass_password.dm_elasticsearch_metrics_password.password
-  }
-}
-
 module "ami" {
   source = "../../../modules/common/ami"
 }
