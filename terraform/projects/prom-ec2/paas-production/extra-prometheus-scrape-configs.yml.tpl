@@ -16,7 +16,7 @@
     source_labels: [__name__]
     target_label: __name__
     regex: (.*)
-    replacement: paas_es_${1}
+    replacement: paas_es_$${1}
   # Dummy entry to be used below
   - &store_this_metric
     action: replace
