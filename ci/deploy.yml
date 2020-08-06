@@ -39,6 +39,7 @@ resources:
       branch: master
       paths:
         - terraform/modules/prom-ec2
+        - terraform/modules/app-ecs-albs
         - terraform/projects/prom-ec2
   - name: cf-app-discovery-git
     type: git
