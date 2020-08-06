@@ -1,8 +1,8 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 ENV TF_VERSION 0.12.19
 
-LABEL ubuntu="18.04"
+LABEL ubuntu="20.04"
 LABEL terraform="$TF_VERSION"
 
 ENV TZ=Europe/London
@@ -28,7 +28,7 @@ RUN curl https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_V
 	sha256sum -c terraform.sha && unzip terraform.zip && mv terraform /usr/bin/terraform                    && \
 	rm terraform.zip && rm terraform.sha
 
-RUN go get -v github.com/camptocamp/terraform-provider-pass && \
+RUN GO111MODULE=on go get -v github.com/camptocamp/terraform-provider-pass && \
 	mkdir -p ~/.terraform.d/plugins/linux_amd64 && \
 	mv ~/go/bin/terraform-provider-pass ~/.terraform.d/plugins/linux_amd64/
 
