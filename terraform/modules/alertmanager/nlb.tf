@@ -30,18 +30,28 @@ resource "aws_acm_certificate" "alertmanager_cert" {
 }
 
 resource "aws_route53_record" "alertmanager_cert_validation" {
-  count      = 1 + length(data.aws_availability_zones.available.names)
-  name       = aws_acm_certificate.alertmanager_cert.domain_validation_options[count.index]["resource_record_name"]
-  type       = aws_acm_certificate.alertmanager_cert.domain_validation_options[count.index]["resource_record_type"]
-  zone_id    = local.zone_id
-  records    = [aws_acm_certificate.alertmanager_cert.domain_validation_options[count.index]["resource_record_value"]]
-  ttl        = 60
+  for_each = {
+    for dvo in aws_acm_certificate.alertmanager_cert.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+
+  name    = each.value.name
+  records = [each.value.record]
+  type    = each.value.type
+  zone_id = local.zone_id
+  ttl     = 60
+
+  allow_overwrite = true
+
   depends_on = [aws_acm_certificate.alertmanager_cert]
 }
 
 resource "aws_acm_certificate_validation" "alertmanager_cert" {
   certificate_arn         = aws_acm_certificate.alertmanager_cert.arn
-  validation_record_fqdns = aws_route53_record.alertmanager_cert_validation.*.fqdn
+  validation_record_fqdns = [for record in aws_route53_record.alertmanager_cert_validation : record.fqdn]
 }
 
 resource "aws_route53_record" "alerts_alias" {
