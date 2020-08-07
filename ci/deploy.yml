@@ -174,7 +174,7 @@ jobs:
         input_mapping: {src: common-git}
         params:
           PROJECT: infra-networking-production
-          DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
+          DEPLOYER_ARN: arn:aws:iam::455214962221:role/autom8-deployer
           GPG_PRIVATE_KEY: ((gpg_private_key))
       - task: apply-infra-security-groups-terraform
         image: task-image
@@ -183,7 +183,7 @@ jobs:
         input_mapping: {src: common-git}
         params:
           PROJECT: infra-security-groups-production
-          DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
+          DEPLOYER_ARN: arn:aws:iam::455214962221:role/autom8-deployer
           GPG_PRIVATE_KEY: ((gpg_private_key))
       - task: apply-app-ecs-elbs-terraform
         image: task-image
@@ -192,7 +192,7 @@ jobs:
         input_mapping: {src: common-git}
         params:
           PROJECT: app-ecs-albs-production
-          DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
+          DEPLOYER_ARN: arn:aws:iam::455214962221:role/autom8-deployer
           GPG_PRIVATE_KEY: ((gpg_private_key))
 
   - name: deploy-prometheus-staging
