@@ -24,6 +24,22 @@ resources:
       branch: master
       paths:
         - ci
+  - name: common-git
+    type: git
+    source:
+      uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
+      branch: master
+      paths:
+        - terraform/modules/app-ecs-albs
+        - terraform/modules/common
+        - terraform/modules/infra-networking
+        - terraform/modules/infra-security-groups
+        - terraform/projects/app-ecs-albs-production
+        - terraform/projects/app-ecs-albs-staging
+        - terraform/projects/infra-networking-production
+        - terraform/projects/infra-networking-staging
+        - terraform/projects/infra-security-groups-production
+        - terraform/projects/infra-security-groups-staging
   - name: alertmanager-git
     type: git
     source:
@@ -93,6 +109,48 @@ jobs:
       params: {build: ci-git/ci/images/task}
       get_params: {skip_download: true}
 
+  - name: deploy-common-staging
+    serial: true
+    plan:
+      - in_parallel:
+        - get: ci-git
+          passed: [configure-pipeline]
+          trigger: true
+        - get: task-image
+          passed: [configure-pipeline]
+          trigger: true
+        - get: common-git
+          trigger: true
+        - get: re-secrets
+          trigger: true
+      - task: apply-infra-networking-terraform
+        image: task-image
+        timeout: 15m
+        file: ci-git/ci/tasks/deploy-project.yml
+        input_mapping: {src: common-git}
+        params:
+          PROJECT: infra-networking-staging
+          DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
+          GPG_PRIVATE_KEY: ((gpg_private_key))
+      - task: apply-infra-security-groups-terraform
+        image: task-image
+        timeout: 15m
+        file: ci-git/ci/tasks/deploy-project.yml
+        input_mapping: {src: common-git}
+        params:
+          PROJECT: infra-security-groups-staging
+          DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
+          GPG_PRIVATE_KEY: ((gpg_private_key))
+      - task: apply-app-ecs-elbs-terraform
+        image: task-image
+        timeout: 15m
+        file: ci-git/ci/tasks/deploy-project.yml
+        input_mapping: {src: common-git}
+        params:
+          PROJECT: app-ecs-albs-staging
+          DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
+          GPG_PRIVATE_KEY: ((gpg_private_key))
+
   - name: deploy-prometheus-staging
     serial: true
     plan:
@@ -102,10 +160,13 @@ jobs:
         - get: re-secrets
           trigger: true
         - get: ci-git
-          passed: [configure-pipeline]
+          passed: [deploy-common-staging]
           trigger: true
         - get: task-image
-          passed: [configure-pipeline]
+          passed: [deploy-common-staging]
+          trigger: true
+        - get: common-git
+          passed: [deploy-common-staging]
           trigger: true
       - task: apply-terraform
         image: task-image
@@ -190,10 +251,13 @@ jobs:
         - get: re-secrets
           trigger: true
         - get: ci-git
-          passed: [configure-pipeline]
+          passed: [deploy-common-staging]
           trigger: true
         - get: task-image
-          passed: [configure-pipeline]
+          passed: [deploy-common-staging]
+          trigger: true
+        - get: common-git
+          passed: [deploy-common-staging]
           trigger: true
       - task: apply-terraform
         image: task-image
