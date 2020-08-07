@@ -151,6 +151,50 @@ jobs:
           DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
           GPG_PRIVATE_KEY: ((gpg_private_key))
 
+  - name: deploy-common-production
+    serial: true
+    plan:
+      - in_parallel:
+        - get: ci-git
+          passed: [deploy-prometheus-staging, deploy-alertmanager-staging]
+          trigger: true
+        - get: task-image
+          passed: [deploy-prometheus-staging, deploy-alertmanager-staging]
+          trigger: true
+        - get: common-git
+          passed: [deploy-prometheus-staging, deploy-alertmanager-staging]
+          trigger: true
+        - get: re-secrets
+          passed: [deploy-prometheus-staging, deploy-alertmanager-staging]
+          trigger: true
+      - task: apply-infra-networking-terraform
+        image: task-image
+        timeout: 15m
+        file: ci-git/ci/tasks/deploy-project.yml
+        input_mapping: {src: common-git}
+        params:
+          PROJECT: infra-networking-production
+          DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
+          GPG_PRIVATE_KEY: ((gpg_private_key))
+      - task: apply-infra-security-groups-terraform
+        image: task-image
+        timeout: 15m
+        file: ci-git/ci/tasks/deploy-project.yml
+        input_mapping: {src: common-git}
+        params:
+          PROJECT: infra-security-groups-production
+          DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
+          GPG_PRIVATE_KEY: ((gpg_private_key))
+      - task: apply-app-ecs-elbs-terraform
+        image: task-image
+        timeout: 15m
+        file: ci-git/ci/tasks/deploy-project.yml
+        input_mapping: {src: common-git}
+        params:
+          PROJECT: app-ecs-albs-production
+          DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
+          GPG_PRIVATE_KEY: ((gpg_private_key))
+
   - name: deploy-prometheus-staging
     serial: true
     plan:
@@ -158,6 +202,7 @@ jobs:
         - get: prometheus-git
           trigger: true
         - get: re-secrets
+          passed: [deploy-common-staging]
           trigger: true
         - get: ci-git
           passed: [deploy-common-staging]
@@ -205,13 +250,16 @@ jobs:
           passed: [deploy-prometheus-staging]
           trigger: true
         - get: re-secrets
-          passed: [deploy-prometheus-staging]
+          passed: [deploy-common-production]
           trigger: true
         - get: ci-git
-          passed: [deploy-prometheus-staging]
+          passed: [deploy-common-production]
           trigger: true
         - get: task-image
-          passed: [deploy-prometheus-staging]
+          passed: [deploy-common-production]
+          trigger: true
+        - get: common-git
+          passed: [deploy-common-production]
           trigger: true
       - task: apply-terraform
         image: task-image
@@ -249,6 +297,7 @@ jobs:
         - get: alertmanager-git
           trigger: true
         - get: re-secrets
+          passed: [deploy-common-staging]
           trigger: true
         - get: ci-git
           passed: [deploy-common-staging]
@@ -376,13 +425,16 @@ jobs:
           passed: [deploy-alertmanager-staging]
           trigger: true
         - get: re-secrets
-          passed: [deploy-alertmanager-staging]
+          passed: [deploy-common-production]
           trigger: true
         - get: ci-git
-          passed: [deploy-alertmanager-staging]
+          passed: [deploy-common-production]
           trigger: true
         - get: task-image
-          passed: [deploy-alertmanager-staging]
+          passed: [deploy-common-production]
+        - get: common-git
+          passed: [deploy-common-production]
+          trigger: true
       - task: apply-terraform
         image: task-image
         timeout: 15m
