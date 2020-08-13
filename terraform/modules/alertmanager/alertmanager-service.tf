@@ -102,6 +102,12 @@ resource "aws_ecs_service" "alertmanager_nlb" {
     container_port   = 9093
   }
 
+  load_balancer {
+    target_group_arn = aws_lb_target_group.alertmanager_per_subnet[count.index].arn
+    container_name   = "alertmanager"
+    container_port   = 9093
+  }
+
   network_configuration {
     subnets         = [data.aws_subnet.private_subnets[count.index].id]
     security_groups = [aws_security_group.alertmanager_task.id]
