@@ -124,7 +124,7 @@ resource "aws_ecs_service" "alertmanager_alb" {
   launch_type     = "FARGATE"
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.alertmanager.arn
+    target_group_arn = aws_lb_target_group.alertmanager_all.arn
     container_name   = "alertmanager"
     container_port   = 9093
   }
