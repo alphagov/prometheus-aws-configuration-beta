@@ -62,7 +62,7 @@ resource "aws_lb_listener" "alertmanager_listener_alb_https" {
 resource "aws_lb_listener_rule" "alertmanager_listener_rule_per_az" {
   count = length(local.availability_zones)
 
-  listener_arn = aws_lb_listener.alertmanager_listener_https.arn
+  listener_arn = aws_lb_listener.alertmanager_alb_listener_https.arn
   priority     = 100 + count.index
 
   action {
