@@ -81,16 +81,19 @@ resource "aws_lb_target_group" "alertmanager_per_az" {
   for_each             = toset(local.availability_zones)
   name                 = "${var.environment}-alertmanager-${each.key}"
   port                 = 9093
-  protocol             = "TCP"
+  protocol             = "HTTP"
   vpc_id               = local.vpc_id
   deregistration_delay = 30
   target_type          = "ip"
 
   health_check {
     interval            = 10
-    protocol            = "TCP"
+    path                = "/"
+    matcher             = "200"
+    protocol            = "HTTP"
     healthy_threshold   = 2
     unhealthy_threshold = 2
+    timeout             = "5"
   }
 }
 
