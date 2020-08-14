@@ -55,7 +55,7 @@ resource "aws_lb_listener" "alertmanager_listener_alb_https" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.alertmanager.arn
+    target_group_arn = aws_lb_target_group.alertmanager_all.arn
   }
 }
 
@@ -80,6 +80,25 @@ resource "aws_lb_listener_rule" "alertmanager_listener_rule_per_az" {
 resource "aws_lb_target_group" "alertmanager_per_az" {
   for_each             = toset(local.availability_zones)
   name                 = "${var.environment}-alertmanager-${each.key}"
+  port                 = 9093
+  protocol             = "HTTP"
+  vpc_id               = local.vpc_id
+  deregistration_delay = 30
+  target_type          = "ip"
+
+  health_check {
+    interval            = 10
+    path                = "/"
+    matcher             = "200"
+    protocol            = "HTTP"
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = "5"
+  }
+}
+
+resource "aws_lb_target_group" "alertmanager_all" {
+  name                 = "${var.environment}-alertmanager-all"
   port                 = 9093
   protocol             = "HTTP"
   vpc_id               = local.vpc_id
