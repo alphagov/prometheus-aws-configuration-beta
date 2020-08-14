@@ -112,6 +112,39 @@ resource "aws_ecs_service" "alertmanager_nlb" {
   }
 }
 
+resource "aws_ecs_service" "alertmanager_alb" {
+  for_each = {
+    for _, subnet in data.aws_subnet.private_subnets :
+    subnet.id => subnet.availability_zone
+  }
+  name            = "${var.environment}-alertmanager-alb-${each.value}"
+  cluster         = "${var.environment}-ecs-monitoring"
+  task_definition = aws_ecs_task_definition.alertmanager_nlb.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.alertmanager.arn
+    container_name   = "alertmanager"
+    container_port   = 9093
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.alertmanager_per_az[each.value].arn
+    container_name   = "alertmanager"
+    container_port   = 9093
+  }
+
+  network_configuration {
+    subnets         = [each.key]
+    security_groups = [aws_security_group.alertmanager_task.id]
+  }
+
+  service_registries {
+    registry_arn = aws_service_discovery_service.alertmanager.arn
+  }
+}
+
 #### alertmanager
 
 data "pass_password" "observe_pagerduty_key" {
