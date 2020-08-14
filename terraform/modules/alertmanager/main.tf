@@ -54,9 +54,10 @@ locals {
     Environment = var.environment
     Service     = "alertmanager"
   }
-  vpc_id    = data.terraform_remote_state.infra_networking.outputs.vpc_id
-  zone_id   = data.terraform_remote_state.infra_networking.outputs.public_zone_id
-  subdomain = replace(data.aws_route53_zone.public_zone.name, "/\\.$/", "")
+  vpc_id             = data.terraform_remote_state.infra_networking.outputs.vpc_id
+  zone_id            = data.terraform_remote_state.infra_networking.outputs.public_zone_id
+  subdomain          = replace(data.aws_route53_zone.public_zone.name, "/\\.$/", "")
+  availability_zones = data.aws_subnet.public_subnets.*.availability_zone
 }
 
 # Resources
