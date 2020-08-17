@@ -66,19 +66,6 @@ resource "aws_route53_record" "alerts_alias" {
   }
 }
 
-resource "aws_route53_record" "alerts_az_alias" {
-  count   = length(data.aws_availability_zones.available.names)
-  zone_id = local.zone_id
-  name    = "alerts-${data.aws_availability_zones.available.names[count.index]}"
-  type    = "A"
-
-  alias {
-    name                   = "${data.aws_availability_zones.available.names[count.index]}.${aws_lb.alertmanager_nlb.dns_name}"
-    zone_id                = aws_lb.alertmanager_nlb.zone_id
-    evaluate_target_health = false
-  }
-}
-
 resource "aws_lb" "alertmanager_nlb" {
   name               = "${var.environment}-alertmanager-nlb"
   internal           = false
