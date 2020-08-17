@@ -62,7 +62,6 @@ resource "aws_lb_listener_rule" "alertmanager_listener_rule_per_az" {
   for_each = toset(local.availability_zones)
 
   listener_arn = aws_lb_listener.alertmanager_listener_alb_https.arn
-  priority     = 100 + count.index
 
   action {
     type             = "forward"
