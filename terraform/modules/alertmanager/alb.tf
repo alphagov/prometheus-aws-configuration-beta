@@ -59,19 +59,19 @@ resource "aws_lb_listener" "alertmanager_listener_alb_https" {
 }
 
 resource "aws_lb_listener_rule" "alertmanager_listener_rule_per_az" {
-  count = length(local.availability_zones)
+  for_each = toset(local.availability_zones)
 
   listener_arn = aws_lb_listener.alertmanager_listener_alb_https.arn
   priority     = 100 + count.index
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.alertmanager_per_az[local.availability_zones[count.index]].arn
+    target_group_arn = aws_lb_target_group.alertmanager_per_az[each.key].arn
   }
 
   condition {
     host_header {
-      values = ["alerts-${count.index + 1}.*"]
+      values = ["alerts-${each.key}.*"]
     }
   }
 }
@@ -129,11 +129,11 @@ resource "aws_lb_target_group" "alertmanager_all" {
   )
 }
 
-resource "aws_route53_record" "alerts_alias_per_az" {
-  count = length(local.availability_zones)
+resource "aws_route53_record" "alerts_az_alias" {
+  for_each = toset(local.availability_zones)
 
   zone_id = local.zone_id
-  name    = "alerts-${count.index + 1}"
+  name    = "alerts-${each.key}"
   type    = "A"
 
   alias {
