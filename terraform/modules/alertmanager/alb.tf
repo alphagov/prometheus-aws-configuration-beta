@@ -24,8 +24,7 @@ resource "aws_lb" "alertmanager_alb" {
   tags = merge(
     local.default_tags,
     {
-      Name    = "${var.environment}-alertmanager-alb"
-      Service = "alertmanager"
+      Name = "${var.environment}-alertmanager-alb"
     },
   )
 }
@@ -79,7 +78,7 @@ resource "aws_lb_listener_rule" "alertmanager_listener_rule_per_az" {
 
 resource "aws_lb_target_group" "alertmanager_per_az" {
   for_each             = toset(local.availability_zones)
-  name                 = "${var.environment}-alertmanager-${each.key}"
+  name                 = "${var.environment}-alerts-${each.key}"
   port                 = 9093
   protocol             = "HTTP"
   vpc_id               = local.vpc_id
@@ -95,10 +94,17 @@ resource "aws_lb_target_group" "alertmanager_per_az" {
     unhealthy_threshold = 2
     timeout             = "5"
   }
+
+  tags = merge(
+    local.default_tags,
+    {
+      Name = "${var.environment}-alertmanager-${each.key}"
+    },
+  )
 }
 
 resource "aws_lb_target_group" "alertmanager_all" {
-  name                 = "${var.environment}-alertmanager-all"
+  name                 = "${var.environment}-alerts-all"
   port                 = 9093
   protocol             = "HTTP"
   vpc_id               = local.vpc_id
@@ -114,6 +120,13 @@ resource "aws_lb_target_group" "alertmanager_all" {
     unhealthy_threshold = 2
     timeout             = "5"
   }
+
+  tags = merge(
+    local.default_tags,
+    {
+      Name = "${var.environment}-alertmanager-all"
+    },
+  )
 }
 
 resource "aws_route53_record" "alerts_alias_per_az" {
