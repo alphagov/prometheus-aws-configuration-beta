@@ -128,6 +128,18 @@ resource "aws_lb_target_group" "alertmanager_all" {
   )
 }
 
+resource "aws_route53_record" "alerts_alias" {
+  zone_id = local.zone_id
+  name    = "alerts"
+  type    = "A"
+
+  alias {
+    name                   = aws_lb.alertmanager_alb.dns_name
+    zone_id                = aws_lb.alertmanager_alb.zone_id
+    evaluate_target_health = false
+  }
+}
+
 resource "aws_route53_record" "alerts_az_alias" {
   for_each = toset(local.availability_zones)
 
