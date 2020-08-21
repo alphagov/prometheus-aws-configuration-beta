@@ -323,8 +323,8 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: gdsre/aws-ruby
-              tag: 2.6.1-3.0.1
+              repository: govsvc/aws-ruby
+              tag: 2.6.1
           params:
             DEPLOYMENT: staging
             ACCOUNT_ID: '027317422673'
@@ -450,8 +450,8 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: gdsre/aws-ruby
-              tag: 2.6.1-3.0.1
+              repository: govsvc/aws-ruby
+              tag: 2.6.1
           params:
             DEPLOYMENT: staging
             ACCOUNT_ID: '027317422673'
