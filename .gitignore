@@ -11,6 +11,9 @@
 # os files 
 .DS_Store
 
+# nix
+local.nix
+
 *.plan
 
 /tools/prometheus-configs/**/data
