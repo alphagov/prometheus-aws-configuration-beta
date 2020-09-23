@@ -95,6 +95,17 @@ groups:
         message: "One of the {{ $labels.job }} targets has been down for 24 hours"
         runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-gds-paas-users.html#re-observe-target-down"
 
+  - alert: RE_Observe_No_Successful_Updates
+    expr: sum(increase(observe_broker_http_requests_total{code="200", path="/update-targets", method="post"}[30m])) by (region) == 0
+    for: 12h
+    labels:
+        product: "prometheus"
+        severity: "ticket"
+    annotations:
+        summary: "No recent target updates in region '{{ $labels.region }}'"
+        message: "Target update in region '{{ $labels.region }}' hasn't completed successfully in at least 12h"
+        runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-gds-paas-users.html#re-observe-no-successful-updates"
+
   - alert: AlwaysAlert
     annotations:
       message: |
