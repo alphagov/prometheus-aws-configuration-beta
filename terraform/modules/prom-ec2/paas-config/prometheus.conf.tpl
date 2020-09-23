@@ -34,6 +34,9 @@ scrape_configs:
     file_sd_configs:
       - files: ['/etc/prometheus/ireland-targets/*.json']
         refresh_interval: 30s
+    relabel_configs:
+      - target_label: region
+        replacement: ireland
   - job_name: paas-london-targets
     scheme: http
     proxy_url: 'http://localhost:8080'
