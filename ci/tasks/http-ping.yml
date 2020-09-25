@@ -12,8 +12,11 @@ run:
     - -euxc
     - |
       DOMAIN=$(echo "${URL}" | awk -F/ '{print $3}')
-      getent ahosts ${DOMAIN} | cut -d ' ' -f1 | sort | uniq | xargs -n1 -I {} curl \
+      getent ahosts ${DOMAIN} | cut -d ' ' -f1 | sort | uniq | tee /dev/stderr | xargs -n1 -I {} curl \
         --resolve ${DOMAIN}:443:{} \
         --silent \
         --fail \
+        --write-out $'{} %{http_code} %{time_total}s\n' \
+        --output /dev/null \
         --max-time 5 "${URL}"
+
