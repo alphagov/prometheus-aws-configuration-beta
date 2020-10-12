@@ -25,9 +25,6 @@ route:
   - receiver: "dgu-pagerduty"
     match:
       product: "data-gov-uk"
-  - receiver: "govuk-pagerduty"
-    match:
-      product: "govuk-coronavirus-services"
   - receiver: "registers-zendesk"
     repeat_interval: 7d
     match:
