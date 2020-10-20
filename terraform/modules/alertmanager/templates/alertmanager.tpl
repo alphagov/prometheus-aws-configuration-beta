@@ -17,7 +17,7 @@ route:
     - product
     - deployment
   routes:
-  - receiver: "re-observe-ticket-alert"
+  - receiver: "autom8-tickets"
     repeat_interval: 7d
     match:
       product: "prometheus"
@@ -39,7 +39,7 @@ route:
     match:
       product: "prometheus"
       severity: "constant"
-  - receiver: "autom8-alerts-slack"
+  - receiver: "autom8-tickets"
     match:
       layer: "infra"
       severity: "ticket"
@@ -110,9 +110,6 @@ receivers:
 - name: "re-observe-pagerduty"
   pagerduty_configs:
     - service_key: "${observe_pagerduty_key}"
-- name: "re-observe-ticket-alert"
-  email_configs:
-  - to: "${autom8_recipient_email}"
 - name: "dgu-pagerduty"
   pagerduty_configs:
     - service_key: "${dgu_pagerduty_key}"
@@ -148,7 +145,9 @@ receivers:
     channel: '#verify-2ndline'
     icon_emoji: ':verify-shield:'
     username: alertmanager
-- name: "autom8-alerts-slack"
+- name: "autom8-tickets"
+  email_configs:
+  - to: "${autom8_recipient_email}"
   slack_configs:
   - send_resolved: true
     channel: '#re-autom8-alerts'
