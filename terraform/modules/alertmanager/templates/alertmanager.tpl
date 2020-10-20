@@ -112,7 +112,7 @@ receivers:
     - service_key: "${observe_pagerduty_key}"
 - name: "re-observe-ticket-alert"
   email_configs:
-  - to: "${ticket_recipient_email}"
+  - to: "${autom8_recipient_email}"
 - name: "dgu-pagerduty"
   pagerduty_configs:
     - service_key: "${dgu_pagerduty_key}"

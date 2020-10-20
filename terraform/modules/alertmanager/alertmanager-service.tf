@@ -155,8 +155,9 @@ data "pass_password" "registers_zendesk" {
   path = "receivers/registers/zendesk"
 }
 
-data "pass_password" "observe_zendesk" {
-  path = "receivers/observe/zendesk"
+data "pass_password" "autom8_email" {
+  path = "receivers/autom8/email"
+
 }
 
 data "pass_password" "verify_gsp_cronitor" {
@@ -200,7 +201,7 @@ data "template_file" "alertmanager_config_file" {
     smtp_smarthost              = "email-smtp.${var.aws_region}.amazonaws.com:587"
     smtp_username               = aws_iam_access_key.smtp.id
     smtp_password               = aws_iam_access_key.smtp.ses_smtp_password
-    ticket_recipient_email      = data.pass_password.observe_zendesk.password
+    autom8_recipient_email      = data.pass_password.autom8_email.password
     observe_cronitor            = var.observe_cronitor
     verify_gsp_cronitor         = data.pass_password.verify_gsp_cronitor.password
     verify_joint_cronitor       = data.pass_password.verify_joint_cronitor.password
