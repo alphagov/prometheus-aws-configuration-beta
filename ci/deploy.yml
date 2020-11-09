@@ -323,7 +323,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: govsvc/aws-ruby
+              repository: ghcr.io/alphagov/aws-ruby
               tag: 2.6.1
           params:
             DEPLOYMENT: staging
@@ -450,7 +450,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: govsvc/aws-ruby
+              repository: ghcr.io/alphagov/aws-ruby
               tag: 2.6.1
           params:
             DEPLOYMENT: staging
