@@ -155,6 +155,10 @@ data "pass_password" "registers_zendesk" {
   path = "receivers/registers/zendesk"
 }
 
+data "pass_password" "notify_zendesk" {
+  path = "receivers/notify/zendesk"
+}
+
 data "pass_password" "autom8_email" {
   path = "receivers/autom8/email"
 
@@ -196,6 +200,7 @@ data "template_file" "alertmanager_config_file" {
     dcs_p2_pagerduty_key    = data.pass_password.dcs_p2_pagerduty_key.password
     slack_api_url           = data.pass_password.slack_api_url.password
     registers_zendesk       = data.pass_password.registers_zendesk.password
+    notify_zendesk          = data.pass_password.notify_zendesk.password
     smtp_from               = "alerts@${local.public_subdomain_notrailingdot}"
     # Port as requested by https://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-connect.html
     smtp_smarthost              = "email-smtp.${var.aws_region}.amazonaws.com:587"
