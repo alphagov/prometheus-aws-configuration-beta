@@ -9,16 +9,9 @@ Terraform configuration to manage a Prometheus server running on AWS.
     brew bundle
     tfenv install # this will pick up the version from .terraform-version
 
-### Set up the `terraform-provider-pass` third-party Terraform plugin
+### Allow access to secrets
 
-This acts as middleware between terraform and the reng-pass password store and enables us to pass secrets into terraform.
-
-```shell
-go get github.com/camptocamp/terraform-provider-pass
-GOBIN=~/.terraform.d/plugins/darwin_amd64 go install github.com/camptocamp/terraform-provider-pass
-```
-
-You will also need to clone the re-secrets repo into `~/.password-store/re-secrets`:
+You will need to clone the re-secrets repo into `~/.password-store/re-secrets`:
 
     git clone git@github.com:alphagov/re-secrets.git ~/.password-store/re-secrets
 
