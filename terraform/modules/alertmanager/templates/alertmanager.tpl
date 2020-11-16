@@ -22,11 +22,6 @@ route:
     match:
       product: "prometheus"
       severity: "ticket"
-  - receiver: "notify-tickets"
-    repeat_interval: 7d
-    match:
-      product: "notify"
-      severity: "ticket"
   - receiver: "dgu-pagerduty"
     match:
       product: "data-gov-uk"
@@ -124,9 +119,6 @@ receivers:
 - name: "registers-zendesk"
   email_configs:
   - to: "${registers_zendesk}"
-- name: "notify-tickets"
-  email_configs:
-  - to: "${notify_zendesk}"
 - name: "observe-cronitor"
   webhook_configs:
   - send_resolved: false
