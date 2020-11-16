@@ -4,7 +4,7 @@ locals {
 }
 
 terraform {
-  required_version = "~> 0.12.19"
+  required_version = "~> 0.13.3"
 
   backend "s3" {
     bucket  = "govukobserve-tfstate-prom-enclave-paas-staging"
