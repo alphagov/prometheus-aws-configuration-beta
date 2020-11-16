@@ -31,12 +31,7 @@ terraform {
 }
 
 provider "aws" {
-  version = "~> 2.45"
-  region  = var.aws_region
-}
-
-provider "template" {
-  version = "~> 2.1"
+  region = var.aws_region
 }
 
 provider "pass" {

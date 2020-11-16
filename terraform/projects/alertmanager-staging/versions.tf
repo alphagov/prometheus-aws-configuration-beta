@@ -1,13 +1,16 @@
 terraform {
   required_providers {
     aws = {
-      source = "hashicorp/aws"
+      source  = "hashicorp/aws"
+      version = "2.70"
     }
     pass = {
-      source = "camptocamp/pass"
+      source  = "camptocamp/pass"
+      version = "1.4.0"
     }
     template = {
-      source = "hashicorp/template"
+      source  = "hashicorp/template"
+      version = "2.70"
     }
   }
   required_version = ">= 0.13"
