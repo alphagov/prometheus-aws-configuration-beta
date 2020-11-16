@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 
-ENV TF_VERSION 0.12.19
+ENV TF_VERSION 0.13.3
 
 LABEL ubuntu="20.04"
 LABEL terraform="$TF_VERSION"
