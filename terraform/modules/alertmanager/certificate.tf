@@ -2,10 +2,10 @@
 # https://docs.aws.amazon.com/acm/latest/userguide/managed-renewal.html
 # If this fails, AWS will email associated with the AWS account
 resource "aws_acm_certificate" "alertmanager_cert" {
-  domain_name       = "alerts.${local.subdomain}"
+  domain_name       = "alerts.${data.terraform_remote_state.infra_networking.outputs.public_subdomain}"
   validation_method = "DNS"
 
-  subject_alternative_names = formatlist("alerts-%s.${local.subdomain}", data.aws_availability_zones.available.names)
+  subject_alternative_names = formatlist("alerts-%s.${data.terraform_remote_state.infra_networking.outputs.public_subdomain}", data.aws_availability_zones.available.names)
 
   lifecycle {
     # We can't destroy a certificate that's in use, and we can't stop
