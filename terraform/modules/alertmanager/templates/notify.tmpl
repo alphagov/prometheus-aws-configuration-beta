@@ -1,4 +1,4 @@
-{{ define "zendesk.notify.html" }}
+{{ define "zendesk.notify.text" }}
 
 {{ .Alerts | len }} alert{{ if gt (len .Alerts) 1 }}s{{ end }} for {{ range .GroupLabels.SortedPairs }}
 {{ .Name }}={{ .Value }} 
