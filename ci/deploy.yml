@@ -21,14 +21,14 @@ resources:
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: master
+      branch: main
       paths:
         - ci
   - name: common-git
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: master
+      branch: main
       paths:
         - terraform/modules/app-ecs-albs
         - terraform/modules/common
@@ -44,7 +44,7 @@ resources:
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: master
+      branch: main
       paths:
         - terraform/modules/alertmanager
         - terraform/projects/alertmanager-*
@@ -52,7 +52,7 @@ resources:
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: master
+      branch: main
       paths:
         - terraform/modules/prom-ec2
         - terraform/projects/prom-ec2
