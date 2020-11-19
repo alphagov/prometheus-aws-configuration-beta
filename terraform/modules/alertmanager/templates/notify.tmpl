@@ -1,0 +1,18 @@
+{{ define "zendesk.notify.html" }}
+
+{{ .Alerts | len }} alert{{ if gt (len .Alerts) 1 }}s{{ end }} for {{ range .GroupLabels.SortedPairs }}
+{{ .Name }}={{ .Value }} 
+{{ end }}
+
+[{{ .Alerts.Firing | len }}] Firing
+
+{{ range .Alerts.Firing }}
+Labels
+{{ range .Labels.SortedPairs }}{{ .Name }} = {{ .Value }}<br />{{ end }}
+{{ if gt (len .Annotations) 0 }}<strong>Annotations</strong><br />{{ end }}
+{{ range .Annotations.SortedPairs }}{{ .Name }} = {{ .Value }}<br />{{ end }}
+Source - {{ .GeneratorURL }}
+{{ end }}
+
+Sent by {{ template "__alertmanager" . }} - {{ .ExternalURL }}
+{{ end }}

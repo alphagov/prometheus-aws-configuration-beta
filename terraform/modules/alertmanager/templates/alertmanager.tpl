@@ -9,6 +9,7 @@ global:
 
 templates:
 - '/etc/alertmanager/default.tmpl'
+- '/etc/alertmanager/notify.tmpl'
 
 route:
   receiver: "re-observe-pagerduty"
@@ -127,6 +128,7 @@ receivers:
 - name: "notify-tickets"
   email_configs:
   - to: "${notify_zendesk}"
+  - html: '{{ template "zendesk.notify.html" . }}'
 - name: "observe-cronitor"
   webhook_configs:
   - send_resolved: false
