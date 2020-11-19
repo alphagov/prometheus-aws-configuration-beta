@@ -27,6 +27,11 @@ route:
     match:
       product: "notify"
       severity: "ticket"
+  - receiver: "notify-p2"
+    repeat_interval: 7d
+    match:
+      product: "notify"
+      severity: "p2"
   - receiver: "dgu-pagerduty"
     match:
       product: "data-gov-uk"
@@ -127,6 +132,9 @@ receivers:
 - name: "notify-tickets"
   email_configs:
   - to: "${notify_zendesk}"
+- name: "notify-p2"
+  pagerduty_configs:
+    - service_key: "${notify_p2_pagerduty_key}"
 - name: "observe-cronitor"
   webhook_configs:
   - send_resolved: false
