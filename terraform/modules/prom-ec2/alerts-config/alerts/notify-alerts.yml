@@ -17,5 +17,5 @@ groups:
         product: "notify"
         severity: "page"
     annotations:
-        summary: "{{ $labels.space }}: disk usage for {{ $labels.app }} is over 95% full"
-        message: "{{ $labels.app }} needs to be urgently re-deployed to avoid running out of disk space"
+        summary: "{{ $labels.space }}: disk usage for {{ $labels.app }} is over 95% full. You should redeploy the app to avoid running out of disk space"
+        grafana: "https://grafana-paas.cloudapps.digital/d/_GlGBNbmk/notify-apps?orgId=2&var-space=production&var-app={{ $labels.app }}"
