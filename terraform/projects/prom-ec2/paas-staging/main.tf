@@ -93,9 +93,8 @@ module "paas-config" {
   prometheus_config_bucket = module.prometheus.s3_config_bucket
   alerts_path              = "../../../modules/prom-ec2/alerts-config/alerts/"
 
-  prom_private_ips  = module.prometheus.private_ip_addresses
-  private_zone_id   = data.terraform_remote_state.infra_networking.outputs.private_zone_id
-  private_subdomain = data.terraform_remote_state.infra_networking.outputs.private_subdomain
+  prom_private_ips = module.prometheus.private_ip_addresses
+  private_zone_id  = data.terraform_remote_state.infra_networking.outputs.private_zone_id
 }
 
 output "instance_ids" {
