@@ -99,6 +99,8 @@ resource "aws_ecs_service" "alertmanager_alb" {
   desired_count   = 1
   launch_type     = "FARGATE"
 
+  wait_for_steady_state = true
+
   load_balancer {
     target_group_arn = aws_lb_target_group.alertmanager_all.arn
     container_name   = "alertmanager"
