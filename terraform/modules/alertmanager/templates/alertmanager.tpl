@@ -128,7 +128,7 @@ receivers:
 - name: "notify-tickets"
   email_configs:
   - to: "${notify_zendesk}"
-  - html: '{{ template "zendesk.notify.html" . }}'
+  - html: '{{ template "zendesk.notify.text" . }}'
 - name: "observe-cronitor"
   webhook_configs:
   - send_resolved: false
