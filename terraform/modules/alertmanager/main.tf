@@ -56,7 +56,6 @@ locals {
   }
   vpc_id             = data.terraform_remote_state.infra_networking.outputs.vpc_id
   zone_id            = data.terraform_remote_state.infra_networking.outputs.public_zone_id
-  subdomain          = replace(data.aws_route53_zone.public_zone.name, "/\\.$/", "")
   availability_zones = data.aws_subnet.public_subnets.*.availability_zone
 }
 
@@ -82,10 +81,6 @@ data "terraform_remote_state" "infra_security_groups" {
     key    = "infra-security-groups-modular.tfstate"
     region = var.aws_region
   }
-}
-
-data "aws_route53_zone" "public_zone" {
-  zone_id = local.zone_id
 }
 
 data "aws_availability_zones" "available" {}
