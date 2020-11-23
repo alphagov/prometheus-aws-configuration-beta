@@ -10,3 +10,12 @@ groups:
     annotations:
         message: "{{ $labels.space }}: disk usage for {{ $labels.app }} is over 75% full. You should redeploy the app to avoid running out of disk space"
         grafana: "https://grafana-paas.cloudapps.digital/d/_GlGBNbmk/notify-apps?orgId=2&var-space=production&var-app={{ $labels.app }}"
+  - alert: GOVUK_Notify_Disk_95_percent_full
+    expr: max(disk_utilization{space="production", organisation="govuk-notify", app!~"(.*conduit.*)|(.*exporter)"}) by (app, space) > 95
+    for: 5m
+    labels:
+        product: "notify"
+        severity: "p2"
+    annotations:
+        summary: "{{ $labels.space }}: disk usage for {{ $labels.app }} is over 95% full. You should redeploy the app to avoid running out of disk space"
+        grafana: "https://grafana-paas.cloudapps.digital/d/_GlGBNbmk/notify-apps?orgId=2&var-space=production&var-app={{ $labels.app }}"

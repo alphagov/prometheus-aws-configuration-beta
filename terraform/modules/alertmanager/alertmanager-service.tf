@@ -161,6 +161,10 @@ data "pass_password" "notify_zendesk" {
   path = "receivers/notify/zendesk"
 }
 
+data "pass_password" "notify_p2_pagerduty_key" {
+  path = "receivers/notify/p2_pagerduty"
+}
+
 data "pass_password" "autom8_email" {
   path = "receivers/autom8/email"
 
@@ -199,6 +203,7 @@ data "template_file" "alertmanager_config_file" {
     slack_api_url           = data.pass_password.slack_api_url.password
     registers_zendesk       = data.pass_password.registers_zendesk.password
     notify_zendesk          = data.pass_password.notify_zendesk.password
+    notify_p2_pagerduty_key = data.pass_password.notify_p2_pagerduty_key.password
     smtp_from               = "alerts@${data.terraform_remote_state.infra_networking.outputs.public_subdomain}"
     # Port as requested by https://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-connect.html
     smtp_smarthost              = "email-smtp.${var.aws_region}.amazonaws.com:587"
