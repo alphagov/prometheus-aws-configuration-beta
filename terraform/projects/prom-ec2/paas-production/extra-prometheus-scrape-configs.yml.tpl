@@ -176,4 +176,4 @@
     source_labels: [__name__]
     target_label: __name__
     regex: (.*)
-    replacement: paas_redis_${1}
+    replacement: paas_redis_$${1}
