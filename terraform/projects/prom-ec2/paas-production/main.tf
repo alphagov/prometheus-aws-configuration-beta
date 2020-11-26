@@ -114,6 +114,8 @@ module "paas-config" {
 
   extra_scrape_configs = yamldecode(templatefile("${path.module}/extra-prometheus-scrape-configs.yml.tpl", {
     dm_elasticsearch_metrics_password = data.pass_password.dm_elasticsearch_metrics_password.password
+    dm_paas_metrics_username          = data.pass_password.dm_paas_metrics_username.password
+    dm_paas_metrics_password          = data.pass_password.dm_paas_metrics_password.password
   }))
 }
 
