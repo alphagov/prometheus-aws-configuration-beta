@@ -66,6 +66,14 @@ data "pass_password" "dm_elasticsearch_metrics_password" {
   path = "dm-elasticsearch-metrics-password"
 }
 
+data "pass_password" "dm_paas_metrics_username" {
+  path = "dm-paas-metrics-username"
+}
+
+data "pass_password" "dm_paas_metrics_password " {
+  path = "dm-paas-metrics-password"
+}
+
 module "ami" {
   source = "../../../modules/common/ami"
 }
