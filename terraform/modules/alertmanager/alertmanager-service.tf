@@ -174,10 +174,6 @@ data "pass_password" "verify_gsp_cronitor" {
   path = "cronitor/verify-gsp-url"
 }
 
-data "pass_password" "verify_joint_cronitor" {
-  path = "cronitor/verify-joint-url"
-}
-
 data "pass_password" "verify_staging_cronitor" {
   path = "cronitor/verify-staging-url"
 }
@@ -212,7 +208,6 @@ data "template_file" "alertmanager_config_file" {
     autom8_recipient_email      = data.pass_password.autom8_email.password
     observe_cronitor            = var.observe_cronitor
     verify_gsp_cronitor         = data.pass_password.verify_gsp_cronitor.password
-    verify_joint_cronitor       = data.pass_password.verify_joint_cronitor.password
     verify_staging_cronitor     = data.pass_password.verify_staging_cronitor.password
     verify_integration_cronitor = data.pass_password.verify_integration_cronitor.password
     verify_prod_cronitor        = data.pass_password.verify_prod_cronitor.password
