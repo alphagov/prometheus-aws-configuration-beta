@@ -158,3 +158,22 @@
   # Drop the temporary label
   - regex: ^__store_this__$
     action: labeldrop
+- job_name: paas_redis_metrics_for_dm
+  scheme: https
+  basic_auth:
+    username: ${dm_paas_metrics_username}
+    password: ${dm_paas_metrics_password}
+  static_configs:
+  - targets:
+    - redis.metrics.cloud.service.gov.uk
+  metrics_path: /metrics
+  scrape_interval: 300s
+  scrape_timeout: 120s
+  honor_timestamps: true
+  metric_relabel_configs:
+  # Prepend `paas_redis_` so the metrics are easier to find
+  - action: replace
+    source_labels: [__name__]
+    target_label: __name__
+    regex: (.*)
+    replacement: paas_redis_$${1}
