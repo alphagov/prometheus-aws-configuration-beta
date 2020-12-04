@@ -1,3 +1,22 @@
+- job_name: dcs-federate
+  scheme: https
+  honor_labels: true
+  honor_timestamps: true
+  metrics_path: '/federate'
+  params:
+    "match[]":
+    # fetch everything (via https://stackoverflow.com/a/39253848 )
+    - '{__name__=~".+"}'
+  static_configs:
+  - targets:
+    - dcs-build-internal-prometheus.london.cloudapps.digital
+    labels:
+      federated_from: dcs-build-internal-prometheus.london.cloudapps.digital
+  - targets:
+    - dcs-integration-internal-prometheus.london.cloudapps.digital
+    labels:
+      federated_from: dcs-integration-internal-prometheus.london.cloudapps.digital
+
 - job_name: paas_elasticsearch_for_dm
   scheme: https
   basic_auth:
