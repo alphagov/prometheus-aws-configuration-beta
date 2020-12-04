@@ -11,11 +11,11 @@
   - targets:
     - dcs-build-internal-prometheus.london.cloudapps.digital
     labels:
-      federated-from: dcs-build-internal-prometheus.london.cloudapps.digital
+      federated_from: dcs-build-internal-prometheus.london.cloudapps.digital
   - targets:
     - dcs-integration-internal-prometheus.london.cloudapps.digital
     labels:
-      federated-from: dcs-integration-internal-prometheus.london.cloudapps.digital
+      federated_from: dcs-integration-internal-prometheus.london.cloudapps.digital
 
 - job_name: paas_elasticsearch_for_dm
   scheme: https
