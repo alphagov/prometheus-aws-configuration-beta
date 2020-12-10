@@ -10,12 +10,12 @@ groups:
         summary: "App {{ $labels.app }} has too many 5xx errors"
         message: "App {{ $labels.app }} has 5xx errors in excess of 25% of total requests"
         dashboard_orj: https://grafana-paas.cloudapps.digital/d/_g_9aRoMk/gov-uk-accounts?orgId=1&refresh=30s
-  - alert: GovukAccounts_90thQuartileResponseTimeExceeds500ms
+  - alert: GovukAccounts_90thPercentileResponseTimeExceeds500ms
     expr: histogram_quantile(0.90, sum by (le) (rate(response_time_bucket{organisation="govuk-accounts",space="production"}[5m]))) > 0.5
     for: 120s
     labels:
         product: "govuk-accounts"
     annotations:
-        summary: "App {{ $labels.app }}'s 90th quartile response time too high"
-        message: "App {{ $labels.app }}'s 90th quartile response time is higher than 500ms"
+        summary: "App {{ $labels.app }}'s 90th percentile response time too high"
+        message: "App {{ $labels.app }}'s 90th percentile response time is higher than 500ms"
         dashboard_orj: https://grafana-paas.cloudapps.digital/d/_g_9aRoMk/gov-uk-accounts?orgId=1&refresh=30s
