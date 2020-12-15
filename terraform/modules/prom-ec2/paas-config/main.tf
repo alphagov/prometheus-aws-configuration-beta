@@ -45,6 +45,13 @@ resource "aws_s3_bucket_object" "alerts-data-gov-uk-config" {
   etag   = filemd5("${var.alerts_path}data-gov-uk-alerts.yml")
 }
 
+resource "aws_s3_bucket_object" "alerts-doc-checking-config" {
+  bucket = var.prometheus_config_bucket
+  key    = "prometheus/alerts/doc-checking-alerts.yml"
+  source = "${var.alerts_path}doc-checking-alerts.yml"
+  etag   = filemd5("${var.alerts_path}doc-checking-alerts.yml")
+}
+
 resource "aws_s3_bucket_object" "alerts-govuk-accounts-config" {
   bucket = var.prometheus_config_bucket
   key    = "prometheus/alerts/govuk-accounts-alerts.yml"

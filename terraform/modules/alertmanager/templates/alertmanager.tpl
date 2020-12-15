@@ -56,6 +56,9 @@ route:
     match:
       layer: "infra"
       severity: "ticket"
+  - receiver: "dev-null"
+    match:
+      product: "doc-checking"
   # GSP clusters
   - match_re:
       clustername: london[.].*[.]govsvc[.]uk
