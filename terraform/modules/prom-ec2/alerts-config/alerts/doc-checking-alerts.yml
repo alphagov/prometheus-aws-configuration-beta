@@ -6,7 +6,7 @@ groups:
         message: >-
           The audit consumer should be writing audit events to the
           database. This hasn't happened in a while.
-        runbook_url: https://dcs-service-manual.cloudapps.digital/supporting-dcs/responding-to-alerts/AuditEventsNotProcessing/
+        runbook_url: https://dcs-service-manual.cloudapps.digital/responding-to-alerts/AuditEventsNotProcessing/
       expr: |
           sum without(instance) (rate(audit_consumer_events_processing_attempts_total[5m]))
           -
@@ -22,7 +22,7 @@ groups:
           The audit consumer has a high error rate when attempting to
           write audit events to the database.  Those events may have
           ended up on the dead letter queue.
-        runbook_url: https://dcs-service-manual.cloudapps.digital/supporting-dcs/responding-to-alerts/AuditEventsFailedProcessing/
+        runbook_url: https://dcs-service-manual.cloudapps.digital/responding-to-alerts/AuditEventsFailedProcessing/
       expr: |
         sum without(instance) (rate(audit_consumer_events_processing_failures_total[2m])) > 3
       for: 5m
@@ -33,7 +33,7 @@ groups:
       annotations:
         message: |
           There are unprocessed audit events on the dead letter queue.
-        runbook_url: https://dcs-service-manual.cloudapps.digital/supporting-dcs/responding-to-alerts/AuditEventsOnTheDeadLetterQueue/
+        runbook_url: https://dcs-service-manual.cloudapps.digital/responding-to-alerts/AuditEventsOnTheDeadLetterQueue/
       expr: |
             max without(instance) (audit_consumer_dead_letter_queue_approximate_messages) > 0
       for: 5m
@@ -44,7 +44,7 @@ groups:
       annotations:
         message: |
           Redis is not available for rate limiting and quota.
-        runbook_url: https://dcs-service-manual.cloudapps.digital/supporting-dcs/responding-to-alerts/RedisNotAvailable/
+        runbook_url: https://dcs-service-manual.cloudapps.digital/responding-to-alerts/RedisNotAvailable/
       expr: |
         (avg by (job) (dcs_dmz_proxy_using_redis_for_rate_limiting) != 1) or (avg by (job) (dcs_agents_using_redis_for_rate_limiting) != 1)
       for: 5m
