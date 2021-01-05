@@ -2,7 +2,7 @@ groups:
 - name: GovukAccounts
   rules:
   - alert: GovukAccounts_AppRequestsExcess5xx
-    expr: sum without(exported_instance, status_range) (rate(requests{org="govuk-accounts", space="production", status_range="5xx"}[5m])) / sum without(exported_instance, status_range) (rate(requests{org="govuk-accounts", space="production"}[5m])) >= 0.25
+    expr: sum without(exported_instance, status_range) (rate(requests{org="govuk-accounts", space="production", status_range="5xx", app!="govuk-account-static-errors"}[5m])) / sum without(exported_instance, status_range) (rate(requests{org="govuk-accounts", space="production"}[5m])) >= 0.25
     for: 120s
     labels:
         product: "govuk-accounts"
