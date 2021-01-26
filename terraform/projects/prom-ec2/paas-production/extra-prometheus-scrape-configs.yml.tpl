@@ -16,6 +16,11 @@
     - dcs-integration-internal-prometheus.london.cloudapps.digital
     labels:
       federated_from: dcs-integration-internal-prometheus.london.cloudapps.digital
+  - targets:
+    - dcs-production-internal-prometheus.london.cloudapps.digital
+    labels:
+      federated_from: dcs-production-internal-prometheus.london.cloudapps.digital
+
 
 - job_name: paas_elasticsearch_for_dm
   scheme: https
