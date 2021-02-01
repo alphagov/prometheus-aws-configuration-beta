@@ -59,6 +59,15 @@ route:
   - receiver: "dev-null"
     match:
       product: "doc-checking"
+    routes:
+    - match_re:
+        space: production|integration
+      receiver: dcs-slack
+      routes:
+      - match:
+          space: production
+          severity: p2
+        receiver: "dcs-p2"
   # GSP clusters
   - match_re:
       clustername: london[.].*[.]govsvc[.]uk
