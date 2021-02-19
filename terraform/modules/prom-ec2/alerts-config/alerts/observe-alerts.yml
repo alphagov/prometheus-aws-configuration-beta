@@ -20,7 +20,7 @@ groups:
         product: "prometheus"
         severity: "page"
     annotations:
-        summary: "There is one or less Alertmanagers that can be scraped"
+        summary: "There is one or fewer Alertmanagers that can be scraped"
         runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-gds-paas-users.html#re-observe-alertmanager-below-threshold"
 
   - alert: RE_Observe_Prometheus_Below_Threshold
@@ -30,7 +30,7 @@ groups:
         product: "prometheus"
         severity: "page"
     annotations:
-        summary: "There is one or less Prometheis that can be scraped"
+        summary: "There is one or fewer Prometheis that can be scraped"
         logs: "https://kibana.logit.io/s/8fd50110-7b0c-490a-bedf-7544daebbec4/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-15m,mode:quick,to:now))&_a=(columns:!(_source),index:'*-*',interval:auto,query:(query_string:(query:'tags:%20prometheus')),sort:!('@timestamp',desc))"
         runbook: "https://re-team-manual.cloudapps.digital/prometheus-for-gds-paas-users.html#re-observe-prometheus-below-threshold"
 
