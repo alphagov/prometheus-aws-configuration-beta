@@ -100,3 +100,7 @@ module "paas-config" {
 output "instance_ids" {
   value = "[\n    ${join("\n    ", module.prometheus.prometheus_instance_id)}\n]"
 }
+
+output "prometheus_config_etag" {
+  value = module.paas-config.prometheus_config_etag
+}
