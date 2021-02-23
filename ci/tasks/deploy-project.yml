@@ -2,6 +2,8 @@
   inputs:
     - name: src
     - name: re-secrets
+  outputs:
+    - name: outputs
   params:
     PROJECT:
     DEPLOYER_ARN:
@@ -28,3 +30,4 @@
         cd "src/terraform/projects/${PROJECT}"
         terraform init
         terraform apply -auto-approve
+        terraform outputs -json > outputs/terraform-outputs.json

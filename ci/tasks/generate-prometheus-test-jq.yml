@@ -1,0 +1,11 @@
+platform: linux
+inputs:
+  - name: input
+outputs:
+  - name: output
+run:
+  path: sh
+  args:
+    - -euxc
+    - |
+      echo ".last_successful_config == $(jq '.prometheus_config_etag' input/terraform-outputs.json)" > output/test.jq
