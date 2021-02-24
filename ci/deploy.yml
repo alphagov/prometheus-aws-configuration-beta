@@ -30,6 +30,7 @@ resources:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
       branch: master
       paths:
+        - ci/tasks
         - terraform/modules/app-ecs-albs
         - terraform/modules/common
         - terraform/modules/infra-networking
@@ -46,6 +47,7 @@ resources:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
       branch: master
       paths:
+        - ci/tasks
         - terraform/modules/alertmanager
         - terraform/projects/alertmanager-*
   - name: prometheus-git
@@ -54,6 +56,7 @@ resources:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
       branch: master
       paths:
+        - ci/tasks
         - terraform/modules/prom-ec2
         - terraform/projects/prom-ec2
   - name: cf-app-discovery-git
