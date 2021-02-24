@@ -16,19 +16,19 @@ resources:
     icon: layers
     source:
       repository: ((readonly_private_ecr_repo_url))
-      tag: prometheus-task-image
+      tag: prometheus-task-image((meta-suffix))
   - name: ci-git
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: master
+      branch: ((prometheus-aws-configuration-beta-branch))
       paths:
         - ci
   - name: common-git
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: master
+      branch: ((prometheus-aws-configuration-beta-branch))
       paths:
         - terraform/modules/app-ecs-albs
         - terraform/modules/common
@@ -44,7 +44,7 @@ resources:
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: master
+      branch: ((prometheus-aws-configuration-beta-branch))
       paths:
         - terraform/modules/alertmanager
         - terraform/projects/alertmanager-*
@@ -52,7 +52,7 @@ resources:
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: master
+      branch: ((prometheus-aws-configuration-beta-branch))
       paths:
         - terraform/modules/prom-ec2
         - terraform/projects/prom-ec2
@@ -77,7 +77,7 @@ resources:
       username: ((cf_user))
       password: ((cf_password))
       organization: gds-tech-ops
-      space: prometheus-staging
+      space: prometheus-staging((meta-suffix))
   - name: service-broker-ireland-production
     type: cf
     source:
@@ -85,7 +85,7 @@ resources:
       username: ((cf_user))
       password: ((cf_password))
       organization: gds-tech-ops
-      space: prometheus-production
+      space: prometheus-production((meta-suffix))
   - name: service-broker-london-production
     type: cf
     source:
@@ -93,7 +93,7 @@ resources:
       username: ((cf_london_user))
       password: ((cf_london_password))
       organization: gds-tech-ops
-      space: prometheus-production
+      space: prometheus-production((meta-suffix))
 
 jobs:
 
@@ -102,8 +102,13 @@ jobs:
     plan:
     - get: ci-git
       trigger: true
-    - set_pipeline: prometheus
+    - set_pipeline: self
       file: ci-git/ci/deploy.yml
+      vars:
+        prometheus-aws-configuration-beta-branch: ((prometheus-aws-configuration-beta-branch))
+        staging-deployer-arn: ((staging-deployer-arn))
+        production-deployer-arn: ((production-deployer-arn))
+        meta-suffix: ((meta-suffix))
     - put: task-image
       params: {build: ci-git/ci/images/task}
       get_params: {skip_download: true}
@@ -129,7 +134,7 @@ jobs:
         input_mapping: {src: common-git}
         params:
           PROJECT: infra-networking-staging
-          DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
+          DEPLOYER_ARN: ((staging-deployer-arn))
           GPG_PRIVATE_KEY: ((gpg_private_key))
       - task: apply-infra-security-groups-terraform
         image: task-image
@@ -138,7 +143,7 @@ jobs:
         input_mapping: {src: common-git}
         params:
           PROJECT: infra-security-groups-staging
-          DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
+          DEPLOYER_ARN: ((staging-deployer-arn))
           GPG_PRIVATE_KEY: ((gpg_private_key))
       - task: apply-app-ecs-elbs-terraform
         image: task-image
@@ -147,7 +152,7 @@ jobs:
         input_mapping: {src: common-git}
         params:
           PROJECT: app-ecs-albs-staging
-          DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
+          DEPLOYER_ARN: ((staging-deployer-arn))
           GPG_PRIVATE_KEY: ((gpg_private_key))
 
   - name: deploy-common-production
@@ -173,7 +178,7 @@ jobs:
         input_mapping: {src: common-git}
         params:
           PROJECT: infra-networking-production
-          DEPLOYER_ARN: arn:aws:iam::455214962221:role/autom8-deployer
+          DEPLOYER_ARN: ((production-deployer-arn))
           GPG_PRIVATE_KEY: ((gpg_private_key))
       - task: apply-infra-security-groups-terraform
         image: task-image
@@ -182,7 +187,7 @@ jobs:
         input_mapping: {src: common-git}
         params:
           PROJECT: infra-security-groups-production
-          DEPLOYER_ARN: arn:aws:iam::455214962221:role/autom8-deployer
+          DEPLOYER_ARN: ((production-deployer-arn))
           GPG_PRIVATE_KEY: ((gpg_private_key))
       - task: apply-app-ecs-elbs-terraform
         image: task-image
@@ -191,7 +196,7 @@ jobs:
         input_mapping: {src: common-git}
         params:
           PROJECT: app-ecs-albs-production
-          DEPLOYER_ARN: arn:aws:iam::455214962221:role/autom8-deployer
+          DEPLOYER_ARN: ((production-deployer-arn))
           GPG_PRIVATE_KEY: ((gpg_private_key))
 
   - name: deploy-prometheus-staging
@@ -220,7 +225,7 @@ jobs:
         output_mapping: {outputs: terraform-outputs}
         params:
           PROJECT: prom-ec2/paas-staging
-          DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
+          DEPLOYER_ARN: ((staging-deployer-arn))
           GPG_PRIVATE_KEY: ((gpg_private_key))
       - task: apply-terraform
         image: task-image
@@ -276,7 +281,7 @@ jobs:
         input_mapping: {src: prometheus-git}
         params:
           PROJECT: prom-ec2/paas-production
-          DEPLOYER_ARN: arn:aws:iam::455214962221:role/autom8-deployer
+          DEPLOYER_ARN: ((production-deployer-arn))
           GPG_PRIVATE_KEY: ((gpg_private_key))
       - in_parallel:
         - task: smoke-test-prom-1
@@ -323,7 +328,7 @@ jobs:
         input_mapping: {src: alertmanager-git}
         params:
           PROJECT: alertmanager-staging
-          DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
+          DEPLOYER_ARN: ((staging-deployer-arn))
           GPG_PRIVATE_KEY: ((gpg_private_key))
       - in_parallel:
         - task: smoke-test-alertmanager
@@ -376,7 +381,7 @@ jobs:
         input_mapping: {src: alertmanager-git}
         params:
           PROJECT: alertmanager-production
-          DEPLOYER_ARN: arn:aws:iam::455214962221:role/autom8-deployer
+          DEPLOYER_ARN: ((production-deployer-arn))
           GPG_PRIVATE_KEY: ((gpg_private_key))
       - in_parallel:
         - task: smoke-test-alertmanager

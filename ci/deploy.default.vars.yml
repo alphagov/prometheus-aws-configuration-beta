@@ -1,0 +1,4 @@
+prometheus-aws-configuration-beta-branch: master
+staging-deployer-arn: arn:aws:iam::027317422673:role/autom8-deployer
+production-deployer-arn: arn:aws:iam::455214962221:role/autom8-deployer
+meta-suffix: ""
