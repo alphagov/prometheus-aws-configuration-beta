@@ -21,14 +21,14 @@ resources:
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: master
+      branch: ((prometheus-aws-configuration-beta-branch))
       paths:
         - ci
   - name: common-git
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: master
+      branch: ((prometheus-aws-configuration-beta-branch))
       paths:
         - ci/tasks
         - terraform/modules/app-ecs-albs
@@ -45,7 +45,7 @@ resources:
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: master
+      branch: ((prometheus-aws-configuration-beta-branch))
       paths:
         - ci/tasks
         - terraform/modules/alertmanager
@@ -54,7 +54,7 @@ resources:
     type: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: master
+      branch: ((prometheus-aws-configuration-beta-branch))
       paths:
         - ci/tasks
         - terraform/modules/prom-ec2
@@ -105,8 +105,10 @@ jobs:
     plan:
     - get: ci-git
       trigger: true
-    - set_pipeline: prometheus
+    - set_pipeline: self
       file: ci-git/ci/deploy.yml
+      vars:
+        prometheus-aws-configuration-beta-branch: ((prometheus-aws-configuration-beta-branch))
     - put: task-image
       params: {build: ci-git/ci/images/task}
       get_params: {skip_download: true}
