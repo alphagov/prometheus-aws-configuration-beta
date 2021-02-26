@@ -222,29 +222,38 @@ jobs:
         timeout: 15m
         file: ci-git/ci/tasks/deploy-project.yml
         input_mapping: {src: prometheus-git}
+        output_mapping: {outputs: terraform-outputs}
         params:
           PROJECT: prom-ec2/paas-staging
           DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
           GPG_PRIVATE_KEY: ((gpg_private_key))
+      - task: generate-prometheus-test-jq
+        image: task-image
+        file: ci-git/ci/tasks/generate-prometheus-test-jq.yml
+        input_mapping: {input: terraform-outputs}
+        output_mapping: {output: prometheus-test-jq}
       - in_parallel:
         - task: smoke-test-prom-1
-          attempts: 4
+          attempts: 8
           timeout: 2m
           file: ci-git/ci/tasks/http-ping.yml
+          input_mapping: {response-jq-test: prometheus-test-jq}
           params:
-            URL: https://prom-1.monitoring-staging.gds-reliability.engineering/healthz
+            URL: https://prom-1.monitoring-staging.gds-reliability.engineering/last-config
         - task: smoke-test-prom-2
-          attempts: 4
+          attempts: 8
           timeout: 2m
           file: ci-git/ci/tasks/http-ping.yml
+          input_mapping: {response-jq-test: prometheus-test-jq}
           params:
-            URL: https://prom-2.monitoring-staging.gds-reliability.engineering/healthz
+            URL: https://prom-2.monitoring-staging.gds-reliability.engineering/last-config
         - task: smoke-test-prom-3
-          attempts: 4
+          attempts: 8
           timeout: 2m
           file: ci-git/ci/tasks/http-ping.yml
+          input_mapping: {response-jq-test: prometheus-test-jq}
           params:
-            URL: https://prom-3.monitoring-staging.gds-reliability.engineering/healthz
+            URL: https://prom-3.monitoring-staging.gds-reliability.engineering/last-config
 
   - name: deploy-prometheus-production
     serial: true
@@ -270,29 +279,38 @@ jobs:
         timeout: 15m
         file: ci-git/ci/tasks/deploy-project.yml
         input_mapping: {src: prometheus-git}
+        output_mapping: {outputs: terraform-outputs}
         params:
           PROJECT: prom-ec2/paas-production
           DEPLOYER_ARN: arn:aws:iam::455214962221:role/autom8-deployer
           GPG_PRIVATE_KEY: ((gpg_private_key))
+      - task: generate-prometheus-test-jq
+        image: task-image
+        file: ci-git/ci/tasks/generate-prometheus-test-jq.yml
+        input_mapping: {input: terraform-outputs}
+        output_mapping: {output: prometheus-test-jq}
       - in_parallel:
         - task: smoke-test-prom-1
-          attempts: 4
+          attempts: 8
           timeout: 2m
           file: ci-git/ci/tasks/http-ping.yml
+          input_mapping: {response-jq-test: prometheus-test-jq}
           params:
-            URL: https://prom-1.monitoring.gds-reliability.engineering/healthz
+            URL: https://prom-1.monitoring.gds-reliability.engineering/last-config
         - task: smoke-test-prom-2
-          attempts: 4
+          attempts: 8
           timeout: 2m
           file: ci-git/ci/tasks/http-ping.yml
+          input_mapping: {response-jq-test: prometheus-test-jq}
           params:
-            URL: https://prom-2.monitoring.gds-reliability.engineering/healthz
+            URL: https://prom-2.monitoring.gds-reliability.engineering/last-config
         - task: smoke-test-prom-3
-          attempts: 4
+          attempts: 8
           timeout: 2m
           file: ci-git/ci/tasks/http-ping.yml
+          input_mapping: {response-jq-test: prometheus-test-jq}
           params:
-            URL: https://prom-3.monitoring.gds-reliability.engineering/healthz
+            URL: https://prom-3.monitoring.gds-reliability.engineering/last-config
 
   - name: deploy-alertmanager-staging
     serial: true
