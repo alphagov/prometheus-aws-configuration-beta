@@ -50,4 +50,4 @@ groups:
       for: 5m
       labels:
         product: doc-checking
-        severity: p2
+        severity: p4
