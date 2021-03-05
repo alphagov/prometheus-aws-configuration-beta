@@ -30,6 +30,8 @@ run:
             cat curl_output
             echo 'Failed jq test:'
             cat response-jq-test/test.jq
+            # don't spin through attempts too fast
+            sleep 5
             exit 9
           fi
         fi
