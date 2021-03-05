@@ -2,6 +2,8 @@
   inputs:
     - name: src
     - name: re-secrets
+  outputs:
+    - name: outputs
   params:
     PROJECT:
     DEPLOYER_ARN:
@@ -15,6 +17,7 @@
       - -eu
       - -c
       - |
+        BUILD_DIR=$(pwd)
 
         echo "configuring aws client..."
         eval $(assume-role "${DEPLOYER_ARN}")
@@ -25,6 +28,8 @@
         cp -R re-secrets $HOME/.password-store
 
         echo "terraforming..."
-        cd "src/terraform/projects/${PROJECT}"
+        pushd "src/terraform/projects/${PROJECT}"
         terraform init
         terraform apply -auto-approve
+        terraform output -json > $BUILD_DIR/outputs/terraform-outputs.json
+        popd

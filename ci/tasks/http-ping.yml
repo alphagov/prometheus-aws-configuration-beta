@@ -4,6 +4,9 @@ image_resource:
   source:
     repository: governmentpaas/curl-ssl
     tag: fe3e384e81ccb50842509d7237e3828b293de694
+inputs:
+  - name: response-jq-test
+    optional: true
 params:
   URL:
 run:
@@ -12,11 +15,23 @@ run:
     - -euxc
     - |
       DOMAIN=$(echo "${URL}" | awk -F/ '{print $3}')
-      getent ahosts ${DOMAIN} | cut -d ' ' -f1 | sort | uniq | tee /dev/stderr | xargs -n1 -I {} curl \
-        --resolve ${DOMAIN}:443:{} \
-        --silent \
-        --fail \
-        --write-out $'{} %{http_code} %{time_total}s\n' \
-        --output /dev/null \
-        --max-time 5 "${URL}"
+      getent ahosts ${DOMAIN} | cut -d ' ' -f1 | sort | uniq | tee /dev/stderr | while read TARGET_IP ; do
+        curl \
+          --resolve ${DOMAIN}:443:${TARGET_IP} \
+          --silent \
+          --fail \
+          --write-out "${TARGET_IP} %{http_code} %{time_total}s"$'\n' \
+          --output curl_output \
+          --max-time 5 "${URL}"
+
+        if [[ -e response-jq-test/test.jq ]] ; then
+          if ! jq -e -f response-jq-test/test.jq curl_output ; then
+            echo 'Response:'
+            cat curl_output
+            echo 'Failed jq test:'
+            cat response-jq-test/test.jq
+            exit 9
+          fi
+        fi
+      done
 
