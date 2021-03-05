@@ -233,27 +233,48 @@ jobs:
         input_mapping: {input: terraform-outputs}
         output_mapping: {output: prometheus-test-jq}
       - in_parallel:
-        - task: smoke-test-prom-1
-          attempts: 8
-          timeout: 2m
-          file: ci-git/ci/tasks/http-ping.yml
-          input_mapping: {response-jq-test: prometheus-test-jq}
-          params:
-            URL: https://prom-1.monitoring-staging.gds-reliability.engineering/last-config
-        - task: smoke-test-prom-2
-          attempts: 8
-          timeout: 2m
-          file: ci-git/ci/tasks/http-ping.yml
-          input_mapping: {response-jq-test: prometheus-test-jq}
-          params:
-            URL: https://prom-2.monitoring-staging.gds-reliability.engineering/last-config
-        - task: smoke-test-prom-3
-          attempts: 8
-          timeout: 2m
-          file: ci-git/ci/tasks/http-ping.yml
-          input_mapping: {response-jq-test: prometheus-test-jq}
-          params:
-            URL: https://prom-3.monitoring-staging.gds-reliability.engineering/last-config
+        - do:
+          - task: conf-test-prom-1
+            attempts: 8
+            timeout: 2m
+            file: ci-git/ci/tasks/http-ping.yml
+            input_mapping: {response-jq-test: prometheus-test-jq}
+            params:
+              URL: https://prom-1.monitoring-staging.gds-reliability.engineering/last-config
+          - task: smoke-test-prom-1
+            attempts: 4
+            timeout: 2m
+            file: ci-git/ci/tasks/http-ping.yml
+            params:
+              URL: https://prom-1.monitoring-staging.gds-reliability.engineering/-/ready
+        - do:
+          - task: conf-test-prom-2
+            attempts: 8
+            timeout: 2m
+            file: ci-git/ci/tasks/http-ping.yml
+            input_mapping: {response-jq-test: prometheus-test-jq}
+            params:
+              URL: https://prom-2.monitoring-staging.gds-reliability.engineering/last-config
+          - task: smoke-test-prom-2
+            attempts: 4
+            timeout: 2m
+            file: ci-git/ci/tasks/http-ping.yml
+            params:
+              URL: https://prom-2.monitoring-staging.gds-reliability.engineering/-/ready
+        - do:
+          - task: conf-test-prom-3
+            attempts: 8
+            timeout: 2m
+            file: ci-git/ci/tasks/http-ping.yml
+            input_mapping: {response-jq-test: prometheus-test-jq}
+            params:
+              URL: https://prom-3.monitoring-staging.gds-reliability.engineering/last-config
+          - task: smoke-test-prom-3
+            attempts: 4
+            timeout: 2m
+            file: ci-git/ci/tasks/http-ping.yml
+            params:
+              URL: https://prom-3.monitoring-staging.gds-reliability.engineering/-/ready
 
   - name: deploy-prometheus-production
     serial: true
@@ -290,27 +311,48 @@ jobs:
         input_mapping: {input: terraform-outputs}
         output_mapping: {output: prometheus-test-jq}
       - in_parallel:
-        - task: smoke-test-prom-1
-          attempts: 8
-          timeout: 2m
-          file: ci-git/ci/tasks/http-ping.yml
-          input_mapping: {response-jq-test: prometheus-test-jq}
-          params:
-            URL: https://prom-1.monitoring.gds-reliability.engineering/last-config
-        - task: smoke-test-prom-2
-          attempts: 8
-          timeout: 2m
-          file: ci-git/ci/tasks/http-ping.yml
-          input_mapping: {response-jq-test: prometheus-test-jq}
-          params:
-            URL: https://prom-2.monitoring.gds-reliability.engineering/last-config
-        - task: smoke-test-prom-3
-          attempts: 8
-          timeout: 2m
-          file: ci-git/ci/tasks/http-ping.yml
-          input_mapping: {response-jq-test: prometheus-test-jq}
-          params:
-            URL: https://prom-3.monitoring.gds-reliability.engineering/last-config
+        - do:
+          - task: conf-test-prom-1
+            attempts: 8
+            timeout: 2m
+            file: ci-git/ci/tasks/http-ping.yml
+            input_mapping: {response-jq-test: prometheus-test-jq}
+            params:
+              URL: https://prom-1.monitoring.gds-reliability.engineering/last-config
+          - task: smoke-test-prom-1
+            attempts: 4
+            timeout: 2m
+            file: ci-git/ci/tasks/http-ping.yml
+            params:
+              URL: https://prom-1.monitoring.gds-reliability.engineering/-/ready
+        - do:
+          - task: conf-test-prom-2
+            attempts: 8
+            timeout: 2m
+            file: ci-git/ci/tasks/http-ping.yml
+            input_mapping: {response-jq-test: prometheus-test-jq}
+            params:
+              URL: https://prom-2.monitoring.gds-reliability.engineering/last-config
+          - task: smoke-test-prom-2
+            attempts: 4
+            timeout: 2m
+            file: ci-git/ci/tasks/http-ping.yml
+            params:
+              URL: https://prom-2.monitoring.gds-reliability.engineering/-/ready
+        - do:
+          - task: conf-test-prom-3
+            attempts: 8
+            timeout: 2m
+            file: ci-git/ci/tasks/http-ping.yml
+            input_mapping: {response-jq-test: prometheus-test-jq}
+            params:
+              URL: https://prom-3.monitoring.gds-reliability.engineering/last-config
+          - task: smoke-test-prom-3
+            attempts: 4
+            timeout: 2m
+            file: ci-git/ci/tasks/http-ping.yml
+            params:
+              URL: https://prom-3.monitoring.gds-reliability.engineering/-/ready
 
   - name: deploy-alertmanager-staging
     serial: true
