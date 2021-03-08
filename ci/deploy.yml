@@ -17,55 +17,30 @@ resources:
     source:
       repository: ((readonly_private_ecr_repo_url))
       tag: prometheus-task-image
-  - name: ci-git
+  - name: prometheus-aws-configuration-beta
     type: git
+    icon: git
+    source:
+      uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
+      branch: ((prometheus-aws-configuration-beta-branch))
+  # image building is expensive even when nothing has changed, hence dedicated resource
+  - name: prometheus-aws-configuration-beta-images
+    type: git
+    icon: git
     source:
       uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
       branch: ((prometheus-aws-configuration-beta-branch))
       paths:
-        - ci
-  - name: common-git
-    type: git
-    source:
-      uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: ((prometheus-aws-configuration-beta-branch))
-      paths:
-        - ci/tasks
-        - terraform/modules/app-ecs-albs
-        - terraform/modules/common
-        - terraform/modules/infra-networking
-        - terraform/modules/infra-security-groups
-        - terraform/projects/app-ecs-albs-production
-        - terraform/projects/app-ecs-albs-staging
-        - terraform/projects/infra-networking-production
-        - terraform/projects/infra-networking-staging
-        - terraform/projects/infra-security-groups-production
-        - terraform/projects/infra-security-groups-staging
-  - name: alertmanager-git
-    type: git
-    source:
-      uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: ((prometheus-aws-configuration-beta-branch))
-      paths:
-        - ci/tasks
-        - terraform/modules/alertmanager
-        - terraform/projects/alertmanager-*
-  - name: prometheus-git
-    type: git
-    source:
-      uri: https://github.com/alphagov/prometheus-aws-configuration-beta.git
-      branch: ((prometheus-aws-configuration-beta-branch))
-      paths:
-        - ci/tasks
-        - terraform/modules/prom-ec2
-        - terraform/projects/prom-ec2
+        - ci/images
   - name: cf-app-discovery-git
     type: git
+    icon: git
     source:
       uri: https://github.com/alphagov/cf_app_discovery.git
       branch: master
   - name: re-secrets
     type: git
+    icon: git
     source:
       private_key: |
         ((re-secrets-ssh-key))
@@ -75,6 +50,7 @@ resources:
         - observe
   - name: service-broker-ireland-staging
     type: cf
+    icon: anvil
     source:
       api: https://api.cloud.service.gov.uk
       username: ((cf_user))
@@ -83,6 +59,7 @@ resources:
       space: prometheus-staging
   - name: service-broker-ireland-production
     type: cf
+    icon: anvil
     source:
       api: https://api.cloud.service.gov.uk
       username: ((cf_user))
@@ -91,6 +68,7 @@ resources:
       space: prometheus-production
   - name: service-broker-london-production
     type: cf
+    icon: anvil
     source:
       api: https://api.london.cloud.service.gov.uk
       username: ((cf_london_user))
@@ -103,35 +81,39 @@ jobs:
   - name: configure-pipeline
     serial: true
     plan:
-    - get: ci-git
+    - get: prometheus-aws-configuration-beta
       trigger: true
     - set_pipeline: self
-      file: ci-git/ci/deploy.yml
+      file: prometheus-aws-configuration-beta/ci/deploy.yml
       vars:
         prometheus-aws-configuration-beta-branch: ((prometheus-aws-configuration-beta-branch))
+
+  - name: build-task-image
+    serial: true
+    plan:
+    - get: prometheus-aws-configuration-beta-images
+      trigger: true
     - put: task-image
-      params: {build: ci-git/ci/images/task}
+      params: {build: prometheus-aws-configuration-beta-images/ci/images/task}
       get_params: {skip_download: true}
 
   - name: deploy-common-staging
     serial: true
     plan:
       - in_parallel:
-        - get: ci-git
+        - get: prometheus-aws-configuration-beta
           passed: [configure-pipeline]
           trigger: true
         - get: task-image
-          passed: [configure-pipeline]
-          trigger: true
-        - get: common-git
+          passed: [build-task-image]
           trigger: true
         - get: re-secrets
           trigger: true
       - task: apply-infra-networking-terraform
         image: task-image
         timeout: 15m
-        file: ci-git/ci/tasks/deploy-project.yml
-        input_mapping: {src: common-git}
+        file: prometheus-aws-configuration-beta/ci/tasks/deploy-project.yml
+        input_mapping: {src: prometheus-aws-configuration-beta}
         params:
           PROJECT: infra-networking-staging
           DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
@@ -139,8 +121,8 @@ jobs:
       - task: apply-infra-security-groups-terraform
         image: task-image
         timeout: 15m
-        file: ci-git/ci/tasks/deploy-project.yml
-        input_mapping: {src: common-git}
+        file: prometheus-aws-configuration-beta/ci/tasks/deploy-project.yml
+        input_mapping: {src: prometheus-aws-configuration-beta}
         params:
           PROJECT: infra-security-groups-staging
           DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
@@ -148,8 +130,8 @@ jobs:
       - task: apply-app-ecs-elbs-terraform
         image: task-image
         timeout: 15m
-        file: ci-git/ci/tasks/deploy-project.yml
-        input_mapping: {src: common-git}
+        file: prometheus-aws-configuration-beta/ci/tasks/deploy-project.yml
+        input_mapping: {src: prometheus-aws-configuration-beta}
         params:
           PROJECT: app-ecs-albs-staging
           DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
@@ -159,13 +141,10 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: ci-git
+        - get: prometheus-aws-configuration-beta
           passed: [deploy-prometheus-staging, deploy-alertmanager-staging]
           trigger: true
         - get: task-image
-          passed: [deploy-prometheus-staging, deploy-alertmanager-staging]
-          trigger: true
-        - get: common-git
           passed: [deploy-prometheus-staging, deploy-alertmanager-staging]
           trigger: true
         - get: re-secrets
@@ -174,8 +153,8 @@ jobs:
       - task: apply-infra-networking-terraform
         image: task-image
         timeout: 15m
-        file: ci-git/ci/tasks/deploy-project.yml
-        input_mapping: {src: common-git}
+        file: prometheus-aws-configuration-beta/ci/tasks/deploy-project.yml
+        input_mapping: {src: prometheus-aws-configuration-beta}
         params:
           PROJECT: infra-networking-production
           DEPLOYER_ARN: arn:aws:iam::455214962221:role/autom8-deployer
@@ -183,8 +162,8 @@ jobs:
       - task: apply-infra-security-groups-terraform
         image: task-image
         timeout: 15m
-        file: ci-git/ci/tasks/deploy-project.yml
-        input_mapping: {src: common-git}
+        file: prometheus-aws-configuration-beta/ci/tasks/deploy-project.yml
+        input_mapping: {src: prometheus-aws-configuration-beta}
         params:
           PROJECT: infra-security-groups-production
           DEPLOYER_ARN: arn:aws:iam::455214962221:role/autom8-deployer
@@ -192,8 +171,8 @@ jobs:
       - task: apply-app-ecs-elbs-terraform
         image: task-image
         timeout: 15m
-        file: ci-git/ci/tasks/deploy-project.yml
-        input_mapping: {src: common-git}
+        file: prometheus-aws-configuration-beta/ci/tasks/deploy-project.yml
+        input_mapping: {src: prometheus-aws-configuration-beta}
         params:
           PROJECT: app-ecs-albs-production
           DEPLOYER_ARN: arn:aws:iam::455214962221:role/autom8-deployer
@@ -203,25 +182,20 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: prometheus-git
-          trigger: true
-        - get: re-secrets
-          passed: [deploy-common-staging]
-          trigger: true
-        - get: ci-git
+        - get: prometheus-aws-configuration-beta
           passed: [deploy-common-staging]
           trigger: true
         - get: task-image
           passed: [deploy-common-staging]
           trigger: true
-        - get: common-git
+        - get: re-secrets
           passed: [deploy-common-staging]
           trigger: true
       - task: apply-terraform
         image: task-image
         timeout: 15m
-        file: ci-git/ci/tasks/deploy-project.yml
-        input_mapping: {src: prometheus-git}
+        file: prometheus-aws-configuration-beta/ci/tasks/deploy-project.yml
+        input_mapping: {src: prometheus-aws-configuration-beta}
         output_mapping: {outputs: terraform-outputs}
         params:
           PROJECT: prom-ec2/paas-staging
@@ -229,7 +203,7 @@ jobs:
           GPG_PRIVATE_KEY: ((gpg_private_key))
       - task: generate-prometheus-test-jq
         image: task-image
-        file: ci-git/ci/tasks/generate-prometheus-test-jq.yml
+        file: prometheus-aws-configuration-beta/ci/tasks/generate-prometheus-test-jq.yml
         input_mapping: {input: terraform-outputs}
         output_mapping: {output: prometheus-test-jq}
       - in_parallel:
@@ -237,42 +211,42 @@ jobs:
           - task: conf-test-prom-1
             attempts: 8
             timeout: 2m
-            file: ci-git/ci/tasks/http-ping.yml
+            file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
             input_mapping: {response-jq-test: prometheus-test-jq}
             params:
               URL: https://prom-1.monitoring-staging.gds-reliability.engineering/last-config
           - task: smoke-test-prom-1
             attempts: 4
             timeout: 2m
-            file: ci-git/ci/tasks/http-ping.yml
+            file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
             params:
               URL: https://prom-1.monitoring-staging.gds-reliability.engineering/-/ready
         - do:
           - task: conf-test-prom-2
             attempts: 8
             timeout: 2m
-            file: ci-git/ci/tasks/http-ping.yml
+            file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
             input_mapping: {response-jq-test: prometheus-test-jq}
             params:
               URL: https://prom-2.monitoring-staging.gds-reliability.engineering/last-config
           - task: smoke-test-prom-2
             attempts: 4
             timeout: 2m
-            file: ci-git/ci/tasks/http-ping.yml
+            file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
             params:
               URL: https://prom-2.monitoring-staging.gds-reliability.engineering/-/ready
         - do:
           - task: conf-test-prom-3
             attempts: 8
             timeout: 2m
-            file: ci-git/ci/tasks/http-ping.yml
+            file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
             input_mapping: {response-jq-test: prometheus-test-jq}
             params:
               URL: https://prom-3.monitoring-staging.gds-reliability.engineering/last-config
           - task: smoke-test-prom-3
             attempts: 4
             timeout: 2m
-            file: ci-git/ci/tasks/http-ping.yml
+            file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
             params:
               URL: https://prom-3.monitoring-staging.gds-reliability.engineering/-/ready
 
@@ -280,26 +254,20 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: prometheus-git
-          passed: [deploy-prometheus-staging]
-          trigger: true
-        - get: re-secrets
-          passed: [deploy-common-production]
-          trigger: true
-        - get: ci-git
+        - get: prometheus-aws-configuration-beta
           passed: [deploy-common-production]
           trigger: true
         - get: task-image
           passed: [deploy-common-production]
           trigger: true
-        - get: common-git
+        - get: re-secrets
           passed: [deploy-common-production]
           trigger: true
       - task: apply-terraform
         image: task-image
         timeout: 15m
-        file: ci-git/ci/tasks/deploy-project.yml
-        input_mapping: {src: prometheus-git}
+        file: prometheus-aws-configuration-beta/ci/tasks/deploy-project.yml
+        input_mapping: {src: prometheus-aws-configuration-beta}
         output_mapping: {outputs: terraform-outputs}
         params:
           PROJECT: prom-ec2/paas-production
@@ -307,7 +275,7 @@ jobs:
           GPG_PRIVATE_KEY: ((gpg_private_key))
       - task: generate-prometheus-test-jq
         image: task-image
-        file: ci-git/ci/tasks/generate-prometheus-test-jq.yml
+        file: prometheus-aws-configuration-beta/ci/tasks/generate-prometheus-test-jq.yml
         input_mapping: {input: terraform-outputs}
         output_mapping: {output: prometheus-test-jq}
       - in_parallel:
@@ -315,42 +283,42 @@ jobs:
           - task: conf-test-prom-1
             attempts: 8
             timeout: 2m
-            file: ci-git/ci/tasks/http-ping.yml
+            file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
             input_mapping: {response-jq-test: prometheus-test-jq}
             params:
               URL: https://prom-1.monitoring.gds-reliability.engineering/last-config
           - task: smoke-test-prom-1
             attempts: 4
             timeout: 2m
-            file: ci-git/ci/tasks/http-ping.yml
+            file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
             params:
               URL: https://prom-1.monitoring.gds-reliability.engineering/-/ready
         - do:
           - task: conf-test-prom-2
             attempts: 8
             timeout: 2m
-            file: ci-git/ci/tasks/http-ping.yml
+            file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
             input_mapping: {response-jq-test: prometheus-test-jq}
             params:
               URL: https://prom-2.monitoring.gds-reliability.engineering/last-config
           - task: smoke-test-prom-2
             attempts: 4
             timeout: 2m
-            file: ci-git/ci/tasks/http-ping.yml
+            file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
             params:
               URL: https://prom-2.monitoring.gds-reliability.engineering/-/ready
         - do:
           - task: conf-test-prom-3
             attempts: 8
             timeout: 2m
-            file: ci-git/ci/tasks/http-ping.yml
+            file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
             input_mapping: {response-jq-test: prometheus-test-jq}
             params:
               URL: https://prom-3.monitoring.gds-reliability.engineering/last-config
           - task: smoke-test-prom-3
             attempts: 4
             timeout: 2m
-            file: ci-git/ci/tasks/http-ping.yml
+            file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
             params:
               URL: https://prom-3.monitoring.gds-reliability.engineering/-/ready
 
@@ -358,25 +326,20 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: alertmanager-git
-          trigger: true
-        - get: re-secrets
-          passed: [deploy-common-staging]
-          trigger: true
-        - get: ci-git
+        - get: prometheus-aws-configuration-beta
           passed: [deploy-common-staging]
           trigger: true
         - get: task-image
           passed: [deploy-common-staging]
           trigger: true
-        - get: common-git
+        - get: re-secrets
           passed: [deploy-common-staging]
           trigger: true
       - task: apply-terraform
         image: task-image
         timeout: 15m
-        file: ci-git/ci/tasks/deploy-project.yml
-        input_mapping: {src: alertmanager-git}
+        file: prometheus-aws-configuration-beta/ci/tasks/deploy-project.yml
+        input_mapping: {src: prometheus-aws-configuration-beta}
         params:
           PROJECT: alertmanager-staging
           DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
@@ -385,25 +348,25 @@ jobs:
         - task: smoke-test-alertmanager
           attempts: 4
           timeout: 2m
-          file: ci-git/ci/tasks/http-ping.yml
+          file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
           params:
             URL: https://alerts.monitoring-staging.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1a
           attempts: 4
           timeout: 2m
-          file: ci-git/ci/tasks/http-ping.yml
+          file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
           params:
             URL: https://alerts-eu-west-1a.monitoring-staging.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1b
           attempts: 4
           timeout: 2m
-          file: ci-git/ci/tasks/http-ping.yml
+          file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
           params:
             URL: https://alerts-eu-west-1b.monitoring-staging.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1c
           attempts: 4
           timeout: 2m
-          file: ci-git/ci/tasks/http-ping.yml
+          file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
           params:
             URL: https://alerts-eu-west-1c.monitoring-staging.gds-reliability.engineering/-/healthy
 
@@ -411,25 +374,20 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: alertmanager-git
-          passed: [deploy-alertmanager-staging]
-          trigger: true
-        - get: re-secrets
-          passed: [deploy-common-production]
-          trigger: true
-        - get: ci-git
+        - get: prometheus-aws-configuration-beta
           passed: [deploy-common-production]
           trigger: true
         - get: task-image
           passed: [deploy-common-production]
-        - get: common-git
+          trigger: true
+        - get: re-secrets
           passed: [deploy-common-production]
           trigger: true
       - task: apply-terraform
         image: task-image
         timeout: 15m
-        file: ci-git/ci/tasks/deploy-project.yml
-        input_mapping: {src: alertmanager-git}
+        file: prometheus-aws-configuration-beta/ci/tasks/deploy-project.yml
+        input_mapping: {src: prometheus-aws-configuration-beta}
         params:
           PROJECT: alertmanager-production
           DEPLOYER_ARN: arn:aws:iam::455214962221:role/autom8-deployer
@@ -438,25 +396,25 @@ jobs:
         - task: smoke-test-alertmanager
           attempts: 4
           timeout: 2m
-          file: ci-git/ci/tasks/http-ping.yml
+          file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
           params:
             URL: https://alerts.monitoring.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1a
           attempts: 4
           timeout: 2m
-          file: ci-git/ci/tasks/http-ping.yml
+          file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
           params:
             URL: https://alerts-eu-west-1a.monitoring.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1b
           attempts: 4
           timeout: 2m
-          file: ci-git/ci/tasks/http-ping.yml
+          file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
           params:
             URL: https://alerts-eu-west-1b.monitoring.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1c
           attempts: 4
           timeout: 2m
-          file: ci-git/ci/tasks/http-ping.yml
+          file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
           params:
             URL: https://alerts-eu-west-1c.monitoring.gds-reliability.engineering/-/healthy
 
