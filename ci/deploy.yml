@@ -1,3 +1,6 @@
+display:
+  background_image: ((background-image))
+
 resource_types:
 - name: cf
   type: docker-image
@@ -87,6 +90,7 @@ jobs:
       file: prometheus-aws-configuration-beta/ci/deploy.yml
       vars:
         prometheus-aws-configuration-beta-branch: ((prometheus-aws-configuration-beta-branch))
+        background-image: ((background-image))
 
   - name: build-task-image
     serial: true
