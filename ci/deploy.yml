@@ -32,7 +32,7 @@ resources:
       branch: ((prometheus-aws-configuration-beta-branch))
       paths:
         - ci/images
-  - name: cf-app-discovery-git
+  - name: cf-app-discovery
     type: git
     icon: git
     source:
@@ -420,7 +420,7 @@ jobs:
 
   - name: run-service-broker-tests
     plan:
-      - get: cf-app-discovery-git
+      - get: cf-app-discovery
         trigger: true
       - task: run-tests
         timeout: 15m
@@ -432,7 +432,7 @@ jobs:
               repository: ruby
               tag: 2.6.6
           inputs:
-            - name: cf-app-discovery-git
+            - name: cf-app-discovery
               path: repo
           run:
             path: sh
@@ -446,28 +446,28 @@ jobs:
               bundle exec rake
   - name: deploy-service-broker-ireland-staging
     plan:
-      - get: cf-app-discovery-git
+      - get: cf-app-discovery
         trigger: true
         passed: [ run-service-broker-tests ]
       - put: service-broker-ireland-staging
         params:
-          manifest: cf-app-discovery-git/manifest-ireland-staging.yml
+          manifest: cf-app-discovery/manifest-ireland-staging.yml
           show_app_log: true
   - name: deploy-service-broker-ireland-production
     plan:
-      - get: cf-app-discovery-git
+      - get: cf-app-discovery
         trigger: true
         passed: [ deploy-service-broker-ireland-staging ]
       - put: service-broker-ireland-production
         params:
-          manifest: cf-app-discovery-git/manifest-ireland-production.yml
+          manifest: cf-app-discovery/manifest-ireland-production.yml
           show_app_log: true
   - name: deploy-service-broker-london-production
     plan:
-      - get: cf-app-discovery-git
+      - get: cf-app-discovery
         trigger: true
         passed: [ deploy-service-broker-ireland-staging ]
       - put: service-broker-london-production
         params:
-          manifest: cf-app-discovery-git/manifest-london-production.yml
+          manifest: cf-app-discovery/manifest-london-production.yml
           show_app_log: true
