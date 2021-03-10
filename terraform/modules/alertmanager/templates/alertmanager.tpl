@@ -87,14 +87,6 @@ route:
         severity: constant
       receiver: "dev-null"
     - match_re:
-        namespace: verify-doc-checking-prod|verify-dcs-integration
-      receiver: dcs-slack
-      routes:
-      - match:
-          namespace: verify-doc-checking-prod
-          severity: p2
-        receiver: "dcs-p2"
-    - match_re:
         namespace: verify-proxy-node-.*|verify-metadata-.*|verify-connector-.*
       receiver: eidas-slack
     - match_re:
