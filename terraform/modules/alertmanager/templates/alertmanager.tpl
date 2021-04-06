@@ -244,7 +244,7 @@ receivers:
 - name: "dcs-slack"
   slack_configs:
     - <<: *slack-config
-      channel: '#verify-dcs-alerts'
+      channel: '#di-dcs-2ndline'
 - name: "dcs-p2"
   pagerduty_configs:
     - service_key: "${dcs_p2_pagerduty_key}"
