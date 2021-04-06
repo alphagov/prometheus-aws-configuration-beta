@@ -94,7 +94,7 @@ route:
       receiver: "dev-null"
     - match_re:
         layer: ".+"
-      receiver: "autom8-gsp-alerts-slack"
+      receiver: "autom8-alerts-slack"
   # Verify hub ECS
   - receiver: "verify-2ndline-slack"
     match:
@@ -195,9 +195,9 @@ receivers:
     - type: button
       text: Runbook
       url: '{{ .CommonAnnotations.runbook_url }}'
-- name: "autom8-gsp-alerts-slack"
+- name: "autom8-alerts-slack"
   slack_configs:
-  - &gsp-slack-config
+  - &slack-config
     send_resolved: true
     channel: '#re-autom8-alerts'
     icon_emoji: ':gsp:'
@@ -239,12 +239,12 @@ receivers:
       url: '{{ .CommonAnnotations.runbook_url }}'
 - name: "eidas-slack"
   slack_configs:
-    - <<: *gsp-slack-config
+    - <<: *slack-config
       channel: '#verify-eidas-alerts'
 - name: "dcs-slack"
   slack_configs:
-    - <<: *gsp-slack-config
-      channel: '#verify-dcs-gsp-alerts'
+    - <<: *slack-config
+      channel: '#verify-dcs-alerts'
 - name: "dcs-p2"
   pagerduty_configs:
     - service_key: "${dcs_p2_pagerduty_key}"
