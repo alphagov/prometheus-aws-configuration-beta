@@ -12,7 +12,7 @@ groups:
         dashboard_orj: https://grafana-paas.cloudapps.digital/d/_g_9aRoMk/gov-uk-accounts?orgId=1&refresh=30s
   - alert: GovukAccounts_90thPercentileResponseTimeExceeds500ms
     expr: histogram_quantile(0.90, sum by (le) (rate(response_time_bucket{organisation="govuk-accounts",space="production"}[5m]))) > 0.5
-    for: 120s
+    for: 600s
     labels:
         product: "govuk-accounts"
     annotations:
