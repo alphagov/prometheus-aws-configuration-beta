@@ -38,10 +38,6 @@ route:
   - receiver: "govuk-pagerduty"
     match:
       product: "govuk-accounts"
-  - receiver: "registers-zendesk"
-    repeat_interval: 7d
-    match:
-      product: "registers"
   - receiver: "re-observe-pagerduty"
     match:
       product: "prometheus"
@@ -133,9 +129,6 @@ receivers:
 - name: "govuk-pagerduty"
   pagerduty_configs:
     - service_key: "${govuk_pagerduty_key}"
-- name: "registers-zendesk"
-  email_configs:
-  - to: "${registers_zendesk}"
 - name: "notify-tickets"
   email_configs:
   - to: "${notify_zendesk}"

@@ -65,10 +65,3 @@ resource "aws_s3_bucket_object" "alerts-notify-config" {
   source = "${var.alerts_path}notify-alerts.yml"
   etag   = filemd5("${var.alerts_path}notify-alerts.yml")
 }
-
-resource "aws_s3_bucket_object" "alerts-registers-config" {
-  bucket = var.prometheus_config_bucket
-  key    = "prometheus/alerts/registers-alerts.yml"
-  source = "${var.alerts_path}registers-alerts.yml"
-  etag   = filemd5("${var.alerts_path}registers-alerts.yml")
-}
