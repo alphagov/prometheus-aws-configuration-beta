@@ -64,33 +64,6 @@ route:
           space: production
           severity: p2
         receiver: "dcs-p2"
-  # GSP clusters
-  - match_re:
-      clustername: london[.].*[.]govsvc[.]uk
-    receiver: "dev-null"
-    group_by:
-      - alertname
-      - product
-      - namespace
-    routes:
-    - match:
-        severity: constant
-        clustername: london.verify.govsvc.uk
-      group_interval: 1m
-      repeat_interval: 1m
-      receiver: "verify-gsp-cronitor"
-    - match:
-        severity: constant
-      receiver: "dev-null"
-    - match_re:
-        namespace: verify-proxy-node-.*|verify-metadata-.*|verify-connector-.*
-      receiver: eidas-slack
-    - match_re:
-        namespace: sandbox-proxy-node-.*|sandbox-metadata-.*|sandbox-connector-.*
-      receiver: "dev-null"
-    - match_re:
-        layer: ".+"
-      receiver: "autom8-alerts-slack"
   # Verify hub ECS
   - receiver: "verify-2ndline-slack"
     match:
@@ -151,10 +124,6 @@ receivers:
   webhook_configs:
   - send_resolved: false
     url: "${verify_staging_cronitor}"
-- name: "verify-gsp-cronitor"
-  webhook_configs:
-  - send_resolved: false
-    url: "${verify_gsp_cronitor}"
 - name: "verify-2ndline-slack"
   slack_configs: &verify-2ndline-slack-configs
   - send_resolved: true
@@ -188,52 +157,6 @@ receivers:
     - type: button
       text: Runbook
       url: '{{ .CommonAnnotations.runbook_url }}'
-- name: "autom8-alerts-slack"
-  slack_configs:
-  - &slack-config
-    send_resolved: true
-    channel: '#re-autom8-alerts'
-    icon_emoji: ':gsp:'
-    username: alertmanager
-    color: '{{ if eq .Status "firing" }}{{ if eq .CommonLabels.severity "warning" }}warning{{ else }}danger{{ end }}{{ else }}good{{ end }}'
-    pretext: '{{ if eq .Status "firing" }}{{ if eq .CommonLabels.severity "warning" }}:warning:{{ else }}:rotating_light:{{ end }}{{ else }}:green_tick:{{ end }} {{ .CommonLabels.alertname }}:{{ .CommonAnnotations.summary }}'
-    text: |-
-      *Description:* {{ .CommonAnnotations.message }}
-      {{ range .Alerts }}
-        *Details:*
-        {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
-        {{ end }}
-      {{ end }}
-    short_fields: true
-    fields:
-    - title: Product
-      value: '{{ .CommonLabels.product }}'
-    - title: Namespace
-      value: '{{ .CommonLabels.namespace }}'
-    - title: |
-        {{- if .CommonLabels.job_name -}}
-        Job
-        {{- else if .CommonLabels.deployment -}}
-        Deployment
-        {{- else if match "^KubePod" .CommonLabels.alertname -}}
-        Pod
-        {{- end -}}
-      value: |
-        {{- if .CommonLabels.job_name -}}
-          {{ .CommonLabels.job_name }}
-        {{- else if .CommonLabels.deployment -}}
-          {{ .CommonLabels.deployment }}
-        {{- else if match "^KubePod" .CommonLabels.alertname -}}
-          {{ .CommonLabels.pod }}
-        {{- end -}}
-    actions:
-    - type: button
-      text: Runbook
-      url: '{{ .CommonAnnotations.runbook_url }}'
-- name: "eidas-slack"
-  slack_configs:
-    - <<: *slack-config
-      channel: '#verify-eidas-alerts'
 - name: "dcs-slack"
   slack_configs:
     - <<: *slack-config
