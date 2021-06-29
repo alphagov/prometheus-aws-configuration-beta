@@ -68,7 +68,3 @@ scrape_configs:
       - source_labels: ['__meta_ec2_instance_id']
         replacement: '$1:9100'
         target_label: instance
-  - job_name: verify-gsp-canary
-    scheme: https
-    static_configs:
-      - targets: ['canary.verify-main.london.verify.govsvc.uk']
