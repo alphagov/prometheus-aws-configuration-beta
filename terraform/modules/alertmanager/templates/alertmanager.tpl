@@ -159,8 +159,45 @@ receivers:
       url: '{{ .CommonAnnotations.runbook_url }}'
 - name: "dcs-slack"
   slack_configs:
-    - <<: *slack-config
-      channel: '#di-dcs-2ndline'
+  - send_resolved: true
+    channel: '#di-dcs-2ndline'
+    icon_emoji: ':gsp:'
+    username: alertmanager
+    color: '{{ if eq .Status "firing" }}{{ if eq .CommonLabels.severity "warning" }}warning{{ else }}danger{{ end }}{{ else }}good{{ end }}'
+    pretext: '{{ if eq .Status "firing" }}{{ if eq .CommonLabels.severity "warning" }}:warning:{{ else }}:rotating_light:{{ end }}{{ else }}:green_tick:{{ end }} {{ .CommonLabels.alertname }}:{{ .CommonAnnotations.summary }}'
+    text: |-
+      *Description:* {{ .CommonAnnotations.message }}
+      {{ range .Alerts }}
+        *Details:*
+        {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+        {{ end }}
+      {{ end }}
+    short_fields: true
+    fields:
+    - title: Product
+      value: '{{ .CommonLabels.product }}'
+    - title: Namespace
+      value: '{{ .CommonLabels.namespace }}'
+    - title: |
+        {{- if .CommonLabels.job_name -}}
+        Job
+        {{- else if .CommonLabels.deployment -}}
+        Deployment
+        {{- else if match "^KubePod" .CommonLabels.alertname -}}
+        Pod
+        {{- end -}}
+      value: |
+        {{- if .CommonLabels.job_name -}}
+          {{ .CommonLabels.job_name }}
+        {{- else if .CommonLabels.deployment -}}
+          {{ .CommonLabels.deployment }}
+        {{- else if match "^KubePod" .CommonLabels.alertname -}}
+          {{ .CommonLabels.pod }}
+        {{- end -}}
+    actions:
+    - type: button
+      text: Runbook
+      url: '{{ .CommonAnnotations.runbook_url }}'
 - name: "dcs-p2"
   pagerduty_configs:
     - service_key: "${dcs_p2_pagerduty_key}"
