@@ -34,9 +34,11 @@ variable "allowed_cidrs" {
   description = "List of CIDRs which are able to access alertmanager, default are GDS ips and concourse egress"
 
   default = [
+    "213.86.153.211/32",
     "213.86.153.212/32",
     "213.86.153.213/32",
     "213.86.153.214/32",
+    "213.86.153.231/32",
     "213.86.153.235/32",
     "213.86.153.236/32",
     "213.86.153.237/32",

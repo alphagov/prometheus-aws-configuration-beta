@@ -53,10 +53,11 @@ module "alertmanager" {
   observe_cronitor    = data.pass_password.cronitor_production_url.password
   allowed_cidrs = [
     # Office IPs
+    "213.86.153.211/32",
     "213.86.153.212/32",
-
     "213.86.153.213/32",
     "213.86.153.214/32",
+    "213.86.153.231/32",
     "213.86.153.235/32",
     "213.86.153.236/32",
     "213.86.153.237/32",
