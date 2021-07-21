@@ -48,10 +48,6 @@ route:
     match:
       product: "prometheus"
       severity: "constant"
-  - receiver: "autom8-tickets"
-    match:
-      layer: "infra"
-      severity: "ticket"
   - receiver: "dev-null"
     match:
       product: "doc-checking"
@@ -77,6 +73,9 @@ route:
       match:
         deployment: integration
         severity: p1
+    - receiver: "verify-p3"
+      match:
+        severity: ticket
     - match:
         severity: constant
       group_interval: 1m
@@ -208,5 +207,7 @@ receivers:
 - name: "verify-p2"
   pagerduty_configs:
     - service_key: "${verify_p2_pagerduty_key}"
+  slack_configs: *verify-2ndline-slack-configs
+- name: "verify-p3"
   slack_configs: *verify-2ndline-slack-configs
 - name: "dev-null"
