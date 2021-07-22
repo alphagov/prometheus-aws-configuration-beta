@@ -344,10 +344,17 @@ jobs:
         timeout: 15m
         file: prometheus-aws-configuration-beta/ci/tasks/deploy-project.yml
         input_mapping: {src: prometheus-aws-configuration-beta}
+        output_mapping: {outputs: terraform-outputs}
         params:
           PROJECT: alertmanager-staging
           DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
           GPG_PRIVATE_KEY: ((gpg_private_key))
+      - task: wait-ecs-services-stable
+        image: task-image
+        file: prometheus-aws-configuration-beta/ci/tasks/wait-ecs-services-stable.yml
+        params:
+          DEPLOYER_ARN: arn:aws:iam::027317422673:role/autom8-deployer
+          TERRAFORM_VAR: alertmanager_ecs_clusters_services
       - in_parallel:
         - task: smoke-test-alertmanager
           attempts: 4
@@ -392,10 +399,17 @@ jobs:
         timeout: 15m
         file: prometheus-aws-configuration-beta/ci/tasks/deploy-project.yml
         input_mapping: {src: prometheus-aws-configuration-beta}
+        output_mapping: {outputs: terraform-outputs}
         params:
           PROJECT: alertmanager-production
           DEPLOYER_ARN: arn:aws:iam::455214962221:role/autom8-deployer
           GPG_PRIVATE_KEY: ((gpg_private_key))
+      - task: wait-ecs-services-stable
+        image: task-image
+        file: prometheus-aws-configuration-beta/ci/tasks/wait-ecs-services-stable.yml
+        params:
+          DEPLOYER_ARN: arn:aws:iam::455214962221:role/autom8-deployer
+          TERRAFORM_VAR: alertmanager_ecs_clusters_services
       - in_parallel:
         - task: smoke-test-alertmanager
           attempts: 4

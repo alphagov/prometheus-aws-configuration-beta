@@ -91,3 +91,6 @@ module "alertmanager" {
   ]
 }
 
+output "alertmanager_ecs_clusters_services" {
+  value = module.alertmanager.ecs_clusters_services
+}

@@ -1,0 +1,27 @@
+platform: linux
+inputs:
+  - name: terraform-outputs
+params:
+  DEPLOYER_ARN:
+  TERRAFORM_VAR:
+  AWS_REGION: 'eu-west-1'
+  AWS_DEFAULT_REGION: 'eu-west-1'
+run:
+  path: bash
+  args:
+    - -eu
+    - -c
+    - |
+      echo "configuring aws client..."
+      eval $(assume-role "${DEPLOYER_ARN}")
+
+      jq -c '.[env.TERRAFORM_VAR].value | to_entries | .[]' terraform-outputs/terraform-outputs.json | while read entry ; do
+        CLUSTER="$(echo ${entry} | jq -r '.key')"
+        SERVICES="$(echo ${entry} | jq -r '.value | join(" ")')"
+
+        echo "Waiting for services ${SERVICES} of cluster ${CLUSTER} to be stable..."
+
+        aws ecs wait services-stable \
+          --cluster "${CLUSTER}" \
+          --services ${SERVICES}
+      done

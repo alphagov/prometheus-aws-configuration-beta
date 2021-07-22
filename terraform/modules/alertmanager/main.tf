@@ -111,3 +111,11 @@ resource "aws_cloudwatch_log_group" "task_logs" {
 }
 
 ## Outputs
+
+output "ecs_clusters_services" {
+  description = "Names of ECS services created, listed by ECS cluster name"
+  value = transpose({
+    for _, service in aws_ecs_service.alertmanager_alb:
+    service.name => [ service.cluster ]
+  })
+}
