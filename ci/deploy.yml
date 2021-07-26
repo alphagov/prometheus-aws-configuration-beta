@@ -220,7 +220,7 @@ jobs:
             params:
               URL: https://prom-1.monitoring-staging.gds-reliability.engineering/last-config
           - task: smoke-test-prom-1
-            attempts: 4
+            attempts: 8
             timeout: 2m
             file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
             params:
@@ -234,7 +234,7 @@ jobs:
             params:
               URL: https://prom-2.monitoring-staging.gds-reliability.engineering/last-config
           - task: smoke-test-prom-2
-            attempts: 4
+            attempts: 8
             timeout: 2m
             file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
             params:
@@ -248,7 +248,7 @@ jobs:
             params:
               URL: https://prom-3.monitoring-staging.gds-reliability.engineering/last-config
           - task: smoke-test-prom-3
-            attempts: 4
+            attempts: 8
             timeout: 2m
             file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
             params:
@@ -292,7 +292,7 @@ jobs:
             params:
               URL: https://prom-1.monitoring.gds-reliability.engineering/last-config
           - task: smoke-test-prom-1
-            attempts: 4
+            attempts: 8
             timeout: 2m
             file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
             params:
@@ -306,7 +306,7 @@ jobs:
             params:
               URL: https://prom-2.monitoring.gds-reliability.engineering/last-config
           - task: smoke-test-prom-2
-            attempts: 4
+            attempts: 8
             timeout: 2m
             file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
             params:
@@ -320,7 +320,7 @@ jobs:
             params:
               URL: https://prom-3.monitoring.gds-reliability.engineering/last-config
           - task: smoke-test-prom-3
-            attempts: 4
+            attempts: 8
             timeout: 2m
             file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
             params:
@@ -350,25 +350,25 @@ jobs:
           GPG_PRIVATE_KEY: ((gpg_private_key))
       - in_parallel:
         - task: smoke-test-alertmanager
-          attempts: 4
+          attempts: 6
           timeout: 2m
           file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
           params:
             URL: https://alerts.monitoring-staging.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1a
-          attempts: 4
+          attempts: 6
           timeout: 2m
           file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
           params:
             URL: https://alerts-eu-west-1a.monitoring-staging.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1b
-          attempts: 4
+          attempts: 6
           timeout: 2m
           file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
           params:
             URL: https://alerts-eu-west-1b.monitoring-staging.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1c
-          attempts: 4
+          attempts: 6
           timeout: 2m
           file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
           params:
@@ -398,25 +398,25 @@ jobs:
           GPG_PRIVATE_KEY: ((gpg_private_key))
       - in_parallel:
         - task: smoke-test-alertmanager
-          attempts: 4
+          attempts: 6
           timeout: 2m
           file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
           params:
             URL: https://alerts.monitoring.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1a
-          attempts: 4
+          attempts: 6
           timeout: 2m
           file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
           params:
             URL: https://alerts-eu-west-1a.monitoring.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1b
-          attempts: 4
+          attempts: 6
           timeout: 2m
           file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
           params:
             URL: https://alerts-eu-west-1b.monitoring.gds-reliability.engineering/-/healthy
         - task: smoke-test-alertmanager-eu-west-1c
-          attempts: 4
+          attempts: 6
           timeout: 2m
           file: prometheus-aws-configuration-beta/ci/tasks/http-ping.yml
           params:
