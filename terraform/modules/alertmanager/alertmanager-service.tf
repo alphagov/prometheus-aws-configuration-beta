@@ -72,6 +72,18 @@ data "template_file" "alertmanager_nlb_container_defn" {
     log_group                  = aws_cloudwatch_log_group.task_logs.name
     region                     = var.aws_region
   }
+
+  depends_on = [
+    module.assertion_alertmanager_config_file_valid_yaml.checked,
+  ]
+}
+
+module "assertion_alertmanager_nlb_container_defn_valid_json" {
+  source = "github.com/Invicton-Labs/terraform-null-assertion?ref=47d7354cc5521853fbe8df96b7bb0223bea732cd"
+
+  condition = can(jsondecode(data.template_file.alertmanager_nlb_container_defn.rendered))
+
+  error_message = "Alertmanager NLB container definition failed JSON parsing"
 }
 
 resource "aws_ecs_task_definition" "alertmanager_nlb" {
@@ -86,6 +98,10 @@ resource "aws_ecs_task_definition" "alertmanager_nlb" {
   tags = merge(local.default_tags, {
     Name = "${var.environment}-alertmanager"
   })
+
+  depends_on = [
+    module.assertion_alertmanager_nlb_container_defn_valid_json.checked,
+  ]
 }
 
 resource "aws_ecs_service" "alertmanager_alb" {
@@ -202,6 +218,14 @@ data "template_file" "alertmanager_config_file" {
     verify_integration_cronitor = data.pass_password.verify_integration_cronitor.password
     verify_prod_cronitor        = data.pass_password.verify_prod_cronitor.password
   }
+}
+
+module "assertion_alertmanager_config_file_valid_yaml" {
+  source = "github.com/Invicton-Labs/terraform-null-assertion?ref=47d7354cc5521853fbe8df96b7bb0223bea732cd"
+
+  condition = can(yamldecode(data.template_file.alertmanager_config_file.rendered))
+
+  error_message = "Alertmanager config failed YAML parsing"
 }
 
 ## AWS SES
