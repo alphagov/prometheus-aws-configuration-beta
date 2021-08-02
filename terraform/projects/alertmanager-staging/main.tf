@@ -53,3 +53,6 @@ module "alertmanager" {
   observe_cronitor    = data.pass_password.cronitor_staging_url.password
 }
 
+output "alertmanager_ecs_clusters_services" {
+  value = module.alertmanager.ecs_clusters_services
+}
