@@ -60,37 +60,7 @@ route:
           space: production
           severity: p2
         receiver: "dcs-p2"
-  # Verify hub ECS
-  - receiver: "verify-2ndline-slack"
-    match:
-      product: "verify"
-    routes:
-    - receiver: "verify-p1"
-      match:
-        deployment: prod
-        severity: p1
-    - receiver: "verify-p2"
-      match:
-        deployment: integration
-        severity: p1
-    - receiver: "verify-p3"
-      match:
-        severity: ticket
-    - match:
-        severity: constant
-      group_interval: 1m
-      repeat_interval: 1m
-      routes:
-        - match:
-            deployment: prod
-          receiver: "verify-prod-cronitor"
-        - match:
-            deployment: integration
-          receiver: "verify-integration-cronitor"
-        - match:
-            deployment: staging
-          receiver: "verify-staging-cronitor"
-
+  
 receivers:
 - name: "re-observe-pagerduty"
   pagerduty_configs:
@@ -111,24 +81,6 @@ receivers:
   webhook_configs:
   - send_resolved: false
     url: "${observe_cronitor}"
-- name: "verify-prod-cronitor"
-  webhook_configs:
-  - send_resolved: false
-    url: "${verify_prod_cronitor}"
-- name: "verify-integration-cronitor"
-  webhook_configs:
-  - send_resolved: false
-    url: "${verify_integration_cronitor}"
-- name: "verify-staging-cronitor"
-  webhook_configs:
-  - send_resolved: false
-    url: "${verify_staging_cronitor}"
-- name: "verify-2ndline-slack"
-  slack_configs: &verify-2ndline-slack-configs
-  - send_resolved: true
-    channel: '#verify-2ndline'
-    icon_emoji: ':verify-shield:'
-    username: alertmanager
 - name: "autom8-tickets"
   email_configs:
   - to: "${autom8_recipient_email}"
@@ -200,14 +152,4 @@ receivers:
 - name: "dcs-p2"
   pagerduty_configs:
     - service_key: "${dcs_p2_pagerduty_key}"
-- name: "verify-p1"
-  pagerduty_configs:
-    - service_key: "${verify_p1_pagerduty_key}"
-  slack_configs: *verify-2ndline-slack-configs
-- name: "verify-p2"
-  pagerduty_configs:
-    - service_key: "${verify_p2_pagerduty_key}"
-  slack_configs: *verify-2ndline-slack-configs
-- name: "verify-p3"
-  slack_configs: *verify-2ndline-slack-configs
 - name: "dev-null"
