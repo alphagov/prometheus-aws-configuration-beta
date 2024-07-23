@@ -1,3 +1,5 @@
+**This repo is no longer in use and has been archived**
+
 # Prometheus configuration on AWS #
 
 Terraform configuration to manage a Prometheus server running on AWS.
